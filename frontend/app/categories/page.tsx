@@ -30,27 +30,19 @@ export default function KategorilerSayfasi() {
     // useEffect, sayfa ilk açıldığında veya içindeki değerler değiştiğinde tetiklenir.
     // En sondaki boş dizi [] sayesinde, bu işlemin sadece sayfa ilk açıldığında 1 kez çalışmasını sağlarız.
     useEffect(() => {
-        fetch(API_BASE_URL) // Backend'in kapısını çalıyoruz (GET isteği).
-            .then(cevap => {
-                // Eğer sunucudan olumsuz bir yanıt gelirse (404, 500 vb.) hata fırlat.
-                if (!cevap.ok) throw new Error('Ağ yanıtı başarılı değil');
-                return cevap.json(); // Gelen yanıtı JavaScript'in anlayacağı JSON formatına çevir.
-            })
+        fetch(API_BASE_URL)
+            .then(cevap => cevap.json())
             .then(gercekVeriler => {
-                // Backend'den gelen veri yapısını (veri.isim), bizim tablomuzun beklediği 
-                // yapıya (name) çeviriyoruz. Bir nevi tercümanlık yapıyoruz.
+                // BURAYA EKLE: Bakalım backend ne gönderiyor?
+                console.log("Backend'den gelen ham veri:", gercekVeriler);
+
                 const uyumluVeriler = gercekVeriler.map((veri: any) => ({
                     id: veri.id,
-                    name: veri.isim || "Bilinmeyen Kategori"
+                    name: veri.name || "Bilinmeyen Kategori"
                 }));
-
-                // Çevrilmiş verileri 'categories' hafızasına kaydediyoruz. 
-                // Bu kod çalıştığı an tablo otomatik olarak dolar.
                 setCategories(uyumluVeriler);
             })
-            .catch(hata => {
-                console.error("Veriler çekilirken hata:", hata);
-            });
+            .catch(hata => console.error(hata));
     }, []);
 
 
@@ -87,64 +79,54 @@ export default function KategorilerSayfasi() {
         setIsModalOpen(true); // Modalı görünür yap.
     };
 
-
-    // --- 5. KAYDET / GÜNCELLE İŞLEMİ (CREATE - POST / UPDATE - PUT) ---
-    // Modaldaki mavi "Kaydet" veya "Güncelle" butonuna basıldığında çalışır.
+    // --- 5. KAYDET / GÜNCELLE İŞLEMİ (DÜZELTİLMİŞ HALİ) ---
     const handleSave = () => {
-        // Eğer input kutusu boşsa (sadece boşluk karakteri varsa) hiçbir şey yapma, işlemi iptal et.
         if (categoryName.trim() === "") return;
 
-        // EĞER editingId NULL DEĞİLSE: Demek ki daha önceden var olan bir kaydı düzenliyoruz (PUT).
         if (editingId !== null) {
+            // GÜNCELLEME (PUT)
             fetch(`${API_BASE_URL}/${editingId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' }, // Backend'e JSON yolladığımızı söylüyoruz.
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id: editingId,
-                    isim: categoryName // Swagger şemasının beklediği değişken adı (isim).
+                    name: categoryName // Burayı 'isim' yaptık
                 })
             })
                 .then(cevap => {
                     if (!cevap.ok) throw new Error('Güncelleme başarısız');
-
-                    // Ekrandaki tabloyu sayfayı yenilemeden güncellemek için map() fonksiyonu kullanıyoruz.
-                    // "Eğer sıradaki elemanın id'si benim düzenlediğim id ise, onun ismini yeni isimle değiştir, değilse aynen bırak."
                     const updatedCategories = categories.map(cat =>
                         cat.id === editingId ? { ...cat, name: categoryName } : cat
                     );
-                    setCategories(updatedCategories); // Tabloyu güncelle.
-                    closeModal(); // Modalı kapat.
+                    setCategories(updatedCategories);
+                    closeModal();
                 })
                 .catch(hata => console.error("Güncelleme hatası:", hata));
-
-        }
-        // EĞER editingId NULL İSE: Demek ki yepyeni bir kayıt ekliyoruz (POST).
-        else {
+        } else {
+            // YENİ EKLEME (POST)
             fetch(API_BASE_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    isim: categoryName // Yeni eklenecek isim.
+                    isim: categoryName // Burayı 'isim' yaptık
                 })
             })
                 .then(cevap => {
                     if (!cevap.ok) throw new Error('Ekleme başarısız');
-                    return cevap.json(); // Backend, eklediği yeni satırı (ID'siyle beraber) bize geri yolluyor.
+                    return cevap.json();
                 })
                 .then(yeniVeri => {
-                    // Backend'den gelen yeni veriyi kendi tablomuza uygun formata çeviriyoruz.
+                    // yeniVeri.isim geldiğini bildiğimiz için onu alıyoruz
                     const newCategory = {
                         id: yeniVeri.id,
-                        name: yeniVeri.isim
+                        name: yeniVeri.isim || categoryName
                     };
-                    // Mevcut kategoriler dizisinin sonuna (...categories) yeni kategoriyi ekliyoruz.
                     setCategories([...categories, newCategory]);
-                    closeModal(); // Modalı kapat.
+                    closeModal();
                 })
                 .catch(hata => console.error("Ekleme hatası:", hata));
         }
     };
-
 
     // --- 6. MODALI KAPATMA VE TEMİZLİK ---
     // "İptal" butonuna basıldığında veya işlem başarıyla bittiğinde çalışır.
@@ -181,7 +163,7 @@ export default function KategorilerSayfasi() {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         {/* Tablo Sütun Başlıkları */}
-                        <tr className="bg-gray-100 border-b border-gray-200 text-gray-600 uppercase text-sm tracking-wider">
+                        <tr className="bg-gray-100 border-b border-gray-200 text-gray-600  text-sm tracking-wider">
                             <th className="p-4 font-semibold">Kategori Adı</th>
                             <th className="p-4 font-semibold text-right">İşlemler</th>
                         </tr>
