@@ -103,7 +103,7 @@ export default function TedarikcilerSayfasi() {
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider uppercase">
+                        <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider ">
                             <th className="p-4 pl-6">Durum</th>
                             <th className="p-4">Firma Ünvanı</th>
                             <th className="p-4">Yetkili Kişi</th>
