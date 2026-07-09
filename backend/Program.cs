@@ -69,7 +69,6 @@ app.UseSwaggerUI();
 // app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
-app.UseCors("AllowREactApp");
 
 app.UseAuthorization();
 
