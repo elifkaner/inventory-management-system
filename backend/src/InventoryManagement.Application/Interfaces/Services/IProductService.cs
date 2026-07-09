@@ -9,6 +9,8 @@ public interface IProductService
 
     Task<ProductResponseDto?> GetProductByIdAsync(int id);
 
+    Task<ProductResponseDto?> GetProductByBarcodeAsync(string Barcode);
+
     Task<ProductResponseDto> CreateProductAsync(Product product);
 
     Task<ProductResponseDto?> UpdateProductAsync(int id, Product updatedProduct);

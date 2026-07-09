@@ -33,6 +33,13 @@ public class ProductService : IProductService
         return product == null ? null : ToResponseDto(product);
     }
 
+    public async Task<ProductResponseDto?> GetProductByBarcodeAsync(string Barcode)
+    {
+        var product = await _productRepository.GetByBarcodeAsync(Barcode);
+
+        return product == null ? null: ToResponseDto(product);
+    }
+
     // Yeni ürün oluşturur
     public async Task<ProductResponseDto> CreateProductAsync(Product product)
     {
