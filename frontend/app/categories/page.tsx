@@ -113,7 +113,7 @@ export default function KategorilerSayfasi() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: categoryName // <--- BURASI 'isim'di, 'name' OLARAK DÜZELTİLDİ
+                    name: categoryName
                 })
             })
                 .then(cevap => {
