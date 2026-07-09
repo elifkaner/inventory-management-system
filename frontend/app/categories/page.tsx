@@ -29,20 +29,25 @@ export default function KategorilerSayfasi() {
     // --- 2. SAYFA YÜKLENDİĞİNDE VERİLERİ ÇEKME (READ / GET) ---
     // useEffect, sayfa ilk açıldığında veya içindeki değerler değiştiğinde tetiklenir.
     // En sondaki boş dizi [] sayesinde, bu işlemin sadece sayfa ilk açıldığında 1 kez çalışmasını sağlarız.
+    // KategorilerSayfasi.tsx içindeki useEffect'ini şu "sağlam" versiyonla değiştir
     useEffect(() => {
-        fetch(API_BASE_URL)
-            .then(cevap => cevap.json())
-            .then(gercekVeriler => {
-                // BURAYA EKLE: Bakalım backend ne gönderiyor?
-                console.log("Backend'den gelen ham veri:", gercekVeriler);
+        const loadCategories = async () => {
+            try {
+                const res = await fetch(API_BASE_URL);
+                if (!res.ok) return; // Hata varsa boş dön, uygulamayı çökertme
+                const data = await res.json();
 
-                const uyumluVeriler = gercekVeriler.map((veri: any) => ({
-                    id: veri.id,
-                    name: veri.name || "Bilinmeyen Kategori"
-                }));
-                setCategories(uyumluVeriler);
-            })
-            .catch(hata => console.error(hata));
+                // Sadece dolu isimleri al, gereksiz "Bilinmeyen"leri temizle
+                const cleanData = data
+                    .filter((item: any) => item.name && item.name.trim() !== "")
+                    .map((item: any) => ({ id: item.id, name: item.name }));
+
+                setCategories(cleanData);
+            } catch (err) {
+                console.warn("Backend kapalı veya ulaşılamıyor, şu an veriler yüklenemedi.");
+            }
+        };
+        loadCategories();
     }, []);
 
 
@@ -79,7 +84,7 @@ export default function KategorilerSayfasi() {
         setIsModalOpen(true); // Modalı görünür yap.
     };
 
-    // --- 5. KAYDET / GÜNCELLE İŞLEMİ (DÜZELTİLMİŞ HALİ) ---
+    // --- 5. KAYDET / GÜNCELLE İŞLEMİ (TAMAMEN DÜZELTİLMİŞ HALİ) ---
     const handleSave = () => {
         if (categoryName.trim() === "") return;
 
@@ -90,7 +95,7 @@ export default function KategorilerSayfasi() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id: editingId,
-                    name: categoryName // Burayı 'isim' yaptık
+                    name: categoryName
                 })
             })
                 .then(cevap => {
@@ -108,7 +113,7 @@ export default function KategorilerSayfasi() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    isim: categoryName // Burayı 'isim' yaptık
+                    name: categoryName // <--- BURASI 'isim'di, 'name' OLARAK DÜZELTİLDİ
                 })
             })
                 .then(cevap => {
@@ -116,10 +121,9 @@ export default function KategorilerSayfasi() {
                     return cevap.json();
                 })
                 .then(yeniVeri => {
-                    // yeniVeri.isim geldiğini bildiğimiz için onu alıyoruz
                     const newCategory = {
                         id: yeniVeri.id,
-                        name: yeniVeri.isim || categoryName
+                        name: yeniVeri.name || categoryName // <--- BURASI DA DÜZELTİLDİ
                     };
                     setCategories([...categories, newCategory]);
                     closeModal();
