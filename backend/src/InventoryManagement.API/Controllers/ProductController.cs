@@ -66,8 +66,26 @@ public class ProductController : ControllerBase
 
         return Ok(product);
     }
+    // GET /api/Product/barcode/{barcode}
+    [HttpGet("barcode/{barcode}")]
+    public async Task<IActionResult> GetProductByBarcode(string barcode)
+    {
+        if (string.IsNullOrWhiteSpace(barcode))
+        {
+            return BadRequest("Barkod boş olamaz.");
+        }
 
-    // POST /api/Product
+        var product = await _productService.GetProductByBarcodeAsync(barcode);
+
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(product);
+    }
+
+    // POST /api/Product/
     [HttpPost]
     public async Task<IActionResult> CreateProduct(CreateProductDto dto)
     {
