@@ -5,7 +5,7 @@ namespace InventoryManagement.Application.Interfaces.Services;
 
 public interface IProductService
 {
-    Task<List<ProductResponseDto>> GetAllProductsAsync();
+    Task<List<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null);
 
     Task<ProductResponseDto?> GetProductByIdAsync(int id);
 
@@ -14,4 +14,8 @@ public interface IProductService
     Task<ProductResponseDto?> UpdateProductAsync(int id, Product updatedProduct);
 
     Task<bool> DeleteProductAsync(int id);
+
+    Task<DashboardSummaryDto> GetSummaryAsync();
+
+    Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null);
 }
