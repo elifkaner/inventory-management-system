@@ -3,6 +3,16 @@ using FluentValidation;
 using IlkDotNetApp.Database;
 using IlkDotNetApp.Services;
 using Microsoft.EntityFrameworkCore;
+using DotNetEnv;
+
+DotNetEnv.Env.Load();
+
+var connectionString =
+    $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
+    $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
+    $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
+    $"Username={Environment.GetEnvironmentVariable("DB_USERNAME")};" +
+    $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,9 +38,7 @@ builder.Services.AddSwaggerGen();
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
+    options.UseNpgsql(connectionString));
 
 
 // Services
