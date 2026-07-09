@@ -1,3 +1,4 @@
+using System.Text;
 using InventoryManagement.Application.DTOs.Product;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Interfaces.Services;
@@ -7,6 +8,8 @@ namespace InventoryManagement.Application.Services;
 
 public class ProductService : IProductService
 {
+    private const int CriticalStockThreshold = 10;
+
     private readonly IProductRepository _productRepository;
 
     public ProductService(IProductRepository productRepository)
@@ -14,10 +17,10 @@ public class ProductService : IProductService
         _productRepository = productRepository;
     }
 
-    // Tüm ürünleri getirir
-    public async Task<List<ProductResponseDto>> GetAllProductsAsync()
+    // Arama ve kategori filtresine göre ürünleri listeler
+    public async Task<List<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null)
     {
-        var products = await _productRepository.GetAllAsync();
+        var products = await _productRepository.GetAllAsync(search, categoryId);
 
         return products.Select(ToResponseDto).ToList();
     }
@@ -50,6 +53,63 @@ public class ProductService : IProductService
     public Task<bool> DeleteProductAsync(int id)
     {
         return _productRepository.DeleteAsync(id);
+    }
+
+    // Dashboard'daki özet KPI kartlarının verilerini hesaplar
+    public async Task<DashboardSummaryDto> GetSummaryAsync()
+    {
+        var stats = await _productRepository.GetSummaryStatsAsync(CriticalStockThreshold);
+
+        var activeSalesRate = stats.TotalProducts > 0
+            ? Math.Round((double)stats.ActiveProductCount / stats.TotalProducts * 100, 1)
+            : 0;
+
+        return new DashboardSummaryDto
+        {
+            TotalProducts = stats.TotalProducts,
+            CriticalStockCount = stats.CriticalStockCount,
+            TotalInventoryValue = stats.TotalInventoryValue,
+            ActiveSalesRate = activeSalesRate
+        };
+    }
+
+    // Listeyi (arama/kategori filtresi uygulanmış haliyle) CSV olarak dışa aktarır
+    public async Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null)
+    {
+        var products = await GetAllProductsAsync(search, categoryId);
+
+        var csv = new StringBuilder();
+        csv.AppendLine("Id,Ürün Adı,Barkod,Kategori,Tedarikçi,Alış Fiyatı,Satış Fiyatı,Stok,Durum");
+
+        foreach (var p in products)
+        {
+            csv.AppendLine(string.Join(",",
+                p.Id,
+                CsvEscape(p.ProductName),
+                CsvEscape(p.Barcode),
+                CsvEscape(p.Category),
+                CsvEscape(p.Supplier),
+                p.PurchasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                p.SalePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                p.StockQuantity,
+                p.IsActive ? "Aktif" : "Pasif"));
+        }
+
+        // Excel'in Türkçe karakterleri doğru göstermesi için UTF-8 BOM ekleniyor
+        var preamble = Encoding.UTF8.GetPreamble();
+        var body = Encoding.UTF8.GetBytes(csv.ToString());
+
+        return preamble.Concat(body).ToArray();
+    }
+
+    private static string CsvEscape(string value)
+    {
+        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
+        {
+            return "\"" + value.Replace("\"", "\"\"") + "\"";
+        }
+
+        return value;
     }
 
     private static ProductResponseDto ToResponseDto(Product p)

@@ -14,12 +14,27 @@ public class ProductRepository : IProductRepository
         _context = context;
     }
 
-    public async Task<List<Product>> GetAllAsync()
+    public async Task<List<Product>> GetAllAsync(string? search = null, int? categoryId = null)
     {
-        return await _context.Products
+        var query = _context.Products
             .Include(p => p.Supplier)
             .Include(p => p.Category)
-            .ToListAsync();
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var pattern = $"%{search}%";
+            query = query.Where(p =>
+                EF.Functions.ILike(p.ProductName, pattern) ||
+                EF.Functions.ILike(p.Barcode, pattern));
+        }
+
+        if (categoryId.HasValue && categoryId.Value > 0)
+        {
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task<Product?> GetByIdAsync(int id)
@@ -77,5 +92,21 @@ public class ProductRepository : IProductRepository
         await _context.SaveChangesAsync();
 
         return true;
+    }
+
+    public async Task<ProductSummaryStats> GetSummaryStatsAsync(int criticalStockThreshold)
+    {
+        var totalProducts = await _context.Products.CountAsync();
+
+        var criticalStockCount = await _context.Products
+            .CountAsync(p => p.StockQuantity <= criticalStockThreshold);
+
+        var totalInventoryValue = await _context.Products
+            .Where(p => p.IsActive)
+            .SumAsync(p => p.SalePrice * p.StockQuantity);
+
+        var activeProductCount = await _context.Products.CountAsync(p => p.IsActive);
+
+        return new ProductSummaryStats(totalProducts, criticalStockCount, totalInventoryValue, activeProductCount);
     }
 }

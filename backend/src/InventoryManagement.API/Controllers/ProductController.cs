@@ -24,17 +24,37 @@ public class ProductController : ControllerBase
         _updateProductValidator = updateProductValidator;
     }
 
-    // GET /api/Product
+    // GET /api/Product?search=kahve&categoryId=3
     [HttpGet]
-    public async Task<IActionResult> GetAllProducts()
+    public async Task<IActionResult> GetAllProducts([FromQuery] string? search, [FromQuery] int? categoryId)
     {
-        var products = await _productService.GetAllProductsAsync();
+        var products = await _productService.GetAllProductsAsync(search, categoryId);
 
         return Ok(products);
     }
 
+    // GET /api/Product/summary
+    [HttpGet("summary")]
+    public async Task<IActionResult> GetProductSummary()
+    {
+        var summary = await _productService.GetSummaryAsync();
+
+        return Ok(summary);
+    }
+
+    // GET /api/Product/export?search=kahve&categoryId=3
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportProducts([FromQuery] string? search, [FromQuery] int? categoryId)
+    {
+        var csvBytes = await _productService.ExportToCsvAsync(search, categoryId);
+
+        var fileName = $"urunler_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
+
+        return File(csvBytes, "text/csv", fileName);
+    }
+
     // GET /api/Product/{id}
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetProductById(int id)
     {
         var product = await _productService.GetProductByIdAsync(id);
@@ -77,7 +97,7 @@ public class ProductController : ControllerBase
     }
 
     // PUT /api/Product/{id}
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto dto)
     {
         var validationResult = await _updateProductValidator.ValidateAsync(dto);
@@ -111,7 +131,7 @@ public class ProductController : ControllerBase
     }
 
     // DELETE /api/Product/{id}
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
         var deleted = await _productService.DeleteProductAsync(id);
