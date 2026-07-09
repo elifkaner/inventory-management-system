@@ -1,145 +1,247 @@
 'use client';
 import { useState } from 'react';
 
-export default function UrunlerSayfasi() {
-    // 1. ARAYÜZ (UI) HAFIZALARI
+// Şimdilik tasarımın nasıl durduğunu görmek için sahte veriler
+const MOCK_PRODUCTS = [
+    { id: 1, productName: 'Kavrulmuş Etiyopya Kahvesi', barcode: 'SKU-ETH-001', purchasePrice: 250, salePrice: 420, stockQuantity: 45, isActive: true, categoryName: 'Çekirdek Kahve' },
+    { id: 2, productName: 'Filtre Kahve Kağıdı (100lü)', barcode: 'SKU-ACC-042', purchasePrice: 80, salePrice: 150, stockQuantity: 120, isActive: true, categoryName: 'Aksesuar' },
+    { id: 3, productName: 'Sanal Espresso Makinesi', barcode: 'SKU-EQP-099', purchasePrice: 12000, salePrice: 18500, stockQuantity: 8, isActive: false, categoryName: 'Ekipman' }
+];
+
+export default function UrunEnvanterSayfasi() {
+    const [products, setProducts] = useState(MOCK_PRODUCTS);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
-    // 2. AKILLI FORM HAFIZALARI (Seçtikçe dolacak olanlar)
-    const [seciliKategori, setSeciliKategori] = useState("");
-    const [seciliAltKategori, setSeciliAltKategori] = useState("");
+    // Form verileri
+    const [formData, setFormData] = useState({
+        productName: '', purchasePrice: '', salePrice: '', barcode: '',
+        stockQuantity: '', categoryId: '', brandId: '', isActive: true, supplierId: ''
+    });
 
-    // 3. SAHTE VERİ TABANI (API gelene kadar bizi idare edecek kurallar)
-    // Hangi kategorinin altında hangi alt kategoriler var?
-    const kategoriKurallari: Record<string, string[]> = {
-        "Elektronik": ["Laptop", "Akıllı Telefon"],
-        "Giyim": ["Tişört", "Ayakkabı"]
+    // Hangi kutuların boş olduğunu (hata durumunu) tutan state
+    const [errors, setErrors] = useState<Record<string, boolean>>({});
+
+    const filteredProducts = products.filter(prod =>
+        prod.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prod.barcode.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // İnputlara yazı yazıldığında hem veriyi günceller hem de o kutudaki hatayı temizler
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+
+        // Eğer o alanda hata varsa ve kullanıcı yazı yazmaya başladıysa hatayı kaldır
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: false }));
+        }
     };
 
-    // Hangi alt kategori seçildiğinde hangi özellikler sorulmalı? (İşte şov burası!)
-    const ozellikKurallari: Record<string, string[]> = {
-        "Laptop": ["RAM Kapasitesi", "İşlemci Modeli", "Ekran Boyutu"],
-        "Akıllı Telefon": ["Dahili Hafıza", "Kamera Çözünürlüğü", "Renk"],
-        "Tişört": ["Beden", "Kumaş Tipi"],
-        "Ayakkabı": ["Ayakkabı Numarası", "Kullanım Alanı"]
-    };
+    // "Ürünü Kaydet" Butonuna Basıldığında Çalışacak Doğrulama (Validation) Fonksiyonu
+    const handleSave = () => {
+        const newErrors: Record<string, boolean> = {};
+        let hasError = false;
 
-    // Modalı kapatıp formu sıfırlayan temizlikçi
-    const formuSifirla = () => {
+        // Kontrol edilecek tüm inputların listesi
+        const fieldsToValidate = ['productName', 'barcode', 'categoryId', 'brandId', 'purchasePrice', 'salePrice', 'stockQuantity', 'supplierId'];
+
+        fieldsToValidate.forEach(field => {
+            // Eğer alan boşsa veya sadece boşluktan oluşuyorsa hata olarak işaretle
+            if (!formData[field as keyof typeof formData] || String(formData[field as keyof typeof formData]).trim() === '') {
+                newErrors[field] = true;
+                hasError = true;
+            }
+        });
+
+        setErrors(newErrors); // Hataları ekrana yansıt
+
+        if (hasError) {
+            return; // Hata varsa işlemi durdur, kaydetme!
+        }
+
+        // Hata yoksa buradaki kodlar çalışacak (İleride backend'e bağlanacak)
+        alert("Harika! Tüm alanlar dolu, veriler backend'e gönderilmeye hazır.");
         setIsModalOpen(false);
-        setSeciliKategori("");
-        setSeciliAltKategori("");
     };
+
+    const handleEditClick = (product: any) => {
+        setFormData({
+            productName: product.productName, purchasePrice: product.purchasePrice, salePrice: product.salePrice,
+            barcode: product.barcode, stockQuantity: product.stockQuantity, categoryId: '', brandId: '',
+            isActive: product.isActive, supplierId: ''
+        });
+        setErrors({}); // Düzenle açıldığında eski hataları temizle
+        setIsModalOpen(true);
+    };
+
+    const handleAddNewClick = () => {
+        setFormData({ productName: '', purchasePrice: '', salePrice: '', barcode: '', stockQuantity: '', categoryId: '', brandId: '', isActive: true, supplierId: '' });
+        setErrors({}); // Yeni ekle açıldığında hataları temizle
+        setIsModalOpen(true);
+    };
+
+    // --- KÜÇÜK YARDIMCI BİLEŞEN: HATA MESAJI VE İKONU ---
+    const ErrorMessage = () => (
+        <div className="flex items-center gap-1.5 mt-1.5 text-rose-500 text-xs font-semibold animate-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            Bu alanı doldurmak zorunludur.
+        </div>
+    );
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="p-8 bg-slate-50 min-h-screen text-slate-800 font-sans">
 
-            {/* Üst Bilgi ve Ekle Butonu */}
-            <div className="flex justify-between items-center mb-6">
+            {/* ÜST BAŞLIK */}
+            <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Ürün Listesi</h1>
-                    <p className="text-sm text-gray-500 mt-1">Sistemdeki tüm ürünleri ve varyant stoklarını yönetin.</p>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Ürün Envanter Yönetimi</h1>
+                    <p className="text-slate-500 mt-1 text-sm">Stok kartlarını, fiyat listelerini ve envanter durumlarını merkezi olarak takip edin.</p>
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2"
-                >
-                    <span>+</span> Ürün Ekle
+                <button onClick={handleAddNewClick} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-emerald-600/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    Yeni Ürün Kartı
                 </button>
             </div>
 
-            {/* Şimdilik boş duran tablo alanı (Burayı sonra dolduracağız) */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-500">
-                Ürün listesi yakında buraya gelecek...
+            {/* KPI KARTLARI */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><div className="flex items-center gap-3 mb-2"><div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg></div><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Toplam Ürün</span></div><h3 className="text-2xl font-black text-slate-900">1,240 <span className="text-sm font-medium text-slate-400">Adet</span></h3></div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><div className="flex items-center gap-3 mb-2"><div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Kritik Stok</span></div><h3 className="text-2xl font-black text-amber-600">14 <span className="text-sm font-medium text-slate-400">Kalem</span></h3></div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><div className="flex items-center gap-3 mb-2"><div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Envanter Değeri</span></div><h3 className="text-2xl font-black text-slate-900">₺450,200</h3></div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><div className="flex items-center gap-3 mb-2"><div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Aktif Satış</span></div><h3 className="text-2xl font-black text-emerald-600">%94.2</h3></div>
             </div>
 
-            {/* AKILLI FORM (MODAL) */}
+            {/* ARAMA */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div className="relative w-full md:w-96">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
+                    <input type="text" placeholder="Ürün adı veya SKU koduna göre ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm" />
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={() => alert("Kategori filtreleme özelliği yakında aktif edilecek!")} className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">
+                        Kategori Filtresi
+                    </button>
+                    <button onClick={() => alert("Excel'e aktarma özelliği yakında eklenecek!")} className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">
+                        Dışa Aktar
+                    </button>
+                </div>
+            </div>
+
+            {/* TABLO */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider uppercase">
+                            <th className="p-4 pl-6">Durum</th><th className="p-4">Ürün Açıklaması</th><th className="p-4">Kategori</th><th className="p-4">SKU Kodu</th><th className="p-4 text-right">Satış Fiyatı</th><th className="p-4 text-center">Stok</th><th className="p-4 pr-6 text-right">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
+                        {filteredProducts.map((prod) => (
+                            <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="p-4 pl-6"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${prod.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>{prod.isActive ? 'Aktif' : 'Pasif'}</span></td>
+                                <td className="p-4 text-slate-900 font-semibold">{prod.productName}</td><td className="p-4 text-slate-500">{prod.categoryName}</td><td className="p-4 font-mono text-xs text-slate-500 bg-slate-50 rounded px-2 py-1 inline-block mt-2">{prod.barcode}</td><td className="p-4 text-right text-slate-900 font-bold">₺{prod.salePrice.toLocaleString()}</td>
+                                <td className="p-4 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>{prod.stockQuantity} Adet</span></td>
+                                <td className="p-4 pr-6 text-right"><button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors mr-3 font-semibold">Düzenle</button></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* MODAL */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl shadow-lg w-[500px] max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
 
-                        <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-3">
-                            Yeni Ürün Ekle (Sahibinden Mantığı)
-                        </h2>
-
-                        {/* 1. ADIM: ANA KATEGORİ SEÇİMİ */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Ana Kategori</label>
-                            <select
-                                className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={seciliKategori}
-                                onChange={(e) => {
-                                    setSeciliKategori(e.target.value);
-                                    setSeciliAltKategori(""); // Ana kategori değişirse, alt kategoriyi sıfırla!
-                                }}
-                            >
-                                <option value="">Lütfen Seçiniz...</option>
-                                <option value="Elektronik">Elektronik</option>
-                                <option value="Giyim">Giyim</option>
-                            </select>
+                        <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <h2 className="text-xl font-bold text-slate-800">Yeni Ürün / Hizmet Kartı</h2>
+                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
                         </div>
 
-                        {/* 2. ADIM: ALT KATEGORİ SEÇİMİ (Sadece Ana Kategori seçildiyse görünür) */}
-                        {seciliKategori && (
-                            <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
-                                <label className="block text-sm font-medium text-blue-800 mb-1">
-                                    {seciliKategori} Alt Kategorisi
-                                </label>
-                                <select
-                                    className="w-full p-2.5 border border-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    value={seciliAltKategori}
-                                    onChange={(e) => setSeciliAltKategori(e.target.value)}
-                                >
-                                    <option value="">Seçiniz...</option>
-                                    {/* Seçilen ana kategoriye göre alt kategorileri dizi içinden döngüyle basıyoruz */}
-                                    {kategoriKurallari[seciliKategori].map(alt => (
-                                        <option key={alt} value={alt}>{alt}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
+                        <div className="p-8 overflow-y-auto flex-1">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                        {/* 3. ADIM: DİNAMİK ÖZELLİKLER (Sadece Alt Kategori seçildiyse görünür) */}
-                        {seciliAltKategori && (
-                            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">
-                                    {seciliAltKategori} Özellikleri
-                                </h3>
+                                {/* SOL SÜTUN */}
+                                <div className="space-y-5">
+                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b pb-2">Temel Bilgiler</h3>
 
-                                <div className="space-y-3">
-                                    {/* Seçilen alt kategoriye göre kurallardan özellikleri bulup input çiziyoruz */}
-                                    {ozellikKurallari[seciliAltKategori].map(ozellik => (
-                                        <div key={ozellik}>
-                                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                                                {ozellik}
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder={`${ozellik} girin...`}
-                                                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Ürün Adı *</label>
+                                        <input type="text" name="productName" value={formData.productName} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.productName ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="Örn: Kavrulmuş Çekirdek" />
+                                        {errors.productName && <ErrorMessage />}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">SKU / Barkod *</label>
+                                        <input type="text" name="barcode" value={formData.barcode} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm font-mono ${errors.barcode ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="Örn: SKU-1001" />
+                                        {errors.barcode && <ErrorMessage />}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Kategori ID</label>
+                                            <input type="number" name="categoryId" value={formData.categoryId} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.categoryId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
+                                            {errors.categoryId && <ErrorMessage />}
                                         </div>
-                                    ))}
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Marka ID</label>
+                                            <input type="number" name="brandId" value={formData.brandId} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.brandId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
+                                            {errors.brandId && <ErrorMessage />}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
 
-                        {/* Butonlar */}
-                        <div className="flex justify-end gap-2 pt-4 border-t">
-                            <button
-                                onClick={formuSifirla}
-                                className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
-                            >
-                                İptal
-                            </button>
-                            <button
-                                // Şimdilik sadece görsel, işlevi daha sonra ekleyeceğiz
-                                disabled={!seciliAltKategori}
-                                className={`px-4 py-2 text-white rounded-lg font-medium transition-colors ${!seciliAltKategori ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                                    }`}
-                            >
-                                Devam Et
-                            </button>
+                                {/* SAĞ SÜTUN */}
+                                <div className="space-y-5">
+                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b pb-2">Ticari Bilgiler</h3>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Alış Fiyatı (₺)</label>
+                                            <input type="number" name="purchasePrice" value={formData.purchasePrice} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.purchasePrice ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0.00" />
+                                            {errors.purchasePrice && <ErrorMessage />}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Satış Fiyatı (₺) *</label>
+                                            <input type="number" name="salePrice" value={formData.salePrice} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm bg-emerald-50/30 ${errors.salePrice ? 'border-rose-500 !bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0.00" />
+                                            {errors.salePrice && <ErrorMessage />}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Başlangıç Stoğu</label>
+                                            <input type="number" name="stockQuantity" value={formData.stockQuantity} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0" />
+                                            {errors.stockQuantity && <ErrorMessage />}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tedarikçi ID</label>
+                                            <input type="number" name="supplierId" value={formData.supplierId} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.supplierId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
+                                            {errors.supplierId && <ErrorMessage />}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-900">Ürün Durumu</label>
+                                            <p className="text-xs text-slate-500">Pasife alınan ürünler satışta görünmez.</p>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleInputChange} className="sr-only peer" />
+                                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div className="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
+                            <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl font-medium text-sm">İptal Et</button>
+                            <button onClick={handleSave} className="px-5 py-2.5 text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 rounded-xl font-medium text-sm">Ürünü Kaydet</button>
                         </div>
 
                     </div>
