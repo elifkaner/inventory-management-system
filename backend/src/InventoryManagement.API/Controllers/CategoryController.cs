@@ -1,3 +1,4 @@
+using FluentValidation;
 using InventoryManagement.Application.DTOs.Category;
 using InventoryManagement.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +10,17 @@ namespace InventoryManagement.API.Controllers;
 public class CategoryController : ControllerBase
 {
     private readonly ICategoryService _categoryService;
+    private readonly IValidator<CreateCategoryDto> _createCategoryValidator;
+    private readonly IValidator<UpdateCategoryDto> _updateCategoryValidator;
 
-    public CategoryController(ICategoryService categoryService)
+    public CategoryController(
+        ICategoryService categoryService,
+        IValidator<CreateCategoryDto> createCategoryValidator,
+        IValidator<UpdateCategoryDto> updateCategoryValidator)
     {
         _categoryService = categoryService;
+        _createCategoryValidator = createCategoryValidator;
+        _updateCategoryValidator = updateCategoryValidator;
     }
 
     // GET /api/Category
@@ -42,6 +50,13 @@ public class CategoryController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateCategory(CreateCategoryDto dto)
     {
+        var validationResult = await _createCategoryValidator.ValidateAsync(dto);
+
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.Errors);
+        }
+
         var createdCategory = await _categoryService.CreateCategoryAsync(dto);
 
         return Ok(createdCategory);
@@ -51,6 +66,13 @@ public class CategoryController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDto dto)
     {
+        var validationResult = await _updateCategoryValidator.ValidateAsync(dto);
+
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.Errors);
+        }
+
         var updatedCategory = await _categoryService.UpdateCategoryAsync(id, dto);
 
         if (updatedCategory == null)
