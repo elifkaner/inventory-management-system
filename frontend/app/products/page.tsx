@@ -166,7 +166,7 @@ export default function UrunEnvanterSayfasi() {
 
                                 {/* SOL SÜTUN */}
                                 <div className="space-y-5">
-                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b pb-2">Temel Bilgiler</h3>
+                                    <h3 className="text-sm font-bold text-slate-400 tracking-wider mb-4 border-b pb-2">Temel Bilgiler</h3>
 
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Ürün Adı *</label>
@@ -196,7 +196,7 @@ export default function UrunEnvanterSayfasi() {
 
                                 {/* SAĞ SÜTUN */}
                                 <div className="space-y-5">
-                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b pb-2">Ticari Bilgiler</h3>
+                                    <h3 className="text-sm font-bold text-slate-400  tracking-wider mb-4 border-b pb-2">Ticari Bilgiler</h3>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
