@@ -38,7 +38,11 @@ public class SupplierService : ISupplierService
             CompanyName = dto.CompanyName,
             ContactPerson = dto.ContactPerson,
             Phone = dto.Phone,
-            Email = dto.Email
+            Email = dto.Email,
+            TaxOffice = dto.TaxOffice,
+            TaxNumber = dto.TaxNumber,
+            Address = dto.Address,
+            IsActive = dto.IsActive
         };
 
         var created = await _supplierRepository.AddAsync(supplier);
@@ -60,6 +64,10 @@ public class SupplierService : ISupplierService
         supplier.ContactPerson = dto.ContactPerson;
         supplier.Phone = dto.Phone;
         supplier.Email = dto.Email;
+        supplier.TaxOffice = dto.TaxOffice;
+        supplier.TaxNumber = dto.TaxNumber;
+        supplier.Address = dto.Address;
+        supplier.IsActive = dto.IsActive;
 
         return await _supplierRepository.UpdateAsync(supplier);
     }
@@ -78,7 +86,11 @@ public class SupplierService : ISupplierService
             CompanyName = s.CompanyName,
             ContactPerson = s.ContactPerson,
             Phone = s.Phone,
-            Email = s.Email
+            Email = s.Email,
+            TaxOffice = s.TaxOffice,
+            TaxNumber = s.TaxNumber,
+            Address = s.Address,
+            IsActive = s.IsActive
         };
     }
 }
