@@ -44,7 +44,13 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Category)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
-
+    public async Task<Product?> GetByBarcodeAsync(string Barcode)
+    {
+        return await _context.Products
+            .Include(p => p.Supplier)
+            .Include(p => p.Category)
+            .FirstOrDefaultAsync(p => p.Barcode == Barcode);
+    }
     public async Task<Product> AddAsync(Product product)
     {
         _context.Products.Add(product);

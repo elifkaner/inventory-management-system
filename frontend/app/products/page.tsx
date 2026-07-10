@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { getProductByBarcode, ProductResponseDto } from '@/app/lib/api';
 
 // Şimdilik tasarımın nasıl durduğunu görmek için sahte veriler
 const MOCK_PRODUCTS = [
@@ -21,6 +22,38 @@ export default function UrunEnvanterSayfasi() {
 
     // Hangi kutuların boş olduğunu (hata durumunu) tutan state
     const [errors, setErrors] = useState<Record<string, boolean>>({});
+
+    // Barkod ile ürün sorgulama (gerçek API'ye bağlı)
+    const [barcodeQuery, setBarcodeQuery] = useState("");
+    const [barcodeResult, setBarcodeResult] = useState<ProductResponseDto | null>(null);
+    const [barcodeError, setBarcodeError] = useState<string | null>(null);
+    const [barcodeLoading, setBarcodeLoading] = useState(false);
+
+    const handleBarcodeSearch = async () => {
+        const trimmed = barcodeQuery.trim();
+
+        if (!trimmed) {
+            return;
+        }
+
+        setBarcodeLoading(true);
+        setBarcodeError(null);
+        setBarcodeResult(null);
+
+        try {
+            const product = await getProductByBarcode(trimmed);
+
+            if (!product) {
+                setBarcodeError(`"${trimmed}" barkoduna sahip ürün bulunamadı.`);
+            } else {
+                setBarcodeResult(product);
+            }
+        } catch (err) {
+            setBarcodeError(err instanceof Error ? err.message : 'Ürün sorgulanırken bir hata oluştu.');
+        } finally {
+            setBarcodeLoading(false);
+        }
+    };
 
     const filteredProducts = products.filter(prod =>
         prod.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -128,6 +161,41 @@ export default function UrunEnvanterSayfasi() {
                         Dışa Aktar
                     </button>
                 </div>
+            </div>
+
+            {/* BARKOD İLE ÜRÜN SORGULA (gerçek API çağrısı) */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
+                <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
+                    <input
+                        type="text"
+                        placeholder="Barkod ile ürün sorgula (Enter'a basın)..."
+                        value={barcodeQuery}
+                        onChange={(e) => setBarcodeQuery(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleBarcodeSearch(); }}
+                        className="w-full md:w-96 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm font-mono"
+                    />
+                    <button
+                        onClick={handleBarcodeSearch}
+                        disabled={barcodeLoading}
+                        className="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 disabled:opacity-50"
+                    >
+                        {barcodeLoading ? 'Sorgulanıyor...' : 'Barkodla Getir'}
+                    </button>
+                </div>
+
+                {barcodeError && (
+                    <p className="mt-3 text-sm font-semibold text-rose-600">{barcodeError}</p>
+                )}
+
+                {barcodeResult && (
+                    <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm bg-emerald-50/60 border border-emerald-100 rounded-xl px-4 py-3">
+                        <span className="font-bold text-slate-900">{barcodeResult.productName}</span>
+                        <span className="font-mono text-slate-500">{barcodeResult.barcode}</span>
+                        <span className="text-slate-500">Kategori: {barcodeResult.category || '-'}</span>
+                        <span className="text-slate-500">Stok: {barcodeResult.stockQuantity}</span>
+                        <span className="font-bold text-emerald-700">₺{barcodeResult.salePrice.toLocaleString()}</span>
+                    </div>
+                )}
             </div>
 
             {/* TABLO */}
