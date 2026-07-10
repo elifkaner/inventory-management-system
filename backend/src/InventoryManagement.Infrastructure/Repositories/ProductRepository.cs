@@ -19,6 +19,7 @@ public class ProductRepository : IProductRepository
         var query = _context.Products
             .Include(p => p.Supplier)
             .Include(p => p.Category)
+            .Include(p => p.Location)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -42,6 +43,7 @@ public class ProductRepository : IProductRepository
         return await _context.Products
             .Include(p => p.Supplier)
             .Include(p => p.Category)
+            .Include(p => p.Location)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
     public async Task<Product?> GetByBarcodeAsync(string Barcode)
@@ -49,6 +51,7 @@ public class ProductRepository : IProductRepository
         return await _context.Products
             .Include(p => p.Supplier)
             .Include(p => p.Category)
+            .Include(p => p.Location)
             .FirstOrDefaultAsync(p => p.Barcode == Barcode);
     }
     public async Task<Product> AddAsync(Product product)
@@ -78,6 +81,7 @@ public class ProductRepository : IProductRepository
         product.BrandId = updatedProduct.BrandId;
         product.IsActive = updatedProduct.IsActive;
         product.SupplierId = updatedProduct.SupplierId;
+        product.LocationId = updatedProduct.LocationId;
 
         await _context.SaveChangesAsync();
 

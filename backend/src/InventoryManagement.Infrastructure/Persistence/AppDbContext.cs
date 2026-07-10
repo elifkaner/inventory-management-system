@@ -18,6 +18,8 @@ public class AppDbContext : DbContext
 
     public DbSet<StockMovement> StockMovements { get; set; }
 
+    public DbSet<WarehouseLocation> WarehouseLocations { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -39,5 +41,12 @@ public class AppDbContext : DbContext
             .HasOne(sm => sm.Product)
             .WithMany(p => p.StockMovements)
             .HasForeignKey(sm => sm.ProductId);
+
+        // Product -> WarehouseLocation (Many to One, opsiyonel)
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.Location)
+            .WithMany(l => l.Products)
+            .HasForeignKey(p => p.LocationId)
+            .IsRequired(false);
     }
 }

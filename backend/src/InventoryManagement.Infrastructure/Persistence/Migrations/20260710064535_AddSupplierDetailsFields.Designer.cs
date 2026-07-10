@@ -3,6 +3,7 @@ using System;
 using InventoryManagement.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InventoryManagement.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260710064535_AddSupplierDetailsFields")]
+    partial class AddSupplierDetailsFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,9 +63,6 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("LocationId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("ProductName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -82,8 +82,6 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("LocationId");
 
                     b.HasIndex("SupplierId");
 
@@ -166,31 +164,6 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                     b.ToTable("Suppliers");
                 });
 
-            modelBuilder.Entity("InventoryManagement.Domain.Entities.WarehouseLocation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Corridor")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Section")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Shelf")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WarehouseLocations");
-                });
-
             modelBuilder.Entity("InventoryManagement.Domain.Entities.Product", b =>
                 {
                     b.HasOne("InventoryManagement.Domain.Entities.Category", "Category")
@@ -199,10 +172,6 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("InventoryManagement.Domain.Entities.WarehouseLocation", "Location")
-                        .WithMany("Products")
-                        .HasForeignKey("LocationId");
-
                     b.HasOne("InventoryManagement.Domain.Entities.Supplier", "Supplier")
                         .WithMany("Products")
                         .HasForeignKey("SupplierId")
@@ -210,8 +179,6 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-
-                    b.Navigation("Location");
 
                     b.Navigation("Supplier");
                 });
@@ -238,11 +205,6 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("InventoryManagement.Domain.Entities.Supplier", b =>
-                {
-                    b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("InventoryManagement.Domain.Entities.WarehouseLocation", b =>
                 {
                     b.Navigation("Products");
                 });

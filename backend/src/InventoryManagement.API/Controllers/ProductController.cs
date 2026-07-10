@@ -106,7 +106,8 @@ public class ProductController : ControllerBase
             CategoryId = dto.CategoryId,
             BrandId = dto.BrandId,
             IsActive = dto.IsActive,
-            SupplierId = dto.SupplierId
+            SupplierId = dto.SupplierId,
+            LocationId = dto.LocationId
         };
 
         var createdProduct = await _productService.CreateProductAsync(product);
@@ -135,7 +136,8 @@ public class ProductController : ControllerBase
             CategoryId = dto.CategoryId,
             BrandId = dto.BrandId,
             IsActive = dto.IsActive,
-            SupplierId = dto.SupplierId
+            SupplierId = dto.SupplierId,
+            LocationId = dto.LocationId
         };
 
         var updatedProduct = await _productService.UpdateProductAsync(id, product);
