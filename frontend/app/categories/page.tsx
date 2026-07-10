@@ -148,7 +148,7 @@ export default function KategorilerSayfasi() {
 
             {/* Üst Bilgi ve Buton */}
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Kategoriler</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Envanter Grupları</h1>
                 <button
                     onClick={() => {
                         // Yeni Kategori Ekle butonuna basılınca temizlik yapıp modalı açıyoruz.

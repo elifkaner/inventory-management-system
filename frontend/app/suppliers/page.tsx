@@ -80,12 +80,12 @@ export default function TedarikcilerSayfasi() {
             {/* ÜST BAŞLIK - Mavi Temalı */}
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Tedarikçi Yönetimi</h1>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">İş Ortakları</h1>
                     <p className="text-slate-500 mt-1 text-sm">Satın alma yaptığınız firmaların iletişim ve ticari bilgilerini yönetin.</p>
                 </div>
                 <button onClick={handleAddNewClick} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-                    Yeni Tedarikçi Ekle
+                    Yeni İş Ortağı Ekle
                 </button>
             </div>
 
@@ -180,7 +180,7 @@ export default function TedarikcilerSayfasi() {
                                     <div>
                                         <label className="block text-sm font-medium resize-none text-slate-700 mb-1">Tam Adres</label>
                                         <textarea name="address" value={formData.address} onChange={handleInputChange} rows={3} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.companyName ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'}`} placeholder="Fatura adresi..."></textarea>
-                                        {errors.companyName && <ErrorMessage />}
+                                        {errors.address && <ErrorMessage />}
                                     </div>
                                 </div>
 
