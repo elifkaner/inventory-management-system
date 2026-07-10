@@ -22,9 +22,13 @@ public class Product
 
     public int SupplierId { get; set; }
 
+    public int? LocationId { get; set; }
+
     public Supplier? Supplier { get; set; }
 
     public Category? Category { get; set; }
+
+    public WarehouseLocation? Location { get; set; }
 
     public List<StockMovement> StockMovements { get; set; } = new();
 }

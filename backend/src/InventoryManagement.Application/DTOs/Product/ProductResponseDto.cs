@@ -21,4 +21,6 @@ public class ProductResponseDto
     public string Supplier { get; set; } = "";
 
     public string Category { get; set; } = "";
+
+    public string Location { get; set; } = "";
 }

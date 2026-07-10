@@ -19,4 +19,6 @@ public class UpdateProductDto
     public bool IsActive { get; set; }
 
     public int SupplierId { get; set; }
+
+    public int? LocationId { get; set; }
 }

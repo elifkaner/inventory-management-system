@@ -132,7 +132,8 @@ public class ProductService : IProductService
             BrandId = p.BrandId,
             IsActive = p.IsActive,
             Supplier = p.Supplier != null ? p.Supplier.CompanyName : "",
-            Category = p.Category != null ? p.Category.Name : ""
+            Category = p.Category != null ? p.Category.Name : "",
+            Location = p.Location != null ? $"{p.Location.Corridor}-{p.Location.Shelf}-{p.Location.Section}" : ""
         };
     }
 }
