@@ -1,16 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getProductByBarcode, ProductResponseDto } from '@/app/lib/api';
 
-// Şimdilik tasarımın nasıl durduğunu görmek için sahte veriler
-const MOCK_PRODUCTS = [
-    { id: 1, productName: 'Kavrulmuş Etiyopya Kahvesi', barcode: 'SKU-ETH-001', purchasePrice: 250, salePrice: 420, stockQuantity: 45, isActive: true, categoryName: 'Çekirdek Kahve' },
-    { id: 2, productName: 'Filtre Kahve Kağıdı (100lü)', barcode: 'SKU-ACC-042', purchasePrice: 80, salePrice: 150, stockQuantity: 120, isActive: true, categoryName: 'Aksesuar' },
-    { id: 3, productName: 'Sanal Espresso Makinesi', barcode: 'SKU-EQP-099', purchasePrice: 12000, salePrice: 18500, stockQuantity: 8, isActive: false, categoryName: 'Ekipman' }
-];
-
 export default function UrunEnvanterSayfasi() {
-    const [products, setProducts] = useState(MOCK_PRODUCTS);
+    const [products, setProducts] = useState<any[]>([]); // Artık boş başlıyoruz
+    const [isLoading, setIsLoading] = useState(true); // Yüklenme durumu
+    const [error, setError] = useState<string | null>(null); // Hata durumu
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -28,6 +23,42 @@ export default function UrunEnvanterSayfasi() {
     const [barcodeResult, setBarcodeResult] = useState<ProductResponseDto | null>(null);
     const [barcodeError, setBarcodeError] = useState<string | null>(null);
     const [barcodeLoading, setBarcodeLoading] = useState(false);
+
+    // Sayfa ilk yüklendiğinde Backend'den tüm ürünleri çeken fonksiyon
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                // Adnan'ın yazdığı gerçek API'ye istek atıyoruz
+                const response = await fetch('http://192.168.2.176:5000/api/Product');
+
+                if (!response.ok) {
+                    throw new Error('Veritabanına bağlanılamadı. Backend kapalı olabilir.');
+                }
+
+                const data = await response.json();
+
+                // Backend'den gelen (Swagger'da gördüğümüz) verileri tabloya uyarlıyoruz
+                const formattedData = data.map((item: any) => ({
+                    id: item.id,
+                    productName: item.productName || 'İsimsiz Ürün',
+                    barcode: item.barcode || 'SKU-YOK',
+                    purchasePrice: item.purchasePrice || 0,
+                    salePrice: item.salePrice || 0,
+                    stockQuantity: item.stockQuantity || 0,
+                    isActive: item.isActive !== undefined ? item.isActive : true,
+                    categoryName: item.category || 'Kategorisiz'
+                }));
+
+                setProducts(formattedData);
+            } catch (err: any) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false); // İşlem bitince yüklenme animasyonunu durdur
+            }
+        };
+
+        fetchProducts();
+    }, []); // Sonundaki boş dizi [], bu kodun sadece sayfa açıldığında 1 kez çalışmasını sağlar
 
     const handleBarcodeSearch = async () => {
         const trimmed = barcodeQuery.trim();
@@ -71,31 +102,65 @@ export default function UrunEnvanterSayfasi() {
         }
     };
 
-    // "Ürünü Kaydet" Butonuna Basıldığında Çalışacak Doğrulama (Validation) Fonksiyonu
-    const handleSave = () => {
+    // "Ürünü Kaydet" Butonuna Basıldığında Çalışacak Fonksiyon
+    const handleSave = async () => {
         const newErrors: Record<string, boolean> = {};
         let hasError = false;
 
-        // Kontrol edilecek tüm inputların listesi
-        const fieldsToValidate = ['productName', 'barcode', 'categoryId', 'brandId', 'purchasePrice', 'salePrice', 'stockQuantity', 'supplierId'];
+        // Kontrol edilecek zorunlu alanlar
+        const fieldsToValidate = ['productName', 'barcode', 'salePrice'];
 
         fieldsToValidate.forEach(field => {
-            // Eğer alan boşsa veya sadece boşluktan oluşuyorsa hata olarak işaretle
             if (!formData[field as keyof typeof formData] || String(formData[field as keyof typeof formData]).trim() === '') {
                 newErrors[field] = true;
                 hasError = true;
             }
         });
 
-        setErrors(newErrors); // Hataları ekrana yansıt
+        setErrors(newErrors);
 
         if (hasError) {
-            return; // Hata varsa işlemi durdur, kaydetme!
+            return; // Hata varsa işlemi durdur
         }
 
-        // Hata yoksa buradaki kodlar çalışacak (İleride backend'e bağlanacak)
-        alert("Harika! Tüm alanlar dolu, veriler backend'e gönderilmeye hazır.");
-        setIsModalOpen(false);
+        try {
+            // Input'lardan gelen verileri Backend'in (C#) istediği formata ve sayı tiplerine dönüştürüyoruz
+            const productData = {
+                productName: formData.productName,
+                barcode: formData.barcode,
+                purchasePrice: Number(formData.purchasePrice) || 0, // Metni sayıya çevirir
+                salePrice: Number(formData.salePrice) || 0,
+                stockQuantity: Number(formData.stockQuantity) || 0,
+                categoryId: formData.categoryId ? Number(formData.categoryId) : 1, // Şimdilik varsayılan kategori ID'si 1
+                brandId: formData.brandId ? Number(formData.brandId) : null,
+                supplierId: formData.supplierId ? Number(formData.supplierId) : null,
+                isActive: formData.isActive
+            };
+
+            // Backend'e POST isteği (Yeni ürün ekleme komutu) atıyoruz
+            const response = await fetch('http://192.168.2.176:5000/api/Product', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(productData) // Verimizi JSON paketine sarıp yolluyoruz
+            });
+
+            if (!response.ok) {
+                // Eğer backend 400 (Bad Request) veya 500 (Sunucu Hatası) dönerse buraya düşer
+                throw new Error('Veritabanına kaydedilemedi! Eksik veya hatalı bilgi olabilir.');
+            }
+
+            alert("Harika! Ürün başarıyla eklendi.");
+            setIsModalOpen(false);
+
+            // Tabloya yeni ürünün düşmesi için sayfayı yeniliyoruz
+            window.location.reload();
+
+        } catch (error: any) {
+            console.error("Kaydetme Hatası:", error);
+            alert("Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
+        }
     };
 
     const handleEditClick = (product: any) => {
@@ -163,40 +228,6 @@ export default function UrunEnvanterSayfasi() {
                 </div>
             </div>
 
-            {/* BARKOD İLE ÜRÜN SORGULA (gerçek API çağrısı) */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
-                <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
-                    <input
-                        type="text"
-                        placeholder="Barkod ile ürün sorgula (Enter'a basın)..."
-                        value={barcodeQuery}
-                        onChange={(e) => setBarcodeQuery(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleBarcodeSearch(); }}
-                        className="w-full md:w-96 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm font-mono"
-                    />
-                    <button
-                        onClick={handleBarcodeSearch}
-                        disabled={barcodeLoading}
-                        className="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 disabled:opacity-50"
-                    >
-                        {barcodeLoading ? 'Sorgulanıyor...' : 'Barkodla Getir'}
-                    </button>
-                </div>
-
-                {barcodeError && (
-                    <p className="mt-3 text-sm font-semibold text-rose-600">{barcodeError}</p>
-                )}
-
-                {barcodeResult && (
-                    <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm bg-emerald-50/60 border border-emerald-100 rounded-xl px-4 py-3">
-                        <span className="font-bold text-slate-900">{barcodeResult.productName}</span>
-                        <span className="font-mono text-slate-500">{barcodeResult.barcode}</span>
-                        <span className="text-slate-500">Kategori: {barcodeResult.category || '-'}</span>
-                        <span className="text-slate-500">Stok: {barcodeResult.stockQuantity}</span>
-                        <span className="font-bold text-emerald-700">₺{barcodeResult.salePrice.toLocaleString()}</span>
-                    </div>
-                )}
-            </div>
 
             {/* TABLO */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -207,14 +238,33 @@ export default function UrunEnvanterSayfasi() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
-                        {filteredProducts.map((prod) => (
+                        {/* 1. DURUM: Veriler Çekiliyor */}
+                        {isLoading && (
+                            <tr><td colSpan={7} className="p-8 text-center text-slate-500 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
+                        )}
+
+                        {/* 2. DURUM: Backend'e bağlanılamadı (Hata) */}
+                        {!isLoading && error && (
+                            <tr><td colSpan={7} className="p-8 text-center text-rose-500 font-bold">Bağlantı Hatası: {error}</td></tr>
+                        )}
+
+                        {/* 3. DURUM: Veriler başarıyla geldi */}
+                        {!isLoading && !error && filteredProducts.map((prod) => (
                             <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
                                 <td className="p-4 pl-6"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${prod.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>{prod.isActive ? 'Aktif' : 'Pasif'}</span></td>
-                                <td className="p-4 text-slate-900 font-semibold">{prod.productName}</td><td className="p-4 text-slate-500">{prod.categoryName}</td><td className="p-4 font-mono text-xs text-slate-500 bg-slate-50 rounded px-2 py-1 inline-block mt-2">{prod.barcode}</td><td className="p-4 text-right text-slate-900 font-bold">₺{prod.salePrice.toLocaleString()}</td>
+                                <td className="p-4 text-slate-900 font-semibold">{prod.productName}</td>
+                                <td className="p-4 text-slate-500">{prod.categoryName}</td>
+                                <td className="p-4 font-mono text-xs text-slate-500 bg-slate-50 rounded px-2 py-1 inline-block mt-2">{prod.barcode}</td>
+                                <td className="p-4 text-right text-slate-900 font-bold">₺{prod.salePrice?.toLocaleString()}</td>
                                 <td className="p-4 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>{prod.stockQuantity} Adet</span></td>
                                 <td className="p-4 pr-6 text-right"><button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors mr-3 font-semibold">Düzenle</button></td>
                             </tr>
                         ))}
+
+                        {/* 4. DURUM: Veri geldi ama sonuç yok / liste boş */}
+                        {!isLoading && !error && filteredProducts.length === 0 && (
+                            <tr><td colSpan={7} className="p-8 text-center text-slate-500">Ürün bulunamadı veya veritabanı boş.</td></tr>
+                        )}
                     </tbody>
                 </table>
             </div>
