@@ -8,7 +8,7 @@ namespace InventoryManagement.Application.Services;
 
 public class ProductService : IProductService
 {
-    private const int CriticalStockThreshold = 10;
+    private const int CriticalStockThreshold = 500;
 
     private readonly IProductRepository _productRepository;
 
