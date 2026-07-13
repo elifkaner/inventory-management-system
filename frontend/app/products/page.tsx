@@ -29,7 +29,7 @@ export default function UrunEnvanterSayfasi() {
         const fetchProducts = async () => {
             try {
                 // Adnan'ın yazdığı gerçek API'ye istek atıyoruz
-                const response = await fetch('http://192.168.2.176:5000/api/Product');
+                const response = await fetch('/api/Product');
 
                 if (!response.ok) {
                     throw new Error('Veritabanına bağlanılamadı. Backend kapalı olabilir.');
@@ -108,7 +108,7 @@ export default function UrunEnvanterSayfasi() {
         let hasError = false;
 
         // Kontrol edilecek zorunlu alanlar
-        const fieldsToValidate = ['productName', 'barcode', 'salePrice'];
+        const fieldsToValidate = ['productName', 'barcode', 'salePrice', 'stockQuantity', 'purchasePrice', 'stockQuantity', 'brandId', 'supplierId', 'categoryId'];
 
         fieldsToValidate.forEach(field => {
             if (!formData[field as keyof typeof formData] || String(formData[field as keyof typeof formData]).trim() === '') {
