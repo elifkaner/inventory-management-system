@@ -129,7 +129,7 @@ public class ProductService : IProductService
             SalePrice = p.SalePrice,
             Barcode = p.Barcode,
             StockQuantity = p.StockQuantity,
-            BrandId = p.BrandId,
+            BrandName = p.BrandName,
             IsActive = p.IsActive,
             Supplier = p.Supplier != null ? p.Supplier.CompanyName : "",
             Category = p.Category != null ? p.Category.Name : "",

@@ -104,7 +104,7 @@ public class ProductController : ControllerBase
             Barcode = dto.Barcode,
             StockQuantity = dto.StockQuantity,
             CategoryId = dto.CategoryId,
-            BrandId = dto.BrandId,
+            BrandName = dto.BrandName,
             IsActive = dto.IsActive,
             SupplierId = dto.SupplierId,
             LocationId = dto.LocationId
@@ -134,7 +134,7 @@ public class ProductController : ControllerBase
             Barcode = dto.Barcode,
             StockQuantity = dto.StockQuantity,
             CategoryId = dto.CategoryId,
-            BrandId = dto.BrandId,
+            BrandName = dto.BrandName,
             IsActive = dto.IsActive,
             SupplierId = dto.SupplierId,
             LocationId = dto.LocationId
