@@ -1,11 +1,12 @@
 using FluentValidation;
 using InventoryManagement.Application.DTOs.Product;
+using InventoryManagement.Application.Interfaces.Repositories;
 
 namespace InventoryManagement.Application.Validators.Product;
 
 public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
 {
-    public CreateProductDtoValidator()
+    public CreateProductDtoValidator(IWarehouseLocationRepository warehouseLocationRepository)
     {
         RuleFor(x => x.ProductName)
             .NotEmpty().WithMessage("Ürün adı boş bırakılamaz.")
@@ -27,10 +28,24 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
         RuleFor(x => x.CategoryId)
             .GreaterThan(0).WithMessage("Geçerli bir kategori seçiniz.");
 
-        RuleFor(x => x.BrandId)
-            .GreaterThan(0).WithMessage("Geçerli bir marka seçiniz.");
+        RuleFor(x => x.BrandName)
+            .NotEmpty().WithMessage("Marka adı boş bırakılamaz.")
+            .MaximumLength(100).WithMessage("Marka adı en fazla 100 karakter olabilir.");
 
         RuleFor(x => x.SupplierId)
             .GreaterThan(0).WithMessage("Geçerli bir tedarikçi seçiniz.");
+
+        RuleFor(x => x.LocationId)
+            .MustAsync(async (locationId, cancellationToken) =>
+            {
+                if (locationId == null)
+                {
+                    return true; // konum opsiyonel, boş bırakılabilir
+                }
+
+                var location = await warehouseLocationRepository.GetByIdAsync(locationId.Value);
+                return location != null;
+            })
+            .WithMessage("Belirtilen depo konumu bulunamadı.");
     }
 }

@@ -78,7 +78,7 @@ public class ProductRepository : IProductRepository
         product.Barcode = updatedProduct.Barcode;
         product.StockQuantity = updatedProduct.StockQuantity;
         product.CategoryId = updatedProduct.CategoryId;
-        product.BrandId = updatedProduct.BrandId;
+        product.BrandName = updatedProduct.BrandName;
         product.IsActive = updatedProduct.IsActive;
         product.SupplierId = updatedProduct.SupplierId;
         product.LocationId = updatedProduct.LocationId;

@@ -14,7 +14,7 @@ public class ProductResponseDto
 
     public int StockQuantity { get; set; }
 
-    public int BrandId { get; set; }
+    public string BrandName { get; set; } = "";
 
     public bool IsActive { get; set; }
 
