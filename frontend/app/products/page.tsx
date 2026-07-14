@@ -105,8 +105,16 @@ export default function UrunEnvanterSayfasi() {
         // Kontrol edilecek zorunlu alanlar
         const fieldsToValidate = ['productName', 'barcode', 'salePrice', 'purchasePrice', 'stockQuantity', 'brandName', 'supplierId', 'categoryId'];
 
+        // Backend'de bu ID alanları GreaterThan(0) kuralına tabi; "0" gönderilirse backend 400 döner
+        const idFields = ['brandId', 'supplierId', 'categoryId'];
+
         fieldsToValidate.forEach(field => {
-            if (!formData[field as keyof typeof formData] || String(formData[field as keyof typeof formData]).trim() === '') {
+            const value = formData[field as keyof typeof formData];
+
+            if (!value || String(value).trim() === '') {
+                newErrors[field] = true;
+                hasError = true;
+            } else if (idFields.includes(field) && Number(value) <= 0) {
                 newErrors[field] = true;
                 hasError = true;
             }
@@ -125,9 +133,9 @@ export default function UrunEnvanterSayfasi() {
                 purchasePrice: Number(formData.purchasePrice) || 0,
                 salePrice: Number(formData.salePrice) || 0,
                 stockQuantity: Number(formData.stockQuantity) || 0,
-                categoryId: Number(formData.categoryId) || 1,
-                supplierId: Number(formData.supplierId) || null,
-                brandName: formData.brandName ? formatName(formData.brandName) : null, // ? : yapısı ile düzeltildi
+                categoryId: Number(formData.categoryId), // Şimdilik varsayılan kategori ID'si 1
+                brandName: formatName(formData.brandName),
+                supplierId: formData.supplierId ? Number(formData.supplierId) : null,
                 locationId: 1,
                 isActive: formData.isActive
             };
@@ -142,7 +150,15 @@ export default function UrunEnvanterSayfasi() {
             });
 
             if (!response.ok) {
-                // Eğer backend 400 (Bad Request) veya 500 (Sunucu Hatası) dönerse buraya düşer
+                // Backend FluentValidation hatası döndüyse (400), gerçek mesajı göster
+                if (response.status === 400) {
+                    const validationErrors = await response.json();
+                    const messages = Array.isArray(validationErrors)
+                        ? validationErrors.map((e: any) => e.errorMessage).join('\n')
+                        : 'Girilen bilgiler geçersiz.';
+                    throw new Error(messages);
+                }
+
                 throw new Error('Veritabanına kaydedilemedi! Eksik veya hatalı bilgi olabilir.');
             }
 
@@ -154,7 +170,7 @@ export default function UrunEnvanterSayfasi() {
 
         } catch (error: any) {
             console.error("Kaydetme Hatası:", error);
-            alert("Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
+            alert(error?.message || "Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
         }
     };
 
@@ -317,7 +333,15 @@ export default function UrunEnvanterSayfasi() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Marka Adı *</label>
-                                            <input type="text" name="brandName" value={formData.brandName} onChange={handleInputChange} className="w-full p-2.5 border border-slate-200 rounded-lg" />
+                                            <input
+                                                type="text"
+                                                name="brandName"
+                                                value={formData.brandName}
+                                                onChange={handleInputChange}
+                                                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.brandName ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`}
+                                                placeholder="Örn: Apple"
+                                            />
+                                            {errors.brandName && <ErrorMessage />}
                                         </div>
                                     </div>
                                 </div>

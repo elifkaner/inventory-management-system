@@ -32,8 +32,8 @@ public class SupplierController : ControllerBase
         return Ok(suppliers);
     }
 
-    // GET /api/Supplier/{id}
-    [HttpGet("{id}")]
+    // GET /api/Supplier/{id:int}
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetSupplierById(int id)
     {
         var supplier = await _supplierService.GetByIdAsync(id);
@@ -62,8 +62,8 @@ public class SupplierController : ControllerBase
         return Ok(createdSupplier);
     }
 
-    // PUT /api/Supplier/{id}
-    [HttpPut("{id}")]
+    // PUT /api/Supplier/{id:int}
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateSupplier(int id, UpdateSupplierDto dto)
     {
         var validationResult = await _updateSupplierValidator.ValidateAsync(dto);
@@ -75,16 +75,16 @@ public class SupplierController : ControllerBase
 
         var updated = await _supplierService.UpdateAsync(id, dto);
 
-        if (!updated)
+        if (updated == null)
         {
             return NotFound();
         }
 
-        return NoContent();
+        return Ok(updated);
     }
 
-    // DELETE /api/Supplier/{id}
-    [HttpDelete("{id}")]
+    // DELETE /api/Supplier/{id:int}
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteSupplier(int id)
     {
         var deleted = await _supplierService.DeleteAsync(id);

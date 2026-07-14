@@ -2,12 +2,15 @@ using FluentValidation;
 using InventoryManagement.Application.DTOs.Product;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
+[AllowAnonymous] // TODO: frontend login akışı eklenince kaldırılacak
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;

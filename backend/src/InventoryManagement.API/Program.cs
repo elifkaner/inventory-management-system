@@ -1,7 +1,10 @@
+using System.Text;
 using System.Text.Json.Serialization;
 using DotNetEnv;
 using InventoryManagement.Application;
 using InventoryManagement.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 DotNetEnv.Env.Load();
 
@@ -35,6 +38,25 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(connectionString);
 
 
+// JWT Authentication
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")!;
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
+            ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+        };
+    });
+
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -58,6 +80,7 @@ app.UseSwaggerUI();
 
 app.UseCors("AllowAll");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
