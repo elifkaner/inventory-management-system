@@ -134,6 +134,7 @@ export default function UrunEnvanterSayfasi() {
                 categoryId: formData.categoryId ? Number(formData.categoryId) : 1, // Şimdilik varsayılan kategori ID'si 1
                 brandId: formData.brandName ? Number(formData.brandName) : null,
                 supplierId: formData.supplierId ? Number(formData.supplierId) : null,
+                locationId: 1,
                 isActive: formData.isActive
             };
 
