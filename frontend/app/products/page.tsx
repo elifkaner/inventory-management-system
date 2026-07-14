@@ -12,7 +12,7 @@ export default function UrunEnvanterSayfasi() {
     // Form verileri
     const [formData, setFormData] = useState({
         productName: '', purchasePrice: '', salePrice: '', barcode: '',
-        stockQuantity: '', categoryId: '', brandId: '', isActive: true, supplierId: ''
+        stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: ''
     });
 
     // Hangi kutuların boş olduğunu (hata durumunu) tutan state
@@ -132,7 +132,7 @@ export default function UrunEnvanterSayfasi() {
                 salePrice: Number(formData.salePrice) || 0,
                 stockQuantity: Number(formData.stockQuantity) || 0,
                 categoryId: formData.categoryId ? Number(formData.categoryId) : 1, // Şimdilik varsayılan kategori ID'si 1
-                brandId: formData.brandId ? Number(formData.brandId) : null,
+                brandId: formData.brandName ? Number(formData.brandName) : null,
                 supplierId: formData.supplierId ? Number(formData.supplierId) : null,
                 isActive: formData.isActive
             };
@@ -166,7 +166,7 @@ export default function UrunEnvanterSayfasi() {
     const handleEditClick = (product: any) => {
         setFormData({
             productName: product.productName, purchasePrice: product.purchasePrice, salePrice: product.salePrice,
-            barcode: product.barcode, stockQuantity: product.stockQuantity, categoryId: '', brandId: '',
+            barcode: product.barcode, stockQuantity: product.stockQuantity, categoryId: '', brandName: '',
             isActive: product.isActive, supplierId: ''
         });
         setErrors({}); // Düzenle açıldığında eski hataları temizle
@@ -174,7 +174,7 @@ export default function UrunEnvanterSayfasi() {
     };
 
     const handleAddNewClick = () => {
-        setFormData({ productName: '', purchasePrice: '', salePrice: '', barcode: '', stockQuantity: '', categoryId: '', brandId: '', isActive: true, supplierId: '' });
+        setFormData({ productName: '', purchasePrice: '', salePrice: '', barcode: '', stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: '' });
         setErrors({}); // Yeni ekle açıldığında hataları temizle
         setIsModalOpen(true);
     };
@@ -306,7 +306,7 @@ export default function UrunEnvanterSayfasi() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Marka ID</label>
-                                            <input type="number" name="brandId" value={formData.brandId} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.brandId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
+                                            <input type="number" name="brandId" value={formData.brandName} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.brandId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
                                             {errors.brandId && <ErrorMessage />}
                                         </div>
                                     </div>
