@@ -18,6 +18,8 @@ public class AppDbContext : DbContext
 
     public DbSet<StockMovement> StockMovements { get; set; }
 
+    public DbSet<User> Users { get; set; }
+
     public DbSet<WarehouseLocation> WarehouseLocations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

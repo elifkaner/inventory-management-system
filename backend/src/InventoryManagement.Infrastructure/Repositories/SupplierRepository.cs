@@ -33,11 +33,11 @@ public class SupplierRepository : ISupplierRepository
         return supplier;
     }
 
-    public async Task<bool> UpdateAsync(Supplier supplier)
+    public async Task<Supplier?> UpdateAsync(Supplier supplier)
     {
         await _context.SaveChangesAsync();
 
-        return true;
+        return supplier;
     }
 
     public async Task<bool> DeleteAsync(int id)
