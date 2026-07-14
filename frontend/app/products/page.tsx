@@ -4,17 +4,17 @@ import { getProductByBarcode, ProductResponseDto } from '@/app/lib/api';
 
 export default function UrunEnvanterSayfasi() {
     const [products, setProducts] = useState<any[]>([]); // Artık boş başlıyoruz
-    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
-    const [suppliers, setSuppliers] = useState<{ id: number; companyName: string }[]>([]);
     const [isLoading, setIsLoading] = useState(true); // Yüklenme durumu
     const [error, setError] = useState<string | null>(null); // Hata durumu
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [suppliers, setSuppliers] = useState<{ id: number; companyName: string }[]>([]);
 
     // Form verileri
     const [formData, setFormData] = useState({
         productName: '', purchasePrice: '', salePrice: '', barcode: '',
-        stockQuantity: '', categoryId: '', brandId: '', isActive: true, supplierId: ''
+        stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: ''
     });
 
     // Hangi kutuların boş olduğunu (hata durumunu) tutan state
@@ -26,57 +26,31 @@ export default function UrunEnvanterSayfasi() {
     const [barcodeError, setBarcodeError] = useState<string | null>(null);
     const [barcodeLoading, setBarcodeLoading] = useState(false);
 
-    // Sayfa ilk yüklendiğinde Backend'den tüm ürünleri çeken fonksiyon
     useEffect(() => {
-        const fetchAllData = async () => {
+        const fetchData = async () => {
             try {
-                // Hepsini aynı anda başlatıyoruz
-                const [prodRes, catRes, supRes] = await Promise.all([
-                    fetch('/api/Product'),
-                    fetch('/api/Category'),
-                    fetch('/api/Supplier')
+                // Kategorileri ve Tedarikçileri çekiyoruz
+                const [catRes, supRes] = await Promise.all([
+                    fetch('http://192.168.2.176:5000/api/Category'),
+                    fetch('http://192.168.2.176:5000/api/Supplier')
                 ]);
 
-                // Her birinin başarılı olup olmadığını kontrol ediyoruz
-                if (!prodRes.ok || !catRes.ok || !supRes.ok) {
-                    throw new Error('Verilerden biri çekilemedi. Backend servislerini kontrol edin.');
+                if (catRes.ok) {
+                    const catData = await catRes.json();
+                    setCategories(catData); // Swagger'dan gelen veriyi state'e atıyoruz
                 }
 
-                const prodData = await prodRes.json();
-                const catData = await catRes.json();
-                const supData = await supRes.json();
+                if (supRes.ok) {
+                    const supData = await supRes.json();
+                    setSuppliers(supData); // Swagger'dan gelen veriyi state'e atıyoruz
+                }
 
-                // Ürünleri formatlayarak state'e atıyoruz
-                const formattedData = prodData.map((item: any) => ({
-                    id: item.id,
-                    productName: item.productName || 'İsimsiz Ürün',
-                    barcode: item.barcode || 'SKU-YOK',
-                    purchasePrice: item.purchasePrice || 0,
-                    salePrice: item.salePrice || 0,
-                    stockQuantity: item.stockQuantity || 0,
-                    isActive: item.isActive !== undefined ? item.isActive : true,
-                    categoryName: item.category || 'Kategorisiz'
-                }));
-
-                setProducts(formattedData);
-                setCategories(catData); // Dropdown için listeyi kaydettik
-                setSuppliers(supData);  // Dropdown için listeyi kaydettik
-
-            } catch (err: any) {
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
+            } catch (err) {
+                console.error("Veri çekme hatası:", err);
             }
         };
-
-        fetchAllData();
+        fetchData();
     }, []);
-
-    // İsim formatlama fonksiyonu
-    const formatName = (text: string) => {
-        if (!text) return "";
-        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
-    };
 
     const handleBarcodeSearch = async () => {
         const trimmed = barcodeQuery.trim();
@@ -109,17 +83,18 @@ export default function UrunEnvanterSayfasi() {
         prod.barcode.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // İnputlara yazı yazıldığında hem veriyi günceller hem de o kutudaki hatayı temizler
+    const formatName = (text: string) => {
+        if (!text) return "";
+        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        // Eğer checkbox ise checked değerini, değilse value değerini al
+        // Checkbox ise checked değerini, değilse value değerini alıyoruz
         const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
-
         setFormData(prev => ({ ...prev, [name]: newValue }));
 
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: false }));
-        }
+        if (errors[name]) setErrors(prev => ({ ...prev, [name]: false }));
     };
 
     // "Ürünü Kaydet" Butonuna Basıldığında Çalışacak Fonksiyon
@@ -128,7 +103,7 @@ export default function UrunEnvanterSayfasi() {
         let hasError = false;
 
         // Kontrol edilecek zorunlu alanlar
-        const fieldsToValidate = ['productName', 'barcode', 'salePrice', 'stockQuantity', 'purchasePrice', 'stockQuantity', 'brandId', 'supplierId', 'categoryId'];
+        const fieldsToValidate = ['productName', 'barcode', 'salePrice', 'purchasePrice', 'stockQuantity', 'brandName', 'supplierId', 'categoryId'];
 
         // Backend'de bu ID alanları GreaterThan(0) kuralına tabi; "0" gönderilirse backend 400 döner
         const idFields = ['brandId', 'supplierId', 'categoryId'];
@@ -143,11 +118,7 @@ export default function UrunEnvanterSayfasi() {
                 newErrors[field] = true;
                 hasError = true;
             }
-
-
         });
-
-
 
         setErrors(newErrors);
 
@@ -156,11 +127,10 @@ export default function UrunEnvanterSayfasi() {
         }
 
         try {
-            // Input'lardan gelen verileri Backend'in (C#) istediği formata ve sayı tiplerine dönüştürüyoruz
             const productData = {
                 productName: formData.productName,
                 barcode: formData.barcode,
-                purchasePrice: Number(formData.purchasePrice) || 0, // Metni sayıya çevirir
+                purchasePrice: Number(formData.purchasePrice) || 0,
                 salePrice: Number(formData.salePrice) || 0,
                 stockQuantity: Number(formData.stockQuantity) || 0,
                 categoryId: Number(formData.categoryId), // Şimdilik varsayılan kategori ID'si 1
@@ -206,16 +176,23 @@ export default function UrunEnvanterSayfasi() {
 
     const handleEditClick = (product: any) => {
         setFormData({
-            productName: product.productName, purchasePrice: product.purchasePrice, salePrice: product.salePrice,
-            barcode: product.barcode, stockQuantity: product.stockQuantity, categoryId: '', brandId: '',
-            isActive: product.isActive, supplierId: ''
+            productName: product.productName,
+            purchasePrice: product.purchasePrice,
+            salePrice: product.salePrice,
+            barcode: product.barcode,
+            stockQuantity: product.stockQuantity,
+            // Backend'den gelen ID'leri ve marka ismini burada form state'ine aktarıyoruz
+            categoryId: product.categoryId || '',
+            brandName: product.brandName || '',
+            supplierId: product.supplierId || '',
+            isActive: product.isActive
         });
-        setErrors({}); // Düzenle açıldığında eski hataları temizle
+        setErrors({});
         setIsModalOpen(true);
     };
 
     const handleAddNewClick = () => {
-        setFormData({ productName: '', purchasePrice: '', salePrice: '', barcode: '', stockQuantity: '', categoryId: '', brandId: '', isActive: true, supplierId: '' });
+        setFormData({ productName: '', purchasePrice: '', salePrice: '', barcode: '', stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: '' });
         setErrors({}); // Yeni ekle açıldığında hataları temizle
         setIsModalOpen(true);
     };
@@ -325,7 +302,7 @@ export default function UrunEnvanterSayfasi() {
 
                                 {/* SOL SÜTUN */}
                                 <div className="space-y-5">
-                                    <h3 className="text-sm font-bold text-slate-400 tracking-wider mb-4 border-b pb-2">Temel Bilgiler</h3>
+                                    <h3 className="text-sm font-bold text-slate-400 tracking-wider mb-4 border-b pb-2">Temel Bilgiler *</h3>
 
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Ürün Adı *</label>
@@ -340,24 +317,20 @@ export default function UrunEnvanterSayfasi() {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
-                                        {/* KATEGORİ DROPDOWN (Artık ID girilmiyor, listeden seçiliyor) */}
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Kategori *</label>
                                             <select
                                                 name="categoryId"
                                                 value={formData.categoryId}
                                                 onChange={handleInputChange}
-                                                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm bg-white ${errors.categoryId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`}
+                                                className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
                                             >
-                                                <option value="" disabled>Kategori Seç...</option>
-                                                {categories.map((cat: any) => (
+                                                <option value="">Kategori Seçiniz...</option>
+                                                {categories.map((cat) => (
                                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                                                 ))}
                                             </select>
-                                            {errors.categoryId && <ErrorMessage />}
                                         </div>
-
-                                        {/* MARKA İSMİ (Kullanıcı metin olarak girecek) */}
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Marka Adı *</label>
                                             <input
@@ -397,14 +370,13 @@ export default function UrunEnvanterSayfasi() {
                                             {errors.stockQuantity && <ErrorMessage />}
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Kategori *</label>
-                                            <select name="categoryId" value={formData.categoryId} onChange={handleInputChange} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm">
-                                                <option value="">Kategori Seçiniz...</option>
-                                                {categories.map((cat) => (
-                                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tedarikçi *</label>
+                                            <select name="supplierId" value={formData.supplierId} onChange={handleInputChange} className="w-full p-2.5 border border-slate-200 rounded-lg">
+                                                <option value="">Tedarikçi Seçiniz...</option>
+                                                {suppliers.map((sup) => (
+                                                    <option key={sup.id} value={sup.id}>{sup.companyName}</option>
                                                 ))}
                                             </select>
-                                            {errors.categoryId && <ErrorMessage />}
                                         </div>
                                     </div>
 
