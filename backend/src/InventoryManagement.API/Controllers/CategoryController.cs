@@ -32,8 +32,8 @@ public class CategoryController : ControllerBase
         return Ok(categories);
     }
 
-    // GET /api/Category/{id}
-    [HttpGet("{id}")]
+    // GET /api/Category/{id:int}
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetCategoryById(int id)
     {
         var category = await _categoryService.GetCategoryByIdAsync(id);
@@ -62,8 +62,8 @@ public class CategoryController : ControllerBase
         return Ok(createdCategory);
     }
 
-    // PUT /api/Category/{id}
-    [HttpPut("{id}")]
+    // PUT /api/Category/{id:int}
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDto dto)
     {
         var validationResult = await _updateCategoryValidator.ValidateAsync(dto);
@@ -83,8 +83,8 @@ public class CategoryController : ControllerBase
         return Ok(updatedCategory);
     }
 
-    // DELETE /api/Category/{id}
-    [HttpDelete("{id}")]
+    // DELETE /api/Category/{id:int}
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteCategory(int id)
     {
         var deleted = await _categoryService.DeleteCategoryAsync(id);
