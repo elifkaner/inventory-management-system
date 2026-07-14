@@ -110,8 +110,16 @@ export default function UrunEnvanterSayfasi() {
         // Kontrol edilecek zorunlu alanlar
         const fieldsToValidate = ['productName', 'barcode', 'salePrice', 'stockQuantity', 'purchasePrice', 'stockQuantity', 'brandId', 'supplierId', 'categoryId'];
 
+        // Backend'de bu ID alanları GreaterThan(0) kuralına tabi; "0" gönderilirse backend 400 döner
+        const idFields = ['brandId', 'supplierId', 'categoryId'];
+
         fieldsToValidate.forEach(field => {
-            if (!formData[field as keyof typeof formData] || String(formData[field as keyof typeof formData]).trim() === '') {
+            const value = formData[field as keyof typeof formData];
+
+            if (!value || String(value).trim() === '') {
+                newErrors[field] = true;
+                hasError = true;
+            } else if (idFields.includes(field) && Number(value) <= 0) {
                 newErrors[field] = true;
                 hasError = true;
             }
@@ -147,7 +155,15 @@ export default function UrunEnvanterSayfasi() {
             });
 
             if (!response.ok) {
-                // Eğer backend 400 (Bad Request) veya 500 (Sunucu Hatası) dönerse buraya düşer
+                // Backend FluentValidation hatası döndüyse (400), gerçek mesajı göster
+                if (response.status === 400) {
+                    const validationErrors = await response.json();
+                    const messages = Array.isArray(validationErrors)
+                        ? validationErrors.map((e: any) => e.errorMessage).join('\n')
+                        : 'Girilen bilgiler geçersiz.';
+                    throw new Error(messages);
+                }
+
                 throw new Error('Veritabanına kaydedilemedi! Eksik veya hatalı bilgi olabilir.');
             }
 
@@ -159,7 +175,7 @@ export default function UrunEnvanterSayfasi() {
 
         } catch (error: any) {
             console.error("Kaydetme Hatası:", error);
-            alert("Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
+            alert(error?.message || "Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
         }
     };
 
