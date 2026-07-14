@@ -29,21 +29,24 @@ export default function UrunEnvanterSayfasi() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Hepsini aynı anda çekiyoruz
-                const [catRes, supRes, prodRes] = await Promise.all([
+                // Kategorileri ve Tedarikçileri çekiyoruz
+                const [catRes, supRes] = await Promise.all([
                     fetch('http://192.168.2.176:5000/api/Category'),
-                    fetch('http://192.168.2.176:5000/api/Supplier'),
-                    fetch('http://192.168.2.176:5000/api/Product') // Ürünleri de çekmelisin
+                    fetch('http://192.168.2.176:5000/api/Supplier')
                 ]);
 
-                if (catRes.ok) setCategories(await catRes.json());
-                if (supRes.ok) setSuppliers(await supRes.json());
-                if (prodRes.ok) setProducts(await prodRes.json()); // Ürünleri state'e aktar
+                if (catRes.ok) {
+                    const catData = await catRes.json();
+                    setCategories(catData); // Swagger'dan gelen veriyi state'e atıyoruz
+                }
+
+                if (supRes.ok) {
+                    const supData = await supRes.json();
+                    setSuppliers(supData); // Swagger'dan gelen veriyi state'e atıyoruz
+                }
 
             } catch (err) {
                 console.error("Veri çekme hatası:", err);
-            } finally {
-                setIsLoading(false); // Yüklemeyi bitir
             }
         };
         fetchData();
@@ -157,11 +160,18 @@ export default function UrunEnvanterSayfasi() {
 
     const handleEditClick = (product: any) => {
         setFormData({
-            productName: product.productName, purchasePrice: product.purchasePrice, salePrice: product.salePrice,
-            barcode: product.barcode, stockQuantity: product.stockQuantity, categoryId: '', brandName: '',
-            isActive: product.isActive, supplierId: ''
+            productName: product.productName,
+            purchasePrice: product.purchasePrice,
+            salePrice: product.salePrice,
+            barcode: product.barcode,
+            stockQuantity: product.stockQuantity,
+            // Backend'den gelen ID'leri ve marka ismini burada form state'ine aktarıyoruz
+            categoryId: product.categoryId || '',
+            brandName: product.brandName || '',
+            supplierId: product.supplierId || '',
+            isActive: product.isActive
         });
-        setErrors({}); // Düzenle açıldığında eski hataları temizle
+        setErrors({});
         setIsModalOpen(true);
     };
 
