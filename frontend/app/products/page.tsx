@@ -4,6 +4,8 @@ import { getProductByBarcode, ProductResponseDto } from '@/app/lib/api';
 
 export default function UrunEnvanterSayfasi() {
     const [products, setProducts] = useState<any[]>([]); // Artık boş başlıyoruz
+    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [suppliers, setSuppliers] = useState<{ id: number; companyName: string }[]>([]);
     const [isLoading, setIsLoading] = useState(true); // Yüklenme durumu
     const [error, setError] = useState<string | null>(null); // Hata durumu
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,19 +28,26 @@ export default function UrunEnvanterSayfasi() {
 
     // Sayfa ilk yüklendiğinde Backend'den tüm ürünleri çeken fonksiyon
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchAllData = async () => {
             try {
-                // Adnan'ın yazdığı gerçek API'ye istek atıyoruz
-                const response = await fetch('/api/Product');
+                // Hepsini aynı anda başlatıyoruz
+                const [prodRes, catRes, supRes] = await Promise.all([
+                    fetch('/api/Product'),
+                    fetch('/api/Category'),
+                    fetch('/api/Supplier')
+                ]);
 
-                if (!response.ok) {
-                    throw new Error('Veritabanına bağlanılamadı. Backend kapalı olabilir.');
+                // Her birinin başarılı olup olmadığını kontrol ediyoruz
+                if (!prodRes.ok || !catRes.ok || !supRes.ok) {
+                    throw new Error('Verilerden biri çekilemedi. Backend servislerini kontrol edin.');
                 }
 
-                const data = await response.json();
+                const prodData = await prodRes.json();
+                const catData = await catRes.json();
+                const supData = await supRes.json();
 
-                // Backend'den gelen (Swagger'da gördüğümüz) verileri tabloya uyarlıyoruz
-                const formattedData = data.map((item: any) => ({
+                // Ürünleri formatlayarak state'e atıyoruz
+                const formattedData = prodData.map((item: any) => ({
                     id: item.id,
                     productName: item.productName || 'İsimsiz Ürün',
                     barcode: item.barcode || 'SKU-YOK',
@@ -50,15 +59,24 @@ export default function UrunEnvanterSayfasi() {
                 }));
 
                 setProducts(formattedData);
+                setCategories(catData); // Dropdown için listeyi kaydettik
+                setSuppliers(supData);  // Dropdown için listeyi kaydettik
+
             } catch (err: any) {
                 setError(err.message);
             } finally {
-                setIsLoading(false); // İşlem bitince yüklenme animasyonunu durdur
+                setIsLoading(false);
             }
         };
 
-        fetchProducts();
-    }, []); // Sonundaki boş dizi [], bu kodun sadece sayfa açıldığında 1 kez çalışmasını sağlar
+        fetchAllData();
+    }, []);
+
+    // İsim formatlama fonksiyonu
+    const formatName = (text: string) => {
+        if (!text) return "";
+        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    };
 
     const handleBarcodeSearch = async () => {
         const trimmed = barcodeQuery.trim();
@@ -92,11 +110,13 @@ export default function UrunEnvanterSayfasi() {
     );
 
     // İnputlara yazı yazıldığında hem veriyi günceller hem de o kutudaki hatayı temizler
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        // Eğer checkbox ise checked değerini, değilse value değerini al
+        const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
 
-        // Eğer o alanda hata varsa ve kullanıcı yazı yazmaya başladıysa hatayı kaldır
+        setFormData(prev => ({ ...prev, [name]: newValue }));
+
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: false }));
         }
@@ -115,7 +135,11 @@ export default function UrunEnvanterSayfasi() {
                 newErrors[field] = true;
                 hasError = true;
             }
+
+
         });
+
+
 
         setErrors(newErrors);
 
@@ -131,8 +155,13 @@ export default function UrunEnvanterSayfasi() {
                 purchasePrice: Number(formData.purchasePrice) || 0, // Metni sayıya çevirir
                 salePrice: Number(formData.salePrice) || 0,
                 stockQuantity: Number(formData.stockQuantity) || 0,
+<<<<<<< Updated upstream
                 categoryId: formData.categoryId ? Number(formData.categoryId) : 1, // Şimdilik varsayılan kategori ID'si 1
                 brandId: formData.brandId ? Number(formData.brandId) : null,
+=======
+                categoryId: Number(formData.categoryId), // Şimdilik varsayılan kategori ID'si 1
+                brandName: formatName(formData.brandName),
+>>>>>>> Stashed changes
                 supplierId: formData.supplierId ? Number(formData.supplierId) : null,
                 locationId: 1,
                 isActive: formData.isActive
@@ -300,26 +329,52 @@ export default function UrunEnvanterSayfasi() {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
+                                        {/* KATEGORİ DROPDOWN (Artık ID girilmiyor, listeden seçiliyor) */}
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Kategori ID</label>
-                                            <input type="number" name="categoryId" value={formData.categoryId} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.categoryId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Kategori *</label>
+                                            <select
+                                                name="categoryId"
+                                                value={formData.categoryId}
+                                                onChange={handleInputChange}
+                                                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm bg-white ${errors.categoryId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`}
+                                            >
+                                                <option value="" disabled>Kategori Seç...</option>
+                                                {categories.map((cat: any) => (
+                                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                                ))}
+                                            </select>
                                             {errors.categoryId && <ErrorMessage />}
                                         </div>
+
+                                        {/* MARKA İSMİ (Kullanıcı metin olarak girecek) */}
                                         <div>
+<<<<<<< Updated upstream
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Marka ID</label>
                                             <input type="number" name="brandId" value={formData.brandId} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.brandId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
                                             {errors.brandId && <ErrorMessage />}
+=======
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Marka Adı *</label>
+                                            <input
+                                                type="text"
+                                                name="brandName"
+                                                value={formData.brandName}
+                                                onChange={handleInputChange}
+                                                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.brandName ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`}
+                                                placeholder="Örn: Apple"
+                                            />
+                                            {errors.brandName && <ErrorMessage />}
+>>>>>>> Stashed changes
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* SAĞ SÜTUN */}
                                 <div className="space-y-5">
-                                    <h3 className="text-sm font-bold text-slate-400  tracking-wider mb-4 border-b pb-2">Ticari Bilgiler</h3>
+                                    <h3 className="text-sm font-bold text-slate-400  tracking-wider mb-4 border-b pb-2">Ticari Bilgiler *</h3>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Alış Fiyatı (₺)</label>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Alış Fiyatı (₺) *</label>
                                             <input type="number" name="purchasePrice" value={formData.purchasePrice} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.purchasePrice ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0.00" />
                                             {errors.purchasePrice && <ErrorMessage />}
                                         </div>
@@ -332,14 +387,19 @@ export default function UrunEnvanterSayfasi() {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Başlangıç Stoğu</label>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Başlangıç Stoğu *</label>
                                             <input type="number" name="stockQuantity" value={formData.stockQuantity} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0" />
                                             {errors.stockQuantity && <ErrorMessage />}
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tedarikçi ID</label>
-                                            <input type="number" name="supplierId" value={formData.supplierId} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.supplierId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
-                                            {errors.supplierId && <ErrorMessage />}
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Kategori *</label>
+                                            <select name="categoryId" value={formData.categoryId} onChange={handleInputChange} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm">
+                                                <option value="">Kategori Seçiniz...</option>
+                                                {categories.map((cat) => (
+                                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                                ))}
+                                            </select>
+                                            {errors.categoryId && <ErrorMessage />}
                                         </div>
                                     </div>
 
