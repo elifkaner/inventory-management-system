@@ -51,13 +51,13 @@ public class SupplierService : ISupplierService
     }
 
     // Update supplier
-    public async Task<bool> UpdateAsync(int id, UpdateSupplierDto dto)
+    public async Task<SupplierDto?> UpdateAsync(int id, UpdateSupplierDto dto)
     {
         var supplier = await _supplierRepository.GetByIdAsync(id);
 
         if (supplier == null)
         {
-            return false;
+            return null;
         }
 
         supplier.CompanyName = dto.CompanyName;
@@ -69,7 +69,9 @@ public class SupplierService : ISupplierService
         supplier.Address = dto.Address;
         supplier.IsActive = dto.IsActive;
 
-        return await _supplierRepository.UpdateAsync(supplier);
+        var updated = await _supplierRepository.UpdateAsync(supplier);
+
+        return updated == null ? null : ToDto(updated);
     }
 
     // Delete supplier

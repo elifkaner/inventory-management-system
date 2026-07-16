@@ -1,71 +1,75 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { getProductByBarcode, ProductResponseDto } from '@/app/lib/api';
+import { useForm } from 'react-hook-form'; // YENİ: Kütüphanemizi çağırdık
+
+// YENİ: Formumuzdaki verilerin tiplerini (TypeScript için) bir kez tanımlıyoruz.
+type ProductFormData = {
+    productName: string;
+    barcode: string;
+    categoryId: number | string;
+    brandName: string;
+    purchasePrice: number | string;
+    salePrice: number | string;
+    stockQuantity: number | string;
+    supplierId: number | string;
+    isActive: boolean;
+};
 
 export default function UrunEnvanterSayfasi() {
-    const [products, setProducts] = useState<any[]>([]); // Artık boş başlıyoruz
-    const [isLoading, setIsLoading] = useState(true); // Yüklenme durumu
-    const [error, setError] = useState<string | null>(null); // Hata durumu
+    const [products, setProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [suppliers, setSuppliers] = useState<{ id: number; companyName: string }[]>([]);
 
-    // Form verileri
-    const [formData, setFormData] = useState({
-        productName: '', purchasePrice: '', salePrice: '', barcode: '',
-        stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: ''
+    // --- YENİ NESİL FORM YÖNETİMİ BAŞLANGICI ---
+    // ESKİDEN BURADA OLAN formData, errors, setErrors, handleInputChange GİBİ MANUEL YAPILARIN HEPSİ SİLİNDİ!
+
+    const {
+        register, // İnputları forma bağlayan kancamız
+        handleSubmit, // Kaydetme işlemini tetikleyen fonksiyonumuz
+        reset, // Formu sıfırlamak veya düzenleme modunda doldurmak için kullanacağız
+        formState: { errors } // Hataları bizim yerimize otomatik tutan obje
+    } = useForm<ProductFormData>({
+        defaultValues: { isActive: true } // Form ilk açıldığında aktif butonu açık gelsin
     });
+    // --- YENİ NESİL FORM YÖNETİMİ BİTİŞİ ---
 
-    // Hangi kutuların boş olduğunu (hata durumunu) tutan state
-    const [errors, setErrors] = useState<Record<string, boolean>>({});
-
-    // Barkod ile ürün sorgulama (gerçek API'ye bağlı)
     const [barcodeQuery, setBarcodeQuery] = useState("");
     const [barcodeResult, setBarcodeResult] = useState<ProductResponseDto | null>(null);
     const [barcodeError, setBarcodeError] = useState<string | null>(null);
     const [barcodeLoading, setBarcodeLoading] = useState(false);
 
-    // Sayfa ilk yüklendiğinde Backend'den tüm ürünleri çeken fonksiyon
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchData = async () => {
             try {
-                // Adnan'ın yazdığı gerçek API'ye istek atıyoruz
-                const response = await fetch('/api/Product');
+                const [catRes, supRes] = await Promise.all([
+                    fetch('http://192.168.2.176:5000/api/Category'),
+                    fetch('http://192.168.2.176:5000/api/Supplier')
+                ]);
 
-                if (!response.ok) {
-                    throw new Error('Veritabanına bağlanılamadı. Backend kapalı olabilir.');
+                if (catRes.ok) {
+                    const catData = await catRes.json();
+                    setCategories(catData);
                 }
 
-                const data = await response.json();
-
-                // Backend'den gelen (Swagger'da gördüğümüz) verileri tabloya uyarlıyoruz
-                const formattedData = data.map((item: any) => ({
-                    id: item.id,
-                    productName: item.productName || 'İsimsiz Ürün',
-                    barcode: item.barcode || 'SKU-YOK',
-                    purchasePrice: item.purchasePrice || 0,
-                    salePrice: item.salePrice || 0,
-                    stockQuantity: item.stockQuantity || 0,
-                    isActive: item.isActive !== undefined ? item.isActive : true,
-                    categoryName: item.category || 'Kategorisiz'
-                }));
-
-                setProducts(formattedData);
-            } catch (err: any) {
-                setError(err.message);
-            } finally {
-                setIsLoading(false); // İşlem bitince yüklenme animasyonunu durdur
+                if (supRes.ok) {
+                    const supData = await supRes.json();
+                    setSuppliers(supData);
+                }
+            } catch (err) {
+                console.error("Veri çekme hatası:", err);
             }
         };
-
-        fetchProducts();
-    }, []); // Sonundaki boş dizi [], bu kodun sadece sayfa açıldığında 1 kez çalışmasını sağlar
+        fetchData();
+    }, []);
 
     const handleBarcodeSearch = async () => {
         const trimmed = barcodeQuery.trim();
-
-        if (!trimmed) {
-            return;
-        }
+        if (!trimmed) return;
 
         setBarcodeLoading(true);
         setBarcodeError(null);
@@ -73,7 +77,6 @@ export default function UrunEnvanterSayfasi() {
 
         try {
             const product = await getProductByBarcode(trimmed);
-
             if (!product) {
                 setBarcodeError(`"${trimmed}" barkoduna sahip ürün bulunamadı.`);
             } else {
@@ -91,96 +94,73 @@ export default function UrunEnvanterSayfasi() {
         prod.barcode.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // İnputlara yazı yazıldığında hem veriyi günceller hem de o kutudaki hatayı temizler
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-
-        // Eğer o alanda hata varsa ve kullanıcı yazı yazmaya başladıysa hatayı kaldır
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: false }));
-        }
+    const formatName = (text: string) => {
+        if (!text) return "";
+        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
     };
 
-    // "Ürünü Kaydet" Butonuna Basıldığında Çalışacak Fonksiyon
-    const handleSave = async () => {
-        const newErrors: Record<string, boolean> = {};
-        let hasError = false;
-
-        // Kontrol edilecek zorunlu alanlar
-        const fieldsToValidate = ['productName', 'barcode', 'salePrice', 'stockQuantity', 'purchasePrice', 'stockQuantity', 'brandId', 'supplierId', 'categoryId'];
-
-        fieldsToValidate.forEach(field => {
-            if (!formData[field as keyof typeof formData] || String(formData[field as keyof typeof formData]).trim() === '') {
-                newErrors[field] = true;
-                hasError = true;
-            }
-        });
-
-        setErrors(newErrors);
-
-        if (hasError) {
-            return; // Hata varsa işlemi durdur
-        }
-
+    // YENİ: KAYDETME FONKSİYONU
+    // data parametresi formdaki tüm verileri otomatik ve hatasız olarak getirir. "fieldsToValidate" ameleliğine gerek kalmadı!
+    const onSubmit = async (data: ProductFormData) => {
         try {
-            // Input'lardan gelen verileri Backend'in (C#) istediği formata ve sayı tiplerine dönüştürüyoruz
             const productData = {
-                productName: formData.productName,
-                barcode: formData.barcode,
-                purchasePrice: Number(formData.purchasePrice) || 0, // Metni sayıya çevirir
-                salePrice: Number(formData.salePrice) || 0,
-                stockQuantity: Number(formData.stockQuantity) || 0,
-                categoryId: formData.categoryId ? Number(formData.categoryId) : 1, // Şimdilik varsayılan kategori ID'si 1
-                brandId: formData.brandName ? Number(formData.brandName) : null,
-                supplierId: formData.supplierId ? Number(formData.supplierId) : null,
+                productName: data.productName,
+                barcode: data.barcode,
+                purchasePrice: Number(data.purchasePrice) || 0,
+                salePrice: Number(data.salePrice) || 0,
+                stockQuantity: Number(data.stockQuantity) || 0,
+                categoryId: Number(data.categoryId) || 1,
+                supplierId: Number(data.supplierId) || null,
+                brandName: data.brandName ? formatName(data.brandName) : null,
                 locationId: 1,
-                isActive: formData.isActive
+                isActive: data.isActive
             };
 
-            // Backend'e POST isteği (Yeni ürün ekleme komutu) atıyoruz
             const response = await fetch('http://192.168.2.176:5000/api/Product', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(productData) // Verimizi JSON paketine sarıp yolluyoruz
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(productData)
             });
 
             if (!response.ok) {
-                // Eğer backend 400 (Bad Request) veya 500 (Sunucu Hatası) dönerse buraya düşer
                 throw new Error('Veritabanına kaydedilemedi! Eksik veya hatalı bilgi olabilir.');
             }
 
             alert("Harika! Ürün başarıyla eklendi.");
             setIsModalOpen(false);
-
-            // Tabloya yeni ürünün düşmesi için sayfayı yeniliyoruz
             window.location.reload();
 
         } catch (error: any) {
             console.error("Kaydetme Hatası:", error);
-            alert("Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
+            alert(error?.message || "Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
         }
     };
 
     const handleEditClick = (product: any) => {
-        setFormData({
-            productName: product.productName, purchasePrice: product.purchasePrice, salePrice: product.salePrice,
-            barcode: product.barcode, stockQuantity: product.stockQuantity, categoryId: '', brandName: '',
-            isActive: product.isActive, supplierId: ''
+        // YENİ: setFormData yerine reset() kullanıyoruz. Formdaki tüm kutuları kütüphane otomatik dolduruyor!
+        reset({
+            productName: product.productName,
+            purchasePrice: product.purchasePrice,
+            salePrice: product.salePrice,
+            barcode: product.barcode,
+            stockQuantity: product.stockQuantity,
+            categoryId: product.categoryId || '',
+            brandName: product.brandName || '',
+            supplierId: product.supplierId || '',
+            isActive: product.isActive
         });
-        setErrors({}); // Düzenle açıldığında eski hataları temizle
         setIsModalOpen(true);
     };
 
     const handleAddNewClick = () => {
-        setFormData({ productName: '', purchasePrice: '', salePrice: '', barcode: '', stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: '' });
-        setErrors({}); // Yeni ekle açıldığında hataları temizle
+        // YENİ: Yeni ekle denildiğinde formu tertemiz sıfırlıyoruz.
+        reset({
+            productName: '', purchasePrice: '', salePrice: '', barcode: '',
+            stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: ''
+        });
         setIsModalOpen(true);
     };
 
-    // --- KÜÇÜK YARDIMCI BİLEŞEN: HATA MESAJI VE İKONU ---
     const ErrorMessage = () => (
         <div className="flex items-center gap-1.5 mt-1.5 text-rose-500 text-xs font-semibold animate-pulse">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -192,7 +172,6 @@ export default function UrunEnvanterSayfasi() {
 
     return (
         <div className="p-8 bg-slate-50 min-h-screen text-slate-800 font-sans">
-
             {/* ÜST BAŞLIK */}
             <div className="flex justify-between items-start mb-8">
                 <div>
@@ -205,7 +184,7 @@ export default function UrunEnvanterSayfasi() {
                 </button>
             </div>
 
-            {/* KPI KARTLARI */}
+            {/* KPI KARTLARI (TASARIM AYNI KALDI) */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><div className="flex items-center gap-3 mb-2"><div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg></div><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Toplam Ürün</span></div><h3 className="text-2xl font-black text-slate-900">1,240 <span className="text-sm font-medium text-slate-400">Adet</span></h3></div>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><div className="flex items-center gap-3 mb-2"><div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Kritik Stok</span></div><h3 className="text-2xl font-black text-amber-600">14 <span className="text-sm font-medium text-slate-400">Kalem</span></h3></div>
@@ -220,15 +199,10 @@ export default function UrunEnvanterSayfasi() {
                     <input type="text" placeholder="Ürün adı veya SKU koduna göre ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm" />
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={() => alert("Kategori filtreleme özelliği yakında aktif edilecek!")} className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">
-                        Kategori Filtresi
-                    </button>
-                    <button onClick={() => alert("Excel'e aktarma özelliği yakında eklenecek!")} className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">
-                        Dışa Aktar
-                    </button>
+                    <button onClick={() => alert("Kategori filtreleme özelliği yakında aktif edilecek!")} className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">Kategori Filtresi</button>
+                    <button onClick={() => alert("Excel'e aktarma özelliği yakında eklenecek!")} className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">Dışa Aktar</button>
                 </div>
             </div>
-
 
             {/* TABLO */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -239,17 +213,12 @@ export default function UrunEnvanterSayfasi() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
-                        {/* 1. DURUM: Veriler Çekiliyor */}
                         {isLoading && (
                             <tr><td colSpan={7} className="p-8 text-center text-slate-500 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
                         )}
-
-                        {/* 2. DURUM: Backend'e bağlanılamadı (Hata) */}
                         {!isLoading && error && (
                             <tr><td colSpan={7} className="p-8 text-center text-rose-500 font-bold">Bağlantı Hatası: {error}</td></tr>
                         )}
-
-                        {/* 3. DURUM: Veriler başarıyla geldi */}
                         {!isLoading && !error && filteredProducts.map((prod) => (
                             <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
                                 <td className="p-4 pl-6"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${prod.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>{prod.isActive ? 'Aktif' : 'Pasif'}</span></td>
@@ -261,8 +230,6 @@ export default function UrunEnvanterSayfasi() {
                                 <td className="p-4 pr-6 text-right"><button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors mr-3 font-semibold">Düzenle</button></td>
                             </tr>
                         ))}
-
-                        {/* 4. DURUM: Veri geldi ama sonuç yok / liste boş */}
                         {!isLoading && !error && filteredProducts.length === 0 && (
                             <tr><td colSpan={7} className="p-8 text-center text-slate-500">Ürün bulunamadı veya veritabanı boş.</td></tr>
                         )}
@@ -270,14 +237,16 @@ export default function UrunEnvanterSayfasi() {
                 </table>
             </div>
 
-            {/* MODAL */}
+            {/* MODAL (FORM ALANI) */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+
+                    {/* YENİ: Div yerine direkt form etiketi kullanıyoruz. onSubmit'e kütüphanenin fonksiyonunu bağladık */}
+                    <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
 
                         <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                             <h2 className="text-xl font-bold text-slate-800">Yeni Ürün Kartı</h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                            <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
                         </div>
 
                         <div className="p-8 overflow-y-auto flex-1">
@@ -285,60 +254,71 @@ export default function UrunEnvanterSayfasi() {
 
                                 {/* SOL SÜTUN */}
                                 <div className="space-y-5">
-                                    <h3 className="text-sm font-bold text-slate-400 tracking-wider mb-4 border-b pb-2">Temel Bilgiler</h3>
+                                    <h3 className="text-sm font-bold text-slate-400 tracking-wider mb-4 border-b pb-2">Temel Bilgiler *</h3>
 
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Ürün Adı *</label>
-                                        <input type="text" name="productName" value={formData.productName} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.productName ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="Örn: Kavrulmuş Çekirdek" />
+                                        {/* YENİ: value ve onChange sildik, yerine sadece register ekledik. */}
+                                        <input type="text" {...register("productName", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.productName ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="Örn: Kavrulmuş Çekirdek" />
                                         {errors.productName && <ErrorMessage />}
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">SKU / Barkod *</label>
-                                        <input type="text" name="barcode" value={formData.barcode} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm font-mono ${errors.barcode ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="Örn: SKU-1001" />
+                                        <input type="text" {...register("barcode", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm font-mono ${errors.barcode ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="Örn: SKU-1001" />
                                         {errors.barcode && <ErrorMessage />}
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Kategori ID</label>
-                                            <input type="number" name="categoryId" value={formData.categoryId} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.categoryId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Kategori *</label>
+                                            <select {...register("categoryId", { required: true })} className={`w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none ${errors.categoryId ? 'border-rose-500' : 'border-slate-200'}`}>
+                                                <option value="">Kategori Seçiniz...</option>
+                                                {categories.map((cat) => (
+                                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                                ))}
+                                            </select>
                                             {errors.categoryId && <ErrorMessage />}
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Marka ID</label>
-                                            <input type="number" name="brandId" value={formData.brandName} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.brandId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
-                                            {errors.brandId && <ErrorMessage />}
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Marka Adı *</label>
+                                            <input type="text" {...register("brandName", { required: true })} className={`w-full p-2.5 border rounded-lg ${errors.brandName ? 'border-rose-500' : 'border-slate-200'}`} />
+                                            {errors.brandName && <ErrorMessage />}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* SAĞ SÜTUN */}
                                 <div className="space-y-5">
-                                    <h3 className="text-sm font-bold text-slate-400  tracking-wider mb-4 border-b pb-2">Ticari Bilgiler</h3>
+                                    <h3 className="text-sm font-bold text-slate-400 tracking-wider mb-4 border-b pb-2">Ticari Bilgiler *</h3>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Alış Fiyatı (₺)</label>
-                                            <input type="number" name="purchasePrice" value={formData.purchasePrice} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.purchasePrice ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0.00" />
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Alış Fiyatı (₺) *</label>
+                                            <input type="number" step="0.01" {...register("purchasePrice", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.purchasePrice ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0.00" />
                                             {errors.purchasePrice && <ErrorMessage />}
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Satış Fiyatı (₺) *</label>
-                                            <input type="number" name="salePrice" value={formData.salePrice} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm bg-emerald-50/30 ${errors.salePrice ? 'border-rose-500 !bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0.00" />
+                                            <input type="number" step="0.01" {...register("salePrice", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm bg-emerald-50/30 ${errors.salePrice ? 'border-rose-500 !bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0.00" />
                                             {errors.salePrice && <ErrorMessage />}
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Başlangıç Stoğu</label>
-                                            <input type="number" name="stockQuantity" value={formData.stockQuantity} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0" />
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Başlangıç Stoğu *</label>
+                                            <input type="number" {...register("stockQuantity", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0" />
                                             {errors.stockQuantity && <ErrorMessage />}
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tedarikçi ID</label>
-                                            <input type="number" name="supplierId" value={formData.supplierId} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.supplierId ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="ID..." />
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tedarikçi *</label>
+                                            <select {...register("supplierId", { required: true })} className={`w-full p-2.5 border rounded-lg ${errors.supplierId ? 'border-rose-500' : 'border-slate-200'}`}>
+                                                <option value="">Tedarikçi Seçiniz...</option>
+                                                {suppliers.map((sup) => (
+                                                    <option key={sup.id} value={sup.id}>{sup.companyName}</option>
+                                                ))}
+                                            </select>
                                             {errors.supplierId && <ErrorMessage />}
                                         </div>
                                     </div>
@@ -349,7 +329,8 @@ export default function UrunEnvanterSayfasi() {
                                             <p className="text-xs text-slate-500">Pasife alınan ürünler satışta görünmez.</p>
                                         </div>
                                         <label className="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleInputChange} className="sr-only peer" />
+                                            {/* YENİ: Checkbox'ı da register ile bağladık */}
+                                            <input type="checkbox" {...register("isActive")} className="sr-only peer" />
                                             <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                                         </label>
                                     </div>
@@ -359,14 +340,14 @@ export default function UrunEnvanterSayfasi() {
                         </div>
 
                         <div className="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                            <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl font-medium text-sm">İptal Et</button>
-                            <button onClick={handleSave} className="px-5 py-2.5 text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 rounded-xl font-medium text-sm">Ürünü Kaydet</button>
+                            <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl font-medium text-sm">İptal Et</button>
+                            {/* YENİ: type="submit" yapıldı. Butona basılınca formdaki handleSubmit otomatik tetiklenecek */}
+                            <button type="submit" className="px-5 py-2.5 text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 rounded-xl font-medium text-sm">Ürünü Kaydet</button>
                         </div>
 
-                    </div>
+                    </form>
                 </div>
             )}
-
         </div>
     );
 }
