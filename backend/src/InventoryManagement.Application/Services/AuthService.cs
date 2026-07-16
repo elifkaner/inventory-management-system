@@ -57,6 +57,51 @@ public class AuthService : IAuthService
             return new LoginResponseDto { Token = token };
     }
 
+    public async Task SeedAdminAsync()
+    {
+        var email = Environment.GetEnvironmentVariable("ADMIN_EMAIL");
+        var password = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
+
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            return;
+        }
+
+        var existing = await _userRepository.GetByEmailAsync(email);
+        if (existing != null)
+        {
+            return;
+        }
+
+        var admin = new User
+        {
+            Name = Environment.GetEnvironmentVariable("ADMIN_NAME") ?? "Admin",
+            Email = email,
+            Role = "Admin",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
+        };
+
+        await _userRepository.AddAsync(admin);
+    }
+
+    public async Task<bool> SetUserRoleAsync(int userId, string role)
+    {
+        if (role != "Admin" && role != "User")
+        {
+            return false;
+        }
+
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return false;
+        }
+
+        user.Role = role;
+        await _userRepository.UpdateAsync(user);
+        return true;
+    }
+
     private static string GenerateJwtToken(User user)
     {
         var claims = new[]

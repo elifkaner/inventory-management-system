@@ -67,4 +67,19 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
+
+    // PUT /api/Auth/users/{id}/role — sadece Admin, başka bir kullanıcının rolünü değiştirebilir.
+    [HttpPut("users/{id:int}/role")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> SetUserRole(int id, SetRoleDto dto)
+    {
+        var success = await _authService.SetUserRoleAsync(id, dto.Role);
+
+        if (!success)
+        {
+            return BadRequest("Kullanıcı bulunamadı veya geçersiz rol (sadece 'User' ya da 'Admin' olabilir).");
+        }
+
+        return Ok();
+    }
 }

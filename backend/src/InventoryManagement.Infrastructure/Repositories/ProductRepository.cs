@@ -115,8 +115,12 @@ public class ProductRepository : IProductRepository
             .Where(p => p.IsActive)
             .SumAsync(p => p.SalePrice * p.StockQuantity);
 
+        var totalProfitMargin = await _context.Products
+            .Where(p => p.IsActive)
+            .SumAsync(p => (p.SalePrice - p.PurchasePrice) * p.StockQuantity);
+
         var activeProductCount = await _context.Products.CountAsync(p => p.IsActive);
 
-        return new ProductSummaryStats(totalProducts, criticalStockCount, totalInventoryValue, activeProductCount);
+        return new ProductSummaryStats(totalProducts, criticalStockCount, totalInventoryValue, totalProfitMargin, activeProductCount);
     }
 }
