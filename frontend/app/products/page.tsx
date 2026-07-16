@@ -46,9 +46,11 @@ export default function UrunEnvanterSayfasi() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [catRes, supRes] = await Promise.all([
+                // YENİ: Ürünleri (Product) de fetch listesine ekledik.
+                const [catRes, supRes, prodRes] = await Promise.all([
                     fetch('http://192.168.2.176:5000/api/Category'),
-                    fetch('http://192.168.2.176:5000/api/Supplier')
+                    fetch('http://192.168.2.176:5000/api/Supplier'),
+                    fetch('http://192.168.2.176:5000/api/Product')
                 ]);
 
                 if (catRes.ok) {
@@ -60,8 +62,21 @@ export default function UrunEnvanterSayfasi() {
                     const supData = await supRes.json();
                     setSuppliers(supData);
                 }
+
+                // YENİ: Gelen ürünleri state'e atıyoruz.
+                if (prodRes.ok) {
+                    const prodData = await prodRes.json();
+                    setProducts(prodData);
+                } else {
+                    setError("Ürünler getirilemedi.");
+                }
+
             } catch (err) {
                 console.error("Veri çekme hatası:", err);
+                setError("Sunucuya bağlanılamadı.");
+            } finally {
+                // YENİ: İşlem bitince (başarılı veya hatalı) yükleniyor animasyonunu kapatıyoruz.
+                setIsLoading(false);
             }
         };
         fetchData();
@@ -223,7 +238,9 @@ export default function UrunEnvanterSayfasi() {
                             <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
                                 <td className="p-4 pl-6"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${prod.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>{prod.isActive ? 'Aktif' : 'Pasif'}</span></td>
                                 <td className="p-4 text-slate-900 font-semibold">{prod.productName}</td>
-                                <td className="p-4 text-slate-500">{prod.categoryName}</td>
+                                <td className="p-4 text-slate-500">
+                                    {categories.find(c => c.id === prod.categoryId)?.name || 'Kategorisiz'}
+                                </td>
                                 <td className="p-4 font-mono text-xs text-slate-500 bg-slate-50 rounded px-2 py-1 inline-block mt-2">{prod.barcode}</td>
                                 <td className="p-4 text-right text-slate-900 font-bold">₺{prod.salePrice?.toLocaleString()}</td>
                                 <td className="p-4 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>{prod.stockQuantity} Adet</span></td>
@@ -239,8 +256,7 @@ export default function UrunEnvanterSayfasi() {
 
             {/* MODAL (FORM ALANI) */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-
+                <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                     {/* YENİ: Div yerine direkt form etiketi kullanıyoruz. onSubmit'e kütüphanenin fonksiyonunu bağladık */}
                     <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
 
@@ -272,7 +288,7 @@ export default function UrunEnvanterSayfasi() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Kategori *</label>
-                                            <select {...register("categoryId", { required: true })} className={`w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none ${errors.categoryId ? 'border-rose-500' : 'border-slate-200'}`}>
+                                            <select {...register("categoryId", { required: true })} className={`w-full p-2.5 border rounded-lg bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none ${errors.categoryId ? 'border-rose-500' : 'border-slate-200'}`}>
                                                 <option value="">Kategori Seçiniz...</option>
                                                 {categories.map((cat) => (
                                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -281,7 +297,7 @@ export default function UrunEnvanterSayfasi() {
                                             {errors.categoryId && <ErrorMessage />}
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Marka Adı *</label>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Marka *</label>
                                             <input type="text" {...register("brandName", { required: true })} className={`w-full p-2.5 border rounded-lg ${errors.brandName ? 'border-rose-500' : 'border-slate-200'}`} />
                                             {errors.brandName && <ErrorMessage />}
                                         </div>
@@ -313,7 +329,7 @@ export default function UrunEnvanterSayfasi() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tedarikçi *</label>
-                                            <select {...register("supplierId", { required: true })} className={`w-full p-2.5 border rounded-lg ${errors.supplierId ? 'border-rose-500' : 'border-slate-200'}`}>
+                                            <select {...register("supplierId", { required: true })} className={`w-full p-2.5 border rounded-lg bg-white ${errors.supplierId ? 'border-rose-500' : 'border-slate-200'}`}>
                                                 <option value="">Tedarikçi Seçiniz...</option>
                                                 {suppliers.map((sup) => (
                                                     <option key={sup.id} value={sup.id}>{sup.companyName}</option>

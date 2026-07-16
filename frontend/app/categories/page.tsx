@@ -15,6 +15,8 @@ export default function KategorilerSayfasi() {
     // isModalOpen: Ekleme/Düzenleme penceresinin (modal) açık mı kapalı mı olduğunu tutar (true/false).
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const [isLoading, setIsLoading] = useState(true);
+
     // categoryName: Modal içindeki input kutusuna (metin kutusu) yazılan yazıyı anlık olarak tutar.
     const [categoryName, setCategoryName] = useState("");
 
@@ -22,29 +24,42 @@ export default function KategorilerSayfasi() {
     // Eğer yeni kayıt ekleniyorsa değeri 'null' kalır. Bu sayede Kaydet butonunun ne yapacağını anlarız.
     const [editingId, setEditingId] = useState<number | null>(null);
 
+    const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [products, setProducts] = useState<any[]>([]); // Ürün sayılarını hesaplamak için
+    const itemsPerPage = 10;
+
     // Backend projesinin (asansörün gideceği) ana adres.
     const API_BASE_URL = 'http://192.168.2.176:5000/api/Category';
 
-
-    // --- 2. SAYFA YÜKLENDİĞİNDE VERİLERİ ÇEKME (READ / GET) ---
-    // useEffect, sayfa ilk açıldığında veya içindeki değerler değiştiğinde tetiklenir.
-    // En sondaki boş dizi [] sayesinde, bu işlemin sadece sayfa ilk açıldığında 1 kez çalışmasını sağlarız.
-    // KategorilerSayfasi.tsx içindeki useEffect'ini şu "sağlam" versiyonla değiştir
     useEffect(() => {
         const loadCategories = async () => {
             try {
-                const res = await fetch(API_BASE_URL);
-                if (!res.ok) return; // Hata varsa boş dön, uygulamayı çökertme
-                const data = await res.json();
+                setIsLoading(true); // Yükleniyor durumunu başlat
 
-                // Sadece dolu isimleri al, gereksiz "Bilinmeyen"leri temizle
-                const cleanData = data
-                    .filter((item: any) => item.name && item.name.trim() !== "")
-                    .map((item: any) => ({ id: item.id, name: item.name }));
+                // Promise.all ile hem kategorileri hem ürünleri aynı anda çekiyoruz
+                const [catRes, prodRes] = await Promise.all([
+                    fetch(API_BASE_URL),
+                    fetch('http://192.168.2.176:5000/api/Product')
+                ]);
 
-                setCategories(cleanData);
+                if (catRes.ok) {
+                    const data = await catRes.json();
+                    const cleanData = data
+                        .filter((item: any) => item.name && item.name.trim() !== "")
+                        .map((item: any) => ({ id: item.id, name: item.name }));
+                    setCategories(cleanData);
+                }
+
+                if (prodRes.ok) {
+                    const prodData = await prodRes.json();
+                    setProducts(prodData); // Ürünleri hafızaya al ki sayabilelim
+                }
+
             } catch (err) {
-                console.warn("Backend kapalı veya ulaşılamıyor, şu an veriler yüklenemedi.");
+                console.warn("Backend kapalı veya ulaşılamıyor.");
+            } finally {
+                setIsLoading(false); // İşlem bitince yükleniyor durumunu kapat
             }
         };
         loadCategories();
@@ -140,7 +155,19 @@ export default function KategorilerSayfasi() {
         setEditingId(null); // Düzenleme modundan çıkar, yeni ekleme moduna geri döner.
     };
 
+    // 1. Önce ürün sayısını hesapla ve arama kelimesine göre filtrele
+    const processedCategories = categories
+        .map(cat => ({
+            ...cat,
+            productCount: products.filter(p => p.categoryId === cat.id).length // Ürünleri sayıyoruz!
+        }))
+        .filter(cat => cat.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
+    // 2. Sonra bu listeyi sayfalara böl
+    const totalPages = Math.ceil(processedCategories.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentCategories = processedCategories.slice(indexOfFirstItem, indexOfLastItem);
     // --- 7. ARAYÜZ (HTML/JSX) ÇİZİMİ ---
     // Kullanıcının ekranda göreceği butonlar, tablolar ve pencereler burada tanımlanır.
     return (
