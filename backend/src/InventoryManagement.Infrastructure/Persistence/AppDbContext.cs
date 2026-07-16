@@ -22,6 +22,8 @@ public class AppDbContext : DbContext
 
     public DbSet<WarehouseLocation> WarehouseLocations { get; set; }
 
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -50,5 +52,11 @@ public class AppDbContext : DbContext
             .WithMany(l => l.Products)
             .HasForeignKey(p => p.LocationId)
             .IsRequired(false);
+
+        // RefreshToken -> User (Many to One: bir kullanıcının birden fazla refresh token'ı olabilir)
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(rt => rt.User)
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(rt => rt.UserId);
     }
 }

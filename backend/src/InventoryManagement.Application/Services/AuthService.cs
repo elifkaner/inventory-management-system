@@ -7,6 +7,7 @@ using InventoryManagement.Domain.Entities;
 using BCrypt.Net;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 
 namespace InventoryManagement.Application.Services;
 
@@ -14,9 +15,12 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
 
-    public AuthService(IUserRepository userRepository)
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
+
+    public AuthService(IUserRepository userRepository,IRefreshTokenRepository refreshTokenRepository)
     {
         _userRepository = userRepository;
+        _refreshTokenRepository = refreshTokenRepository;
     }
 
     public async Task<bool> RegisterAsync(RegisterDto dto)
@@ -52,10 +56,23 @@ public class AuthService : IAuthService
             {
                 return null;
             }
-            var token = GenerateJwtToken(existingUser);
+            var accessToken = GenerateJwtToken(existingUser);
+            var refreshTokenValue = GenerateRefreshToken();
 
-            return new LoginResponseDto { Token = token };
-    }
+            var refreshToken = new RefreshToken
+            {
+                UserId = existingUser.UserId,
+                Token = refreshTokenValue,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _refreshTokenRepository.AddAsync(refreshToken);
+
+            return new LoginResponseDto { AccessToken = accessToken, RefreshToken = refreshTokenValue };
+        }
+        
 
     public async Task SeedAdminAsync()
     {
@@ -101,6 +118,57 @@ public class AuthService : IAuthService
         await _userRepository.UpdateAsync(user);
         return true;
     }
+    public async Task<LoginResponseDto?> RefreshAsync(RefreshRequestDto dto)
+    {
+        var existingToken = await _refreshTokenRepository.GetByTokenAsync(dto.RefreshToken);
+        if (existingToken == null)
+        {
+            return null;
+        }
+        else if (existingToken.IsRevoked || existingToken.ExpiresAt < DateTime.UtcNow)
+        {
+            return null;
+        }
+
+        existingToken.IsRevoked = true;
+        await _refreshTokenRepository.UpdateAsync(existingToken);
+
+        var user = await _userRepository.GetByIdAsync(existingToken.UserId);
+        
+        if (user == null)
+        {
+            return null;
+        }
+
+            var accessToken = GenerateJwtToken(user);
+            var refreshTokenValue = GenerateRefreshToken();
+
+            var refreshToken = new RefreshToken
+            {
+                UserId = existingToken.UserId,
+                Token = refreshTokenValue,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _refreshTokenRepository.AddAsync(refreshToken);
+
+            return new LoginResponseDto { AccessToken = accessToken, RefreshToken = refreshTokenValue };
+        }
+
+    public async Task<bool> LogoutAsync(RefreshRequestDto dto)
+    {
+        var existingToken = await _refreshTokenRepository.GetByTokenAsync(dto.RefreshToken);
+        if (existingToken == null)
+        {
+            return false;
+        }
+
+        existingToken.IsRevoked = true;
+        await _refreshTokenRepository.UpdateAsync(existingToken);
+        return true;
+    }
 
     private static string GenerateJwtToken(User user)
     {
@@ -119,9 +187,15 @@ public class AuthService : IAuthService
             issuer: Environment.GetEnvironmentVariable("JWT_ISSUER"),
             audience: Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(2),
+            expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static string GenerateRefreshToken()
+    {
+        var randomBytes = RandomNumberGenerator.GetBytes(64);
+        return Convert.ToBase64String(randomBytes); 
     }
 }
