@@ -62,8 +62,9 @@ public class ProductService : IProductService
         return _productRepository.DeleteAsync(id);
     }
 
-    // Dashboard'daki özet KPI kartlarının verilerini hesaplar
-    public async Task<DashboardSummaryDto> GetSummaryAsync()
+    // Dashboard'daki özet KPI kartlarının verilerini hesaplar.
+    // includeFinancials: sadece Admin rolü için true gelir; false ise parasal alanlar null kalır.
+    public async Task<DashboardSummaryDto> GetSummaryAsync(bool includeFinancials)
     {
         var stats = await _productRepository.GetSummaryStatsAsync(CriticalStockThreshold);
 
@@ -71,13 +72,20 @@ public class ProductService : IProductService
             ? Math.Round((double)stats.ActiveProductCount / stats.TotalProducts * 100, 1)
             : 0;
 
-        return new DashboardSummaryDto
+        var summary = new DashboardSummaryDto
         {
             TotalProducts = stats.TotalProducts,
             CriticalStockCount = stats.CriticalStockCount,
-            TotalInventoryValue = stats.TotalInventoryValue,
             ActiveSalesRate = activeSalesRate
         };
+
+        if (includeFinancials)
+        {
+            summary.TotalInventoryValue = stats.TotalInventoryValue;
+            summary.TotalProfitMargin = stats.TotalProfitMargin;
+        }
+
+        return summary;
     }
 
     // Listeyi (arama/kategori filtresi uygulanmış haliyle) CSV olarak dışa aktarır

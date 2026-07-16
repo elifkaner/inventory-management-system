@@ -17,7 +17,7 @@ public interface IProductService
 
     Task<bool> DeleteProductAsync(int id);
 
-    Task<DashboardSummaryDto> GetSummaryAsync();
+    Task<DashboardSummaryDto> GetSummaryAsync(bool includeFinancials);
 
     Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null);
 }

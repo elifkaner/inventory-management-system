@@ -40,7 +40,8 @@ public class ProductController : ControllerBase
     [HttpGet("summary")]
     public async Task<IActionResult> GetProductSummary()
     {
-        var summary = await _productService.GetSummaryAsync();
+        var isAdmin = User.IsInRole("Admin");
+        var summary = await _productService.GetSummaryAsync(isAdmin);
 
         return Ok(summary);
     }

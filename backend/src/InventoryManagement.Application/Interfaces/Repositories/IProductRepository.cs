@@ -6,6 +6,7 @@ public record ProductSummaryStats(
     int TotalProducts,
     int CriticalStockCount,
     decimal TotalInventoryValue,
+    decimal TotalProfitMargin,
     int ActiveProductCount);
 
 public interface IProductRepository

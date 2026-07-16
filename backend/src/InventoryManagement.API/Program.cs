@@ -72,6 +72,14 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 
+// İlk admin kullanıcısını oluşturur (ADMIN_EMAIL/ADMIN_PASSWORD .env'de tanımlıysa ve henüz yoksa).
+using (var scope = app.Services.CreateScope())
+{
+    var authService = scope.ServiceProvider.GetRequiredService<InventoryManagement.Application.Interfaces.Services.IAuthService>();
+    await authService.SeedAdminAsync();
+}
+
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
