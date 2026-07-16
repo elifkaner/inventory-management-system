@@ -62,7 +62,7 @@ public class AuthService : IAuthService
             var refreshToken = new RefreshToken
             {
                 UserId = existingUser.UserId,
-                Token = refreshTokenValue,
+                Token = HashToken(refreshTokenValue),
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
                 IsRevoked = false,
                 CreatedAt = DateTime.UtcNow
@@ -72,7 +72,7 @@ public class AuthService : IAuthService
 
             return new LoginResponseDto { AccessToken = accessToken, RefreshToken = refreshTokenValue };
         }
-        
+
 
     public async Task SeedAdminAsync()
     {
@@ -120,12 +120,22 @@ public class AuthService : IAuthService
     }
     public async Task<LoginResponseDto?> RefreshAsync(RefreshRequestDto dto)
     {
-        var existingToken = await _refreshTokenRepository.GetByTokenAsync(dto.RefreshToken);
+        var existingToken = await _refreshTokenRepository.GetByTokenAsync(HashToken(dto.RefreshToken));
         if (existingToken == null)
         {
             return null;
         }
-        else if (existingToken.IsRevoked || existingToken.ExpiresAt < DateTime.UtcNow)
+
+        if (existingToken.IsRevoked)
+        {
+            // Zaten kullanılmış/iptal edilmiş bir token tekrar sunuldu — bu, token'ın çalınmış
+            // olabileceğinin işareti. Bu kullanıcının tüm oturumlarını kapatıyoruz ki hem
+            // saldırgan hem de (varsa) meşru kullanıcı tekrar login olmak zorunda kalsın.
+            await _refreshTokenRepository.RevokeAllForUserAsync(existingToken.UserId);
+            return null;
+        }
+
+        if (existingToken.ExpiresAt < DateTime.UtcNow)
         {
             return null;
         }
@@ -134,7 +144,7 @@ public class AuthService : IAuthService
         await _refreshTokenRepository.UpdateAsync(existingToken);
 
         var user = await _userRepository.GetByIdAsync(existingToken.UserId);
-        
+
         if (user == null)
         {
             return null;
@@ -146,7 +156,7 @@ public class AuthService : IAuthService
             var refreshToken = new RefreshToken
             {
                 UserId = existingToken.UserId,
-                Token = refreshTokenValue,
+                Token = HashToken(refreshTokenValue),
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
                 IsRevoked = false,
                 CreatedAt = DateTime.UtcNow
@@ -159,7 +169,7 @@ public class AuthService : IAuthService
 
     public async Task<bool> LogoutAsync(RefreshRequestDto dto)
     {
-        var existingToken = await _refreshTokenRepository.GetByTokenAsync(dto.RefreshToken);
+        var existingToken = await _refreshTokenRepository.GetByTokenAsync(HashToken(dto.RefreshToken));
         if (existingToken == null)
         {
             return false;
@@ -196,6 +206,16 @@ public class AuthService : IAuthService
     private static string GenerateRefreshToken()
     {
         var randomBytes = RandomNumberGenerator.GetBytes(64);
-        return Convert.ToBase64String(randomBytes); 
+        return Convert.ToBase64String(randomBytes);
+    }
+
+    // Refresh token'ı veritabanına yazmadan önce hash'ler — şifrelerde BCrypt kullandığımız
+    // mantığın aynısı: DB sızarsa saldırganın eline çalışır token değil, geri döndürülemeyen
+    // bir hash geçsin. BCrypt'in aksine burada kasıtlı yavaşlığa gerek yok (token zaten 512-bit
+    // rastgele, kaba kuvvetle tahmin edilemez), bu yüzden hızlı SHA256 yeterli.
+    private static string HashToken(string token)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToBase64String(bytes);
     }
 }
