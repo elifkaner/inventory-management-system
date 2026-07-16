@@ -13,4 +13,9 @@ public interface IAuthService
 
     // Var olan bir kullanıcının rolünü değiştirir (sadece [Authorize(Roles = "Admin")] endpoint'inden çağrılır).
     Task<bool> SetUserRoleAsync(int userId, string role);
+    
+    Task<LoginResponseDto?> RefreshAsync(RefreshRequestDto dto);
+
+    // Verilen refresh token'ı iptal eder — bir daha yeni access token almak için kullanılamaz.
+    Task<bool> LogoutAsync(RefreshRequestDto dto);
 }

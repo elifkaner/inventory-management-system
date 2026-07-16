@@ -1,8 +1,6 @@
 namespace InventoryManagement.Application.DTOs.User;
 
-public class LoginResponseDto
+public class RefreshRequestDto
 {
-    public string AccessToken { get; set;} = string.Empty;
-
     public string RefreshToken { get; set; } = string.Empty;
 }

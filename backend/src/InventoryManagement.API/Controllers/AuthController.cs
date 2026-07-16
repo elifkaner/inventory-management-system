@@ -46,6 +46,19 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Refresh(RefreshRequestDto dto)
+    {
+        var result = await _authService.RefreshAsync(dto);
+
+        if (result == null )
+        {
+            return Unauthorized("Yetkiniz yok.");
+        }
+        return Ok(result);
+    }
+
     // POST /api/Auth/login
     [HttpPost("login")]
     [AllowAnonymous]
@@ -66,6 +79,21 @@ public class AuthController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    // POST /api/Auth/logout — refresh token'ı iptal eder, bir daha yeni access token almak için kullanılamaz.
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout(RefreshRequestDto dto)
+    {
+        var success = await _authService.LogoutAsync(dto);
+
+        if (!success)
+        {
+            return BadRequest("Geçersiz refresh token.");
+        }
+
+        return Ok();
     }
 
     // PUT /api/Auth/users/{id}/role — sadece Admin, başka bir kullanıcının rolünü değiştirebilir.
