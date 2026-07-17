@@ -4,7 +4,8 @@ namespace InventoryManagement.Application.Interfaces.Services;
 
 public interface IAuthService
 {
-    Task<bool> RegisterAsync(RegisterDto dto);
+    // Sadece [Authorize(Roles = "Admin")] endpoint'inden çağrılır — dışarıdan kimse kendine hesap açamaz.
+    Task<bool> CreateUserByAdminAsync(CreateUserByAdminDto dto);
 
     Task<LoginResponseDto?> LoginAsync(LoginDto dto);
 

@@ -23,19 +23,19 @@ public class AuthService : IAuthService
         _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async Task<bool> RegisterAsync(RegisterDto dto)
+    public async Task<bool> CreateUserByAdminAsync(CreateUserByAdminDto dto)
     {
         var existingUser = await _userRepository.GetByEmailAsync(dto.Email);
-        if (existingUser!=null)
+        if (existingUser != null)
         {
             return false;
         }
-        
+
         var user = new User()
         {
             Name = dto.Name,
             Email = dto.Email,
-            Role = "User",
+            Role = dto.Role,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
         };
 
@@ -87,6 +87,15 @@ public class AuthService : IAuthService
         var existing = await _userRepository.GetByEmailAsync(email);
         if (existing != null)
         {
+            // Bu email'le zaten bir kullanıcı var (ör. eskiden açık register üzerinden User
+            // olarak kaydolmuş) ama Admin değilse, admin'e yükseltip şifresini ADMIN_PASSWORD
+            // ile eşitliyoruz — aksi halde ortam değişkenleriyle giriş yapmak imkansız kalırdı.
+            if (existing.Role != "Admin")
+            {
+                existing.Role = "Admin";
+                existing.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+                await _userRepository.UpdateAsync(existing);
+            }
             return;
         }
 

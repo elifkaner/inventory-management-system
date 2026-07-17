@@ -3,9 +3,9 @@ using InventoryManagement.Application.DTOs.User;
 
 namespace InventoryManagement.Application.Validators.User;
 
-public class RegisterDtoValidator : AbstractValidator<RegisterDto>
+public class CreateUserByAdminDtoValidator : AbstractValidator<CreateUserByAdminDto>
 {
-    public RegisterDtoValidator()
+    public CreateUserByAdminDtoValidator()
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("İsim boş bırakılamaz.")
@@ -18,5 +18,9 @@ public class RegisterDtoValidator : AbstractValidator<RegisterDto>
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Şifre boş bırakılamaz.")
             .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır.");
+
+        RuleFor(x => x.Role)
+            .NotEmpty().WithMessage("Rol boş bırakılamaz.")
+            .Must(role => role == "User" || role == "Admin").WithMessage("Rol sadece 'User' ya da 'Admin' olabilir.");
     }
 }
