@@ -56,9 +56,16 @@ public class WarehouseLocationService : IWarehouseLocationService
         return updated == null ? null : ToDto(updated);
     }
 
-    public Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
-        return _locationRepository.DeleteAsync(id);
+        var hasProducts = await _locationRepository.HasProductsAsync(id);
+
+        if (hasProducts)
+        {
+            throw new InvalidOperationException("Bu depo konumuna bağlı ürünler var, önce onları silin ya da başka bir konuma taşıyın.");
+        }
+
+        return await _locationRepository.DeleteAsync(id);
     }
 
     private static WarehouseLocationDto ToDto(WarehouseLocation l)

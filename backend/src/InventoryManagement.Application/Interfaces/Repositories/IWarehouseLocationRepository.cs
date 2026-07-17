@@ -13,4 +13,6 @@ public interface IWarehouseLocationRepository
     Task<WarehouseLocation?> UpdateAsync(int id, WarehouseLocation updatedLocation);
 
     Task<bool> DeleteAsync(int id);
+
+    Task<bool> HasProductsAsync(int locationId);
 }
