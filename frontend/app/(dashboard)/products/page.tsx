@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'; // YENİ: Kütüphanemizi çağırdı
 
 // YENİ: Formumuzdaki verilerin tiplerini (TypeScript için) bir kez tanımlıyoruz.
 type ProductFormData = {
+    id?: number | null;
     productName: string;
     barcode: string;
     categoryId: number | string;
@@ -29,12 +30,14 @@ export default function UrunEnvanterSayfasi() {
     // ESKİDEN BURADA OLAN formData, errors, setErrors, handleInputChange GİBİ MANUEL YAPILARIN HEPSİ SİLİNDİ!
 
     const {
-        register, // İnputları forma bağlayan kancamız
-        handleSubmit, // Kaydetme işlemini tetikleyen fonksiyonumuz
-        reset, // Formu sıfırlamak veya düzenleme modunda doldurmak için kullanacağız
-        formState: { errors } // Hataları bizim yerimize otomatik tutan obje
+        register,
+        handleSubmit,
+        reset,
+        setValue, // EKLENDİ: Gizli inputun değerini değiştirmek için
+        watch,    // EKLENDİ: Seçili tedarikçiyi anlık takip etmek için
+        formState: { errors }
     } = useForm<ProductFormData>({
-        defaultValues: { isActive: true } // Form ilk açıldığında aktif butonu açık gelsin
+        defaultValues: { isActive: true }
     });
     // --- YENİ NESİL FORM YÖNETİMİ BİTİŞİ ---
 
@@ -42,6 +45,9 @@ export default function UrunEnvanterSayfasi() {
     const [barcodeResult, setBarcodeResult] = useState<ProductResponseDto | null>(null);
     const [barcodeError, setBarcodeError] = useState<string | null>(null);
     const [barcodeLoading, setBarcodeLoading] = useState(false);
+    const [supplierSearch, setSupplierSearch] = useState("");
+    const [isSupplierOpen, setIsSupplierOpen] = useState(false);
+    const selectedSupplierId = watch("supplierId");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -121,33 +127,37 @@ export default function UrunEnvanterSayfasi() {
             const productData = {
                 productName: data.productName,
                 barcode: data.barcode,
-                purchasePrice: Number(data.purchasePrice) || 0,
-                salePrice: Number(data.salePrice) || 0,
+                // Virgül girilirse noktaya çevirip sayıya dönüştürüyoruz
+                purchasePrice: Number(String(data.purchasePrice).replace(',', '.')) || 0,
+                salePrice: Number(String(data.salePrice).replace(',', '.')) || 0,
                 stockQuantity: Number(data.stockQuantity) || 0,
-                categoryId: Number(data.categoryId) || 1,
+                categoryId: Number(data.categoryId),
                 supplierId: Number(data.supplierId) || null,
                 brandName: data.brandName ? formatName(data.brandName) : null,
-                locationId: 1,
+                locationId: null, // DİKKAT: Burası 1 kalmıştı, veritabanı hatasını önlemek için null yaptık.
                 isActive: data.isActive
             };
 
-            const response = await fetch('http://192.168.2.176:5000/api/Product', {
+            // DİKKAT: Sabit IP yerine dinamik proxy yönlendirmemizi kullanıyoruz
+            const response = await fetch('/api/Product', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(productData)
             });
 
             if (!response.ok) {
-                throw new Error('Veritabanına kaydedilemedi! Eksik veya hatalı bilgi olabilir.');
+                // Backend'in gönderdiği GERÇEK hatayı yakalıyoruz
+                const errorData = await response.text();
+                console.error("Backend'den dönen gerçek hata:", errorData);
+                throw new Error(`Kayıt Başarısız! Sunucu mesajı: ${errorData}`);
             }
 
             alert("Harika! Ürün başarıyla eklendi.");
             setIsModalOpen(false);
             window.location.reload();
-
         } catch (error: any) {
             console.error("Kaydetme Hatası:", error);
-            alert(error?.message || "Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
+            alert(error?.message || "Bağlantı Hatası.");
         }
     };
 
@@ -329,12 +339,84 @@ export default function UrunEnvanterSayfasi() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tedarikçi *</label>
-                                            <select {...register("supplierId", { required: true })} className={`w-full p-2.5 border rounded-lg bg-white ${errors.supplierId ? 'border-rose-500' : 'border-slate-200'}`}>
-                                                <option value="">Tedarikçi Seçiniz...</option>
-                                                {suppliers.map((sup) => (
-                                                    <option key={sup.id} value={sup.id}>{sup.companyName}</option>
-                                                ))}
-                                            </select>
+                                            <div className="relative">
+                                                {/* Görünmez (Hidden) input: React Hook Form'un veriyi takip etmesi için */}
+                                                <input type="hidden" {...register("supplierId", { required: true })} />
+
+                                                {/* Dropdown Tetikleyici (Tıklanan Kutu) */}
+                                                <div
+                                                    className={`w-full p-2.5 border rounded-lg bg-white cursor-pointer flex justify-between items-center ${errors.supplierId ? 'border-rose-500' : 'border-slate-200'}`}
+                                                    onClick={() => setIsSupplierOpen(!isSupplierOpen)}
+                                                >
+                                                    <span className={selectedSupplierId ? 'text-slate-900 text-sm' : 'text-slate-500 text-sm'}>
+                                                        {selectedSupplierId
+                                                            ? suppliers.find(s => s.id === Number(selectedSupplierId))?.companyName || "Tedarikçi Seçiniz..."
+                                                            : "Tedarikçi Seçiniz..."}
+                                                    </span>
+                                                    <svg className={`w-4 h-4 text-slate-400 transition-transform ${isSupplierOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </div>
+
+                                                {/* Açılır Menü ve Arama Kutusu */}
+                                                {isSupplierOpen && (
+                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                                        {/* BÜYÜTEÇLİ ARAMA KUTUSU */}
+                                                        <div className="p-2 sticky top-0 bg-white border-b border-slate-100">
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Firma adı ara..."
+                                                                    className="w-full pl-3 pr-9 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                                                    value={supplierSearch}
+                                                                    onChange={(e) => setSupplierSearch(e.target.value)}
+                                                                    onClick={(e) => e.stopPropagation()} // Tıklayınca menünün kapanmasını engeller
+                                                                />
+                                                                <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                                                                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* FİLTRELENMİŞ LİSTE */}
+                                                        <ul className="py-1">
+                                                            <li
+                                                                className="px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm text-slate-500 italic"
+                                                                onClick={() => {
+                                                                    setValue("supplierId", "");
+                                                                    setIsSupplierOpen(false);
+                                                                }}
+                                                            >
+                                                                Tedarikçi Seçimini Temizle
+                                                            </li>
+                                                            {suppliers
+                                                                .filter(sup => sup.companyName.toLowerCase().includes(supplierSearch.toLowerCase()))
+                                                                .map((sup) => (
+                                                                    <li
+                                                                        key={sup.id}
+                                                                        className={`px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm ${Number(selectedSupplierId) === sup.id ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'text-slate-700'}`}
+                                                                        onClick={() => {
+                                                                            setValue("supplierId", sup.id);
+                                                                            setIsSupplierOpen(false);
+                                                                            setSupplierSearch(""); // Seçimden sonra aramayı sıfırla
+                                                                        }}
+                                                                    >
+                                                                        {sup.companyName}
+                                                                    </li>
+                                                                ))
+                                                            }
+                                                            {/* Arama sonucu boşsa */}
+                                                            {suppliers.filter(sup => sup.companyName.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
+                                                                <li className="px-3 py-4 text-center text-sm text-slate-500">
+                                                                    Sonuç bulunamadı.
+                                                                </li>
+                                                            )}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
                                             {errors.supplierId && <ErrorMessage />}
                                         </div>
                                     </div>
