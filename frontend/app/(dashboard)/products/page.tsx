@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { getProductByBarcode, ProductResponseDto } from '@/app/lib/api';
 import { useForm } from 'react-hook-form'; // YENİ: Kütüphanemizi çağırdık
+import { authFetch } from '@/app/lib/api';
 
 // YENİ: Formumuzdaki verilerin tiplerini (TypeScript için) bir kez tanımlıyoruz.
 type ProductFormData = {
@@ -54,11 +55,10 @@ export default function UrunEnvanterSayfasi() {
             try {
                 // YENİ: Ürünleri (Product) de fetch listesine ekledik.
                 const [catRes, supRes, prodRes] = await Promise.all([
-                    fetch('http://192.168.2.176:5000/api/Category'),
-                    fetch('http://192.168.2.176:5000/api/Supplier'),
-                    fetch('http://192.168.2.176:5000/api/Product')
+                    authFetch('http://192.168.2.176:5000/api/Category'),
+                    authFetch('http://192.168.2.176:5000/api/Supplier'),
+                    authFetch('http://192.168.2.176:5000/api/Product')
                 ]);
-
                 if (catRes.ok) {
                     const catData = await catRes.json();
                     setCategories(catData);
@@ -124,35 +124,43 @@ export default function UrunEnvanterSayfasi() {
     // data parametresi formdaki tüm verileri otomatik ve hatasız olarak getirir. "fieldsToValidate" ameleliğine gerek kalmadı!
     const onSubmit = async (data: ProductFormData) => {
         try {
-            const productData = {
+            const isEditing = !!data.id;
+
+            // Swagger'a göre hem POST hem de PUT işleminde ortak olan veriler
+            const basePayload = {
                 productName: data.productName,
                 barcode: data.barcode,
-                // Virgül girilirse noktaya çevirip sayıya dönüştürüyoruz
                 purchasePrice: Number(String(data.purchasePrice).replace(',', '.')) || 0,
                 salePrice: Number(String(data.salePrice).replace(',', '.')) || 0,
-                stockQuantity: Number(data.stockQuantity) || 0,
                 categoryId: Number(data.categoryId),
                 supplierId: Number(data.supplierId) || null,
                 brandName: data.brandName ? formatName(data.brandName) : null,
-                locationId: null, // DİKKAT: Burası 1 kalmıştı, veritabanı hatasını önlemek için null yaptık.
+                locationId: null,
                 isActive: data.isActive
             };
 
-            // DİKKAT: Sabit IP yerine dinamik proxy yönlendirmemizi kullanıyoruz
-            const response = await fetch('/api/Product', {
-                method: 'POST',
+            // YENİ: Eğer YENİ KAYIT (POST) ise CreateProductDto'ya göre 'stockQuantity' Ekle!
+            // Eğer GÜNCELLEME (PUT) ise UpdateProductDto'ya göre 'stockQuantity' GÖNDERME!
+            const finalPayload = isEditing
+                ? basePayload
+                : { ...basePayload, stockQuantity: Number(data.stockQuantity) || 0 };
+
+            const url = isEditing ? `/api/Product/${data.id}` : '/api/Product';
+            const method = isEditing ? 'PUT' : 'POST';
+
+            const response = await authFetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(productData)
+                body: JSON.stringify(finalPayload)
             });
 
             if (!response.ok) {
-                // Backend'in gönderdiği GERÇEK hatayı yakalıyoruz
                 const errorData = await response.text();
                 console.error("Backend'den dönen gerçek hata:", errorData);
                 throw new Error(`Kayıt Başarısız! Sunucu mesajı: ${errorData}`);
             }
 
-            alert("Harika! Ürün başarıyla eklendi.");
+            alert(isEditing ? "Harika! Ürün başarıyla güncellendi." : "Harika! Ürün başarıyla eklendi.");
             setIsModalOpen(false);
             window.location.reload();
         } catch (error: any) {
@@ -162,24 +170,24 @@ export default function UrunEnvanterSayfasi() {
     };
 
     const handleEditClick = (product: any) => {
-        // YENİ: setFormData yerine reset() kullanıyoruz. Formdaki tüm kutuları kütüphane otomatik dolduruyor!
         reset({
+            id: product.id, // EKSİK OLAN KRİTİK SATIR: Form artık hangi ürünü düzenlediğini bilecek
             productName: product.productName,
             purchasePrice: product.purchasePrice,
             salePrice: product.salePrice,
             barcode: product.barcode,
             stockQuantity: product.stockQuantity,
-            categoryId: product.categoryId || '',
+            categoryId: product.categoryId ? String(product.categoryId) : '', // Dropdown eşleşmesi için String yapıldı
             brandName: product.brandName || '',
-            supplierId: product.supplierId || '',
+            supplierId: product.supplierId ? String(product.supplierId) : '', // Dropdown eşleşmesi için String yapıldı
             isActive: product.isActive
         });
         setIsModalOpen(true);
     };
 
     const handleAddNewClick = () => {
-        // YENİ: Yeni ekle denildiğinde formu tertemiz sıfırlıyoruz.
         reset({
+            id: null, // Yeni kayıtta ID boş olmalı
             productName: '', purchasePrice: '', salePrice: '', barcode: '',
             stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: ''
         });
@@ -251,7 +259,11 @@ export default function UrunEnvanterSayfasi() {
                                 <td className="p-4 text-slate-500">
                                     {categories.find(c => c.id === prod.categoryId)?.name || 'Kategorisiz'}
                                 </td>
-                                <td className="p-4 font-mono text-xs text-slate-500 bg-slate-50 rounded px-2 py-1 inline-block mt-2">{prod.barcode}</td>
+                                <td className="p-4 align-middle">
+                                    <span className="font-mono text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded px-2 py-1">
+                                        {prod.barcode}
+                                    </span>
+                                </td>
                                 <td className="p-4 text-right text-slate-900 font-bold">₺{prod.salePrice?.toLocaleString()}</td>
                                 <td className="p-4 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>{prod.stockQuantity} Adet</span></td>
                                 <td className="p-4 pr-6 text-right"><button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors mr-3 font-semibold">Düzenle</button></td>
@@ -269,6 +281,7 @@ export default function UrunEnvanterSayfasi() {
                 <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                     {/* YENİ: Div yerine direkt form etiketi kullanıyoruz. onSubmit'e kütüphanenin fonksiyonunu bağladık */}
                     <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+                        <input type="hidden" {...register("id")} />
 
                         <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                             <h2 className="text-xl font-bold text-slate-800">Yeni Ürün Kartı</h2>
@@ -334,7 +347,7 @@ export default function UrunEnvanterSayfasi() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Başlangıç Stoğu *</label>
-                                            <input type="number" {...register("stockQuantity", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0" />
+                                            <input type="number" disabled={!!watch("id")} {...register("stockQuantity", { required: !watch("id") })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200'}`} placeholder="0" />
                                             {errors.stockQuantity && <ErrorMessage />}
                                         </div>
                                         <div>

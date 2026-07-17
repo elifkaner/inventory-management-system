@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-
+import { authFetch } from '@/app/lib/api';
 export default function KategorilerSayfasi() {
     const [categories, setCategories] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -10,7 +10,7 @@ export default function KategorilerSayfasi() {
     const fetchCategories = async () => {
         try {
             setIsLoading(true);
-            const res = await fetch('/api/Category');
+            const res = await authFetch('/api/Category');
             if (res.ok) {
                 const data = await res.json();
                 setCategories(data);
@@ -34,7 +34,7 @@ export default function KategorilerSayfasi() {
             const url = formData.id ? `/api/Category/${formData.id}` : '/api/Category';
             const method = formData.id ? 'PUT' : 'POST';
 
-            const res = await fetch(url, {
+            const res = await authFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: formData.name })
@@ -53,7 +53,7 @@ export default function KategorilerSayfasi() {
         if (!window.confirm(`"${name}" kategorisini silmek istediğinize emin misiniz?`)) return;
 
         try {
-            const res = await fetch(`/api/Category/${id}`, { method: 'DELETE' });
+            const res = await authFetch(`/api/Category/${id}`, { method: 'DELETE' });
             if (res.ok) {
                 setCategories(prev => prev.filter(c => c.id !== id));
             } else {

@@ -26,7 +26,7 @@ export default function LoginSayfasi() {
             setLoginError(null);
 
             // Backend'e POST isteği atıyoruz
-            const response = await fetch('http://192.168.2.176:5000/api/Auth/login', {
+            const response = await fetch('/api/Auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data) // { email, password }
@@ -36,13 +36,11 @@ export default function LoginSayfasi() {
                 throw new Error('E-posta veya şifre hatalı.');
             }
 
-            // Başarılı giriş sonrası backend'den dönen veriyi (Token) alıyoruz
             const result = await response.json();
 
-            // Token'ı tarayıcının güvenli alanına (localStorage) kaydediyoruz
-            // (İleride diğer sayfalarda backend'e istek atarken bu token'ı kullanacağız)
-            if (result.token) {
-                localStorage.setItem('stokpro_token', result.token);
+            if (result.accessToken) {
+                localStorage.setItem('stokpro_token', result.accessToken);
+                localStorage.setItem('stokpro_refresh_token', result.refreshToken);
             }
 
             // Giriş başarılı, kullanıcıyı anında envanter sayfasına yönlendiriyoruz
