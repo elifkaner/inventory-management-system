@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation'; // Yönlendirme için
+import { useRouter } from 'next/navigation';
 
-// Swagger'daki LoginDto'ya birebir uyan veri tipimiz
+// Swagger'daki LoginDto şemasına uygun veri tipi
 type LoginFormData = {
     email: string;
     password: string;
@@ -25,25 +25,27 @@ export default function LoginSayfasi() {
             setIsLoading(true);
             setLoginError(null);
 
+            // Backend'e POST isteği atıyoruz
             const response = await fetch('http://192.168.2.176:5000/api/Auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data) // { email, password }
             });
 
             if (!response.ok) {
                 throw new Error('E-posta veya şifre hatalı.');
             }
 
-            // Backend büyük ihtimalle bir Token (JWT) dönecektir.
+            // Başarılı giriş sonrası backend'den dönen veriyi (Token) alıyoruz
             const result = await response.json();
 
-            // Eğer backend token dönüyorsa (Örn: result.token), bunu tarayıcıya kaydetmeliyiz:
+            // Token'ı tarayıcının güvenli alanına (localStorage) kaydediyoruz
+            // (İleride diğer sayfalarda backend'e istek atarken bu token'ı kullanacağız)
             if (result.token) {
                 localStorage.setItem('stokpro_token', result.token);
             }
 
-            // Giriş başarılı, ana sayfaya veya ürünler sayfasına yönlendir
+            // Giriş başarılı, kullanıcıyı anında envanter sayfasına yönlendiriyoruz
             router.push('/products');
 
         } catch (error: any) {
@@ -91,11 +93,20 @@ export default function LoginSayfasi() {
                             )}
                         </div>
 
-                        {/* ŞİFRE İNPUTU */}
+                        {/* ŞİFRE İNPUTU VE ŞİFREMİ UNUTTUM LİNKİ */}
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">
-                                Şifre
-                            </label>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-medium text-slate-700">
+                                    Şifre
+                                </label>
+                                <a
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); alert("Şifre sıfırlama linki e-posta adresinize gönderilecektir. (Yakında aktif edilecek)"); }}
+                                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                                >
+                                    Şifremi Unuttum
+                                </a>
+                            </div>
                             <input
                                 type="password"
                                 {...register("password", { required: "Şifre alanı zorunludur." })}
@@ -108,7 +119,7 @@ export default function LoginSayfasi() {
                             )}
                         </div>
 
-                        {/* HATA MESAJI (Backend'den dönen) */}
+                        {/* HATA MESAJI (Backend'den dönen hatalar için) */}
                         {loginError && (
                             <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-rose-600 text-sm font-semibold">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
