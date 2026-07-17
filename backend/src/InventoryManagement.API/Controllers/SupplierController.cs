@@ -1,12 +1,14 @@
 using FluentValidation;
 using InventoryManagement.Application.DTOs.Supplier;
 using InventoryManagement.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class SupplierController : ControllerBase
 {
     private readonly ISupplierService _supplierService;
@@ -87,13 +89,20 @@ public class SupplierController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteSupplier(int id)
     {
-        var deleted = await _supplierService.DeleteAsync(id);
-
-        if (!deleted)
+        try
         {
-            return NotFound();
-        }
+            var deleted = await _supplierService.DeleteAsync(id);
 
-        return NoContent();
+            if (!deleted)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

@@ -66,4 +66,9 @@ public class WarehouseLocationRepository : IWarehouseLocationRepository
 
         return true;
     }
+
+    public async Task<bool> HasProductsAsync(int locationId)
+    {
+        return await _context.Products.AnyAsync(p => p.LocationId == locationId);
+    }
 }

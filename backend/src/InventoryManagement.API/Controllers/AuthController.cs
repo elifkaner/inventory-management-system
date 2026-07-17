@@ -104,13 +104,20 @@ public class AuthController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> SetUserRole(int id, SetRoleDto dto)
     {
-        var success = await _authService.SetUserRoleAsync(id, dto.Role);
-
-        if (!success)
+        try
         {
-            return BadRequest("Kullanıcı bulunamadı veya geçersiz rol (sadece 'User' ya da 'Admin' olabilir).");
-        }
+            var success = await _authService.SetUserRoleAsync(id, dto.Role);
 
-        return Ok();
+            if (!success)
+            {
+                return BadRequest("Kullanıcı bulunamadı veya geçersiz rol (sadece 'User' ya da 'Admin' olabilir).");
+            }
+
+            return Ok();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

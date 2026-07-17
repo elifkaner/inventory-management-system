@@ -36,4 +36,9 @@ public class UserRepository : IUserRepository
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<int> CountAdminsAsync()
+    {
+        return await _context.Users.CountAsync(u => u.Role == "Admin");
+    }
 }

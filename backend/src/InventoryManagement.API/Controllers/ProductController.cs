@@ -10,7 +10,6 @@ namespace InventoryManagement.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-[AllowAnonymous] // TODO: frontend login akışı eklenince kaldırılacak
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
@@ -123,7 +122,10 @@ public class ProductController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto dto)
     {
-        var validationResult = await _updateProductValidator.ValidateAsync(dto);
+        var validationContext = new ValidationContext<UpdateProductDto>(dto);
+        validationContext.RootContextData["ProductId"] = id;
+
+        var validationResult = await _updateProductValidator.ValidateAsync(validationContext);
 
         if (!validationResult.IsValid)
         {
@@ -136,7 +138,6 @@ public class ProductController : ControllerBase
             PurchasePrice = dto.PurchasePrice,
             SalePrice = dto.SalePrice,
             Barcode = dto.Barcode,
-            StockQuantity = dto.StockQuantity,
             CategoryId = dto.CategoryId,
             BrandName = dto.BrandName,
             IsActive = dto.IsActive,

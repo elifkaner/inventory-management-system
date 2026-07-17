@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using InventoryManagement.Application.DTOs.Product;
 using InventoryManagement.Application.Interfaces.Repositories;
@@ -48,9 +49,19 @@ public class ProductService : IProductService
         return ToResponseDto(created);
     }
 
-    // Ürün güncelleme
+    // Ürün güncelleme. Stok miktarına burada dokunulmaz — sadece StockMovement üzerinden değişir,
+    // aksi halde stok geçmişiyle (audit) senkronu bozan bir "arka kapı" olurdu.
     public async Task<ProductResponseDto?> UpdateProductAsync(int id, Product updatedProduct)
     {
+        var existingProduct = await _productRepository.GetByIdAsync(id);
+
+        if (existingProduct == null)
+        {
+            return null;
+        }
+
+        updatedProduct.StockQuantity = existingProduct.StockQuantity;
+
         var product = await _productRepository.UpdateAsync(id, updatedProduct);
 
         return product == null ? null : ToResponseDto(product);
@@ -117,8 +128,17 @@ public class ProductService : IProductService
         return preamble.Concat(body).ToArray();
     }
 
+    private static readonly char[] FormulaTriggerChars = { '=', '+', '-', '@' };
+
     private static string CsvEscape(string value)
     {
+        // Excel'de "=", "+", "-", "@" ile başlayan hücreler formül olarak çalıştırılabilir
+        // (CSV/Formula Injection). Başına apostrof koyarak düz metin olmaya zorluyoruz.
+        if (value.Length > 0 && FormulaTriggerChars.Contains(value[0]))
+        {
+            value = "'" + value;
+        }
+
         if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
         {
             return "\"" + value.Replace("\"", "\"\"") + "\"";

@@ -14,14 +14,42 @@ public class StockMovementRepository : IStockMovementRepository
         _context = context;
     }
 
-    public async Task<List<StockMovement>> GetAllAsync()
+    public async Task<List<StockMovement>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null)
     {
-        return await _context.StockMovements.ToListAsync();
+        var query = _context.StockMovements
+            .Include(s => s.Product)
+            .Include(s => s.CreatedByUser)
+            .AsQueryable();
+
+        if (productId.HasValue)
+        {
+            query = query.Where(s => s.ProductId == productId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(transactionType))
+        {
+            query = query.Where(s => s.TransactionType == transactionType);
+        }
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(s => s.CreatedAt >= fromDate.Value);
+        }
+
+        if (toDate.HasValue)
+        {
+            query = query.Where(s => s.CreatedAt <= toDate.Value);
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task<StockMovement?> GetByIdAsync(int id)
     {
-        return await _context.StockMovements.FirstOrDefaultAsync(s => s.Id == id);
+        return await _context.StockMovements
+            .Include(s => s.Product)
+            .Include(s => s.CreatedByUser)
+            .FirstOrDefaultAsync(s => s.Id == id);
     }
 
     public async Task<StockMovement> AddAsync(StockMovement stockMovement)

@@ -123,6 +123,17 @@ public class AuthService : IAuthService
             return false;
         }
 
+        // Sistemde son admin bu kişiyse, onu User'a düşürmeyi engelliyoruz — aksi halde
+        // kimse yeni kullanıcı ekleyemez/rol değiştiremez hale gelir (Admin-only endpoint'ler kilitlenir).
+        if (user.Role == "Admin" && role != "Admin")
+        {
+            var adminCount = await _userRepository.CountAdminsAsync();
+            if (adminCount <= 1)
+            {
+                throw new InvalidOperationException("Sistemdeki son Admin kullanıcı, User rolüne düşürülemez.");
+            }
+        }
+
         user.Role = role;
         await _userRepository.UpdateAsync(user);
         return true;
@@ -193,6 +204,7 @@ public class AuthService : IAuthService
     {
         var claims = new[]
         {
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
             new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role)

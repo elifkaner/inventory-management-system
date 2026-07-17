@@ -17,4 +17,6 @@ public class StockMovementResponseDto
     public DateTime CreatedAt { get; set; }
 
     public string Description { get; set; } = "";
+
+    public string CreatedByUserName { get; set; } = "";
 }
