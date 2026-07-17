@@ -13,32 +13,33 @@ namespace InventoryManagement.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    private readonly IValidator<RegisterDto> _registerValidator;
+    private readonly IValidator<CreateUserByAdminDto> _createUserValidator;
     private readonly IValidator<LoginDto> _loginValidator;
 
     public AuthController(
         IAuthService authService,
-        IValidator<RegisterDto> registerValidator,
+        IValidator<CreateUserByAdminDto> createUserValidator,
         IValidator<LoginDto> loginValidator)
     {
         _authService = authService;
-        _registerValidator = registerValidator;
+        _createUserValidator = createUserValidator;
         _loginValidator = loginValidator;
     }
 
-    // POST /api/Auth/register
-    [HttpPost("register")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Register(RegisterDto dto)
+    // POST /api/Auth/users — sadece Admin, yeni bir çalışan (User veya Admin rolünde) hesabı oluşturabilir.
+    // Dışarıdan kimse kendine hesap açamaz; bu yüzden herkese açık bir /register endpoint'i yok.
+    [HttpPost("users")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> CreateUser(CreateUserByAdminDto dto)
     {
-        var validationResult = await _registerValidator.ValidateAsync(dto);
+        var validationResult = await _createUserValidator.ValidateAsync(dto);
 
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var success = await _authService.RegisterAsync(dto);
+        var success = await _authService.CreateUserByAdminAsync(dto);
 
         if (!success)
         {

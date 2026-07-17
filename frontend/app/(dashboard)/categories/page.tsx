@@ -7,7 +7,6 @@ export default function KategorilerSayfasi() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({ id: null, name: '' });
 
-    // 1. Kategorileri Getir (Read)
     const fetchCategories = async () => {
         try {
             setIsLoading(true);
@@ -27,7 +26,6 @@ export default function KategorilerSayfasi() {
         fetchCategories();
     }, []);
 
-    // 2. Kategori Kaydet/Güncelle (Create & Update)
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name.trim()) return alert("Kategori adı boş olamaz!");
@@ -51,7 +49,6 @@ export default function KategorilerSayfasi() {
         }
     };
 
-    // 3. Kategori Sil (Delete)
     const handleDelete = async (id: number, name: string) => {
         if (!window.confirm(`"${name}" kategorisini silmek istediğinize emin misiniz?`)) return;
 
