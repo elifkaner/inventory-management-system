@@ -9,7 +9,8 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
     public CreateProductDtoValidator(
         IWarehouseLocationRepository warehouseLocationRepository,
         ICategoryRepository categoryRepository,
-        ISupplierRepository supplierRepository)
+        ISupplierRepository supplierRepository,
+        IProductRepository productRepository)
     {
         RuleFor(x => x.ProductName)
             .NotEmpty().WithMessage("Ürün adı boş bırakılamaz.")
@@ -23,7 +24,13 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
 
         RuleFor(x => x.Barcode)
             .NotEmpty().WithMessage("Barkod boş bırakılamaz.")
-            .MaximumLength(50).WithMessage("Barkod en fazla 50 karakter olabilir.");
+            .MaximumLength(50).WithMessage("Barkod en fazla 50 karakter olabilir.")
+            .MustAsync(async (barcode, cancellationToken) =>
+            {
+                var existing = await productRepository.GetByBarcodeAsync(barcode);
+                return existing == null;
+            })
+            .WithMessage("Bu barkod başka bir ürün tarafından kullanılıyor.");
 
         RuleFor(x => x.StockQuantity)
             .GreaterThanOrEqualTo(0).WithMessage("Stok miktarı negatif olamaz.");

@@ -1,12 +1,14 @@
 using FluentValidation;
 using InventoryManagement.Application.DTOs.WarehouseLocation;
 using InventoryManagement.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class WarehouseLocationController : ControllerBase
 {
     private readonly IWarehouseLocationService _locationService;

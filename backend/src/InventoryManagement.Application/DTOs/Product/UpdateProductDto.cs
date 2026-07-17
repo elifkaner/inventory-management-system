@@ -10,8 +10,6 @@ public class UpdateProductDto
 
     public string Barcode { get; set; } = "";
 
-    public int StockQuantity { get; set; }
-
     public int CategoryId { get; set; }
 
     public string BrandName { get; set; } = "";

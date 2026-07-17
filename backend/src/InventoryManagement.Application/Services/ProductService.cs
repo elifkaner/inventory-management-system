@@ -48,9 +48,19 @@ public class ProductService : IProductService
         return ToResponseDto(created);
     }
 
-    // Ürün güncelleme
+    // Ürün güncelleme. Stok miktarına burada dokunulmaz — sadece StockMovement üzerinden değişir,
+    // aksi halde stok geçmişiyle (audit) senkronu bozan bir "arka kapı" olurdu.
     public async Task<ProductResponseDto?> UpdateProductAsync(int id, Product updatedProduct)
     {
+        var existingProduct = await _productRepository.GetByIdAsync(id);
+
+        if (existingProduct == null)
+        {
+            return null;
+        }
+
+        updatedProduct.StockQuantity = existingProduct.StockQuantity;
+
         var product = await _productRepository.UpdateAsync(id, updatedProduct);
 
         return product == null ? null : ToResponseDto(product);
