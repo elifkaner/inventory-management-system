@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
 import '@/app/ui/global.css';
 import SideNav from '@/app/ui/sidenav'; // Az önce yaptığımız menüyü çağırıyoruz
+=======
+import '@/app/ui/global.css'; // Sadece bu satırı ekliyoruz!
+>>>>>>> Stashed changes
 
 export default function RootLayout({
   children,
