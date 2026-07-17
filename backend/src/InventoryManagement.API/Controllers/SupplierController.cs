@@ -87,13 +87,20 @@ public class SupplierController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteSupplier(int id)
     {
-        var deleted = await _supplierService.DeleteAsync(id);
-
-        if (!deleted)
+        try
         {
-            return NotFound();
-        }
+            var deleted = await _supplierService.DeleteAsync(id);
 
-        return NoContent();
+            if (!deleted)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

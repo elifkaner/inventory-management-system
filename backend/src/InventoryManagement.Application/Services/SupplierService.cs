@@ -75,9 +75,16 @@ public class SupplierService : ISupplierService
     }
 
     // Delete supplier
-    public Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
-        return _supplierRepository.DeleteAsync(id);
+        var hasProducts = await _supplierRepository.HasProductsAsync(id);
+
+        if (hasProducts)
+        {
+            throw new InvalidOperationException("Bu tedarikçiye bağlı ürünler var, önce onları silin ya da başka bir tedarikçiye taşıyın.");
+        }
+
+        return await _supplierRepository.DeleteAsync(id);
     }
 
     private static SupplierDto ToDto(Supplier s)

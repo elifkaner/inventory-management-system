@@ -16,6 +16,11 @@ public class StockMovement
 
     public string Description { get; set; } = "";
 
-    // Navigation Property
+    // Bu hareketi kaydeden kullanıcı (audit amaçlı). Opsiyonel: kullanıcı silinse bile hareket kaydı kalabilsin.
+    public int? CreatedByUserId { get; set; }
+
+    // Navigation Properties
     public Product? Product { get; set; }
+
+    public User? CreatedByUser { get; set; }
 }
