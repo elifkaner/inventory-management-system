@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { authFetch } from '@/app/lib/api';
 
 export default function TedarikcilerSayfasi() {
     const [suppliers, setSuppliers] = useState<any[]>([]);
@@ -17,7 +18,7 @@ export default function TedarikcilerSayfasi() {
     const fetchSuppliers = async () => {
         try {
             setIsLoading(true);
-            const res = await fetch('http://192.168.2.176:5000/api/Supplier');
+            const res = await authFetch('http://192.168.2.176:5000/api/Supplier');
             if (res.ok) {
                 const data = await res.json();
                 // Backend'deki 'contactPerson' alanını bizim 'contactName' ile eşleştiriyoruz
@@ -85,7 +86,7 @@ export default function TedarikcilerSayfasi() {
 
             const method = formData.id ? 'PUT' : 'POST';
 
-            const res = await fetch(url, {
+            const res = await authFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -105,7 +106,7 @@ export default function TedarikcilerSayfasi() {
         if (!window.confirm(`"${companyName}" firmasını silmek istediğinize emin misiniz?`)) return;
 
         try {
-            const res = await fetch(`http://192.168.2.176:5000/api/Supplier/${id}`, { method: 'DELETE' });
+            const res = await authFetch(`http://192.168.2.176:5000/api/Supplier/${id}`, { method: 'DELETE' });
             if (res.ok) {
                 setSuppliers(prev => prev.filter(s => s.id !== id));
             } else {

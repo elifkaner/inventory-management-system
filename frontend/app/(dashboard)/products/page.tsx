@@ -2,9 +2,11 @@
 import { useState, useEffect } from 'react';
 import { getProductByBarcode, ProductResponseDto } from '@/app/lib/api';
 import { useForm } from 'react-hook-form'; // YENİ: Kütüphanemizi çağırdık
+import { authFetch } from '@/app/lib/api';
 
 // YENİ: Formumuzdaki verilerin tiplerini (TypeScript için) bir kez tanımlıyoruz.
 type ProductFormData = {
+    id?: number | null;
     productName: string;
     barcode: string;
     categoryId: number | string;
@@ -29,12 +31,14 @@ export default function UrunEnvanterSayfasi() {
     // ESKİDEN BURADA OLAN formData, errors, setErrors, handleInputChange GİBİ MANUEL YAPILARIN HEPSİ SİLİNDİ!
 
     const {
-        register, // İnputları forma bağlayan kancamız
-        handleSubmit, // Kaydetme işlemini tetikleyen fonksiyonumuz
-        reset, // Formu sıfırlamak veya düzenleme modunda doldurmak için kullanacağız
-        formState: { errors } // Hataları bizim yerimize otomatik tutan obje
+        register,
+        handleSubmit,
+        reset,
+        setValue, // EKLENDİ: Gizli inputun değerini değiştirmek için
+        watch,    // EKLENDİ: Seçili tedarikçiyi anlık takip etmek için
+        formState: { errors }
     } = useForm<ProductFormData>({
-        defaultValues: { isActive: true } // Form ilk açıldığında aktif butonu açık gelsin
+        defaultValues: { isActive: true }
     });
     // --- YENİ NESİL FORM YÖNETİMİ BİTİŞİ ---
 
@@ -42,17 +46,19 @@ export default function UrunEnvanterSayfasi() {
     const [barcodeResult, setBarcodeResult] = useState<ProductResponseDto | null>(null);
     const [barcodeError, setBarcodeError] = useState<string | null>(null);
     const [barcodeLoading, setBarcodeLoading] = useState(false);
+    const [supplierSearch, setSupplierSearch] = useState("");
+    const [isSupplierOpen, setIsSupplierOpen] = useState(false);
+    const selectedSupplierId = watch("supplierId");
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 // YENİ: Ürünleri (Product) de fetch listesine ekledik.
                 const [catRes, supRes, prodRes] = await Promise.all([
-                    fetch('http://192.168.2.176:5000/api/Category'),
-                    fetch('http://192.168.2.176:5000/api/Supplier'),
-                    fetch('http://192.168.2.176:5000/api/Product')
+                    authFetch('http://192.168.2.176:5000/api/Category'),
+                    authFetch('http://192.168.2.176:5000/api/Supplier'),
+                    authFetch('http://192.168.2.176:5000/api/Product')
                 ]);
-
                 if (catRes.ok) {
                     const catData = await catRes.json();
                     setCategories(catData);
@@ -118,58 +124,70 @@ export default function UrunEnvanterSayfasi() {
     // data parametresi formdaki tüm verileri otomatik ve hatasız olarak getirir. "fieldsToValidate" ameleliğine gerek kalmadı!
     const onSubmit = async (data: ProductFormData) => {
         try {
-            const productData = {
+            const isEditing = !!data.id;
+
+            // Swagger'a göre hem POST hem de PUT işleminde ortak olan veriler
+            const basePayload = {
                 productName: data.productName,
                 barcode: data.barcode,
-                purchasePrice: Number(data.purchasePrice) || 0,
-                salePrice: Number(data.salePrice) || 0,
-                stockQuantity: Number(data.stockQuantity) || 0,
-                categoryId: Number(data.categoryId) || 1,
+                purchasePrice: Number(String(data.purchasePrice).replace(',', '.')) || 0,
+                salePrice: Number(String(data.salePrice).replace(',', '.')) || 0,
+                categoryId: Number(data.categoryId),
                 supplierId: Number(data.supplierId) || null,
                 brandName: data.brandName ? formatName(data.brandName) : null,
-                locationId: 1,
+                locationId: null,
                 isActive: data.isActive
             };
 
-            const response = await fetch('http://192.168.2.176:5000/api/Product', {
-                method: 'POST',
+            // YENİ: Eğer YENİ KAYIT (POST) ise CreateProductDto'ya göre 'stockQuantity' Ekle!
+            // Eğer GÜNCELLEME (PUT) ise UpdateProductDto'ya göre 'stockQuantity' GÖNDERME!
+            const finalPayload = isEditing
+                ? basePayload
+                : { ...basePayload, stockQuantity: Number(data.stockQuantity) || 0 };
+
+            const url = isEditing ? `/api/Product/${data.id}` : '/api/Product';
+            const method = isEditing ? 'PUT' : 'POST';
+
+            const response = await authFetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(productData)
+                body: JSON.stringify(finalPayload)
             });
 
             if (!response.ok) {
-                throw new Error('Veritabanına kaydedilemedi! Eksik veya hatalı bilgi olabilir.');
+                const errorData = await response.text();
+                console.error("Backend'den dönen gerçek hata:", errorData);
+                throw new Error(`Kayıt Başarısız! Sunucu mesajı: ${errorData}`);
             }
 
-            alert("Harika! Ürün başarıyla eklendi.");
+            alert(isEditing ? "Harika! Ürün başarıyla güncellendi." : "Harika! Ürün başarıyla eklendi.");
             setIsModalOpen(false);
             window.location.reload();
-
         } catch (error: any) {
             console.error("Kaydetme Hatası:", error);
-            alert(error?.message || "Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
+            alert(error?.message || "Bağlantı Hatası.");
         }
     };
 
     const handleEditClick = (product: any) => {
-        // YENİ: setFormData yerine reset() kullanıyoruz. Formdaki tüm kutuları kütüphane otomatik dolduruyor!
         reset({
+            id: product.id, // EKSİK OLAN KRİTİK SATIR: Form artık hangi ürünü düzenlediğini bilecek
             productName: product.productName,
             purchasePrice: product.purchasePrice,
             salePrice: product.salePrice,
             barcode: product.barcode,
             stockQuantity: product.stockQuantity,
-            categoryId: product.categoryId || '',
+            categoryId: product.categoryId ? String(product.categoryId) : '', // Dropdown eşleşmesi için String yapıldı
             brandName: product.brandName || '',
-            supplierId: product.supplierId || '',
+            supplierId: product.supplierId ? String(product.supplierId) : '', // Dropdown eşleşmesi için String yapıldı
             isActive: product.isActive
         });
         setIsModalOpen(true);
     };
 
     const handleAddNewClick = () => {
-        // YENİ: Yeni ekle denildiğinde formu tertemiz sıfırlıyoruz.
         reset({
+            id: null, // Yeni kayıtta ID boş olmalı
             productName: '', purchasePrice: '', salePrice: '', barcode: '',
             stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: ''
         });
@@ -241,7 +259,11 @@ export default function UrunEnvanterSayfasi() {
                                 <td className="p-4 text-slate-500">
                                     {categories.find(c => c.id === prod.categoryId)?.name || 'Kategorisiz'}
                                 </td>
-                                <td className="p-4 font-mono text-xs text-slate-500 bg-slate-50 rounded px-2 py-1 inline-block mt-2">{prod.barcode}</td>
+                                <td className="p-4 align-middle">
+                                    <span className="font-mono text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded px-2 py-1">
+                                        {prod.barcode}
+                                    </span>
+                                </td>
                                 <td className="p-4 text-right text-slate-900 font-bold">₺{prod.salePrice?.toLocaleString()}</td>
                                 <td className="p-4 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>{prod.stockQuantity} Adet</span></td>
                                 <td className="p-4 pr-6 text-right"><button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors mr-3 font-semibold">Düzenle</button></td>
@@ -259,6 +281,7 @@ export default function UrunEnvanterSayfasi() {
                 <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                     {/* YENİ: Div yerine direkt form etiketi kullanıyoruz. onSubmit'e kütüphanenin fonksiyonunu bağladık */}
                     <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+                        <input type="hidden" {...register("id")} />
 
                         <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                             <h2 className="text-xl font-bold text-slate-800">Yeni Ürün Kartı</h2>
@@ -324,17 +347,89 @@ export default function UrunEnvanterSayfasi() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Başlangıç Stoğu *</label>
-                                            <input type="number" {...register("stockQuantity", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-emerald-500/20'}`} placeholder="0" />
+                                            <input type="number" disabled={!!watch("id")} {...register("stockQuantity", { required: !watch("id") })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200'}`} placeholder="0" />
                                             {errors.stockQuantity && <ErrorMessage />}
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tedarikçi *</label>
-                                            <select {...register("supplierId", { required: true })} className={`w-full p-2.5 border rounded-lg bg-white ${errors.supplierId ? 'border-rose-500' : 'border-slate-200'}`}>
-                                                <option value="">Tedarikçi Seçiniz...</option>
-                                                {suppliers.map((sup) => (
-                                                    <option key={sup.id} value={sup.id}>{sup.companyName}</option>
-                                                ))}
-                                            </select>
+                                            <div className="relative">
+                                                {/* Görünmez (Hidden) input: React Hook Form'un veriyi takip etmesi için */}
+                                                <input type="hidden" {...register("supplierId", { required: true })} />
+
+                                                {/* Dropdown Tetikleyici (Tıklanan Kutu) */}
+                                                <div
+                                                    className={`w-full p-2.5 border rounded-lg bg-white cursor-pointer flex justify-between items-center ${errors.supplierId ? 'border-rose-500' : 'border-slate-200'}`}
+                                                    onClick={() => setIsSupplierOpen(!isSupplierOpen)}
+                                                >
+                                                    <span className={selectedSupplierId ? 'text-slate-900 text-sm' : 'text-slate-500 text-sm'}>
+                                                        {selectedSupplierId
+                                                            ? suppliers.find(s => s.id === Number(selectedSupplierId))?.companyName || "Tedarikçi Seçiniz..."
+                                                            : "Tedarikçi Seçiniz..."}
+                                                    </span>
+                                                    <svg className={`w-4 h-4 text-slate-400 transition-transform ${isSupplierOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </div>
+
+                                                {/* Açılır Menü ve Arama Kutusu */}
+                                                {isSupplierOpen && (
+                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                                        {/* BÜYÜTEÇLİ ARAMA KUTUSU */}
+                                                        <div className="p-2 sticky top-0 bg-white border-b border-slate-100">
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Firma adı ara..."
+                                                                    className="w-full pl-3 pr-9 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                                                    value={supplierSearch}
+                                                                    onChange={(e) => setSupplierSearch(e.target.value)}
+                                                                    onClick={(e) => e.stopPropagation()} // Tıklayınca menünün kapanmasını engeller
+                                                                />
+                                                                <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                                                                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* FİLTRELENMİŞ LİSTE */}
+                                                        <ul className="py-1">
+                                                            <li
+                                                                className="px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm text-slate-500 italic"
+                                                                onClick={() => {
+                                                                    setValue("supplierId", "");
+                                                                    setIsSupplierOpen(false);
+                                                                }}
+                                                            >
+                                                                Tedarikçi Seçimini Temizle
+                                                            </li>
+                                                            {suppliers
+                                                                .filter(sup => sup.companyName.toLowerCase().includes(supplierSearch.toLowerCase()))
+                                                                .map((sup) => (
+                                                                    <li
+                                                                        key={sup.id}
+                                                                        className={`px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm ${Number(selectedSupplierId) === sup.id ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'text-slate-700'}`}
+                                                                        onClick={() => {
+                                                                            setValue("supplierId", sup.id);
+                                                                            setIsSupplierOpen(false);
+                                                                            setSupplierSearch(""); // Seçimden sonra aramayı sıfırla
+                                                                        }}
+                                                                    >
+                                                                        {sup.companyName}
+                                                                    </li>
+                                                                ))
+                                                            }
+                                                            {/* Arama sonucu boşsa */}
+                                                            {suppliers.filter(sup => sup.companyName.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
+                                                                <li className="px-3 py-4 text-center text-sm text-slate-500">
+                                                                    Sonuç bulunamadı.
+                                                                </li>
+                                                            )}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
                                             {errors.supplierId && <ErrorMessage />}
                                         </div>
                                     </div>
