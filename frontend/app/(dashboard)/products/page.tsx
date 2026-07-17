@@ -32,15 +32,11 @@ export default function UrunEnvanterSayfasi() {
         register, // İnputları forma bağlayan kancamız
         handleSubmit, // Kaydetme işlemini tetikleyen fonksiyonumuz
         reset, // Formu sıfırlamak veya düzenleme modunda doldurmak için kullanacağız
-        setValue, // YENİ: Gizli inputun değerini kodla değiştirmek için (Bunu da eklemeliyiz!)
-        watch,    // YENİ: Seçili tedarikçinin adını ekranda göstermek için
         formState: { errors } // Hataları bizim yerimize otomatik tutan obje
     } = useForm<ProductFormData>({
-        defaultValues: { isActive: true }
+        defaultValues: { isActive: true } // Form ilk açıldığında aktif butonu açık gelsin
     });
-    const [supplierSearch, setSupplierSearch] = useState("");
-    const [isSupplierOpen, setIsSupplierOpen] = useState(false);
-    const selectedSupplierId = watch("supplierId");
+    // --- YENİ NESİL FORM YÖNETİMİ BİTİŞİ ---
 
     const [barcodeQuery, setBarcodeQuery] = useState("");
     const [barcodeResult, setBarcodeResult] = useState<ProductResponseDto | null>(null);
@@ -125,15 +121,13 @@ export default function UrunEnvanterSayfasi() {
             const productData = {
                 productName: data.productName,
                 barcode: data.barcode,
-                // Virgül girilirse noktaya çevirip sayıya dönüştürüyoruz (virgül hatasını önler)
-                purchasePrice: Number(String(data.purchasePrice).replace(',', '.')) || 0,
-                salePrice: Number(String(data.salePrice).replace(',', '.')) || 0,
+                purchasePrice: Number(data.purchasePrice) || 0,
+                salePrice: Number(data.salePrice) || 0,
                 stockQuantity: Number(data.stockQuantity) || 0,
-                categoryId: Number(data.categoryId),
-                supplierId: Number(data.supplierId),
-                brandName: data.brandName,
-                // DİKKAT: Eskiden burası 1'di. Veritabanında 1 numaralı depo yoksa hata veriyordu. Şimdilik null yapıyoruz.
-                locationId: null,
+                categoryId: Number(data.categoryId) || 1,
+                supplierId: Number(data.supplierId) || null,
+                brandName: data.brandName ? formatName(data.brandName) : null,
+                locationId: 1,
                 isActive: data.isActive
             };
 
@@ -144,18 +138,16 @@ export default function UrunEnvanterSayfasi() {
             });
 
             if (!response.ok) {
-                // Backend'in bize gönderdiği GERÇEK hatayı yakalıyoruz
-                const errorData = await response.text();
-                console.error("Backend'den dönen gerçek hata:", errorData);
-                throw new Error(`Kayıt Başarısız! Backend mesajı: ${errorData}`);
+                throw new Error('Veritabanına kaydedilemedi! Eksik veya hatalı bilgi olabilir.');
             }
 
             alert("Harika! Ürün başarıyla eklendi.");
             setIsModalOpen(false);
             window.location.reload();
+
         } catch (error: any) {
             console.error("Kaydetme Hatası:", error);
-            alert(error?.message || "Bağlantı Hatası.");
+            alert(error?.message || "Bağlantı Hatası (Failed to fetch): Arka uç kapalı olabilir veya CORS izni yoktur.");
         }
     };
 
@@ -337,68 +329,12 @@ export default function UrunEnvanterSayfasi() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tedarikçi *</label>
-                                            <div className="relative">
-                                                {/* Dropdown Tetikleyici (Görünen Kutu) */}
-                                                <div
-                                                    className={`w-full p-2.5 border rounded-lg bg-white cursor-pointer flex justify-between items-center ${errors.supplierId ? 'border-rose-500' : 'border-slate-200'}`}
-                                                    onClick={() => setIsSupplierOpen(!isSupplierOpen)}
-                                                >
-                                                    <span className={selectedSupplierId ? 'text-slate-900 text-sm' : 'text-slate-500 text-sm'}>
-                                                        {selectedSupplierId
-                                                            ? suppliers.find(s => s.id === Number(selectedSupplierId))?.companyName || "Tedarikçi Seçiniz..."
-                                                            : "Tedarikçi Seçiniz..."}
-                                                    </span>
-                                                    <svg className={`w-4 h-4 text-slate-400 transition-transform ${isSupplierOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                                </div>
-
-                                                {/* Açılır Menü ve Arama Kutusu */}
-                                                {isSupplierOpen && (
-                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-
-                                                        {/* BÜYÜTEÇLİ ARAMA KUTUSU BURADAN BAŞLIYOR */}
-                                                        <div className="p-2 sticky top-0 bg-white border-b border-slate-100">
-                                                            <div className="relative">
-                                                                <input
-                                                                    type="text"
-                                                                    placeholder="Firma adı ara..."
-                                                                    className="w-full pl-3 pr-9 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                                                                    value={supplierSearch}
-                                                                    onChange={(e) => setSupplierSearch(e.target.value)}
-                                                                    onClick={(e) => e.stopPropagation()}
-                                                                />
-                                                                <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
-                                                                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                                                    </svg>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <ul className="py-1">
-                                                            {suppliers
-                                                                .filter(sup => sup.companyName.toLowerCase().includes(supplierSearch.toLowerCase()))
-                                                                .map((sup) => (
-                                                                    <li
-                                                                        key={sup.id}
-                                                                        className="px-3 py-2 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer transition-colors"
-                                                                        onClick={() => {
-                                                                            setValue('supplierId', sup.id, { shouldValidate: true });
-                                                                            setIsSupplierOpen(false);
-                                                                            setSupplierSearch(""); // Seçim yapılınca aramayı sıfırla
-                                                                        }}
-                                                                    >
-                                                                        {sup.companyName}
-                                                                    </li>
-                                                                ))}
-                                                            {suppliers.filter(sup => sup.companyName.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
-                                                                <li className="p-3 text-sm text-slate-500 text-center">Firma bulunamadı.</li>
-                                                            )}
-                                                        </ul>
-                                                    </div>
-                                                )}
-
-                                                {/* Arka planda çalışan gerçek input (react-hook-form için) */}
-                                                <input type="hidden" {...register("supplierId", { required: true })} />
-                                            </div>
+                                            <select {...register("supplierId", { required: true })} className={`w-full p-2.5 border rounded-lg bg-white ${errors.supplierId ? 'border-rose-500' : 'border-slate-200'}`}>
+                                                <option value="">Tedarikçi Seçiniz...</option>
+                                                {suppliers.map((sup) => (
+                                                    <option key={sup.id} value={sup.id}>{sup.companyName}</option>
+                                                ))}
+                                            </select>
                                             {errors.supplierId && <ErrorMessage />}
                                         </div>
                                     </div>
