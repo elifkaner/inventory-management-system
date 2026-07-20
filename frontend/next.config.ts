@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://192.168.2.176:5000/api/:path*',
+        // Öncelikli olarak .env.local'e bakar, bulamazsa yedeği (176) kullanır
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://192.168.2.176:5000'}/api/:path*`,
       },
     ];
   },
