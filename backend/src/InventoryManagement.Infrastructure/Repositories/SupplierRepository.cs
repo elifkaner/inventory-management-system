@@ -55,4 +55,9 @@ public class SupplierRepository : ISupplierRepository
 
         return true;
     }
+
+    public async Task<bool> HasProductsAsync(int supplierId)
+    {
+        return await _context.Products.AnyAsync(p => p.SupplierId == supplierId);
+    }
 }

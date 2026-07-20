@@ -6,7 +6,11 @@ namespace InventoryManagement.Application.Validators.Product;
 
 public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
 {
-    public CreateProductDtoValidator(IWarehouseLocationRepository warehouseLocationRepository)
+    public CreateProductDtoValidator(
+        IWarehouseLocationRepository warehouseLocationRepository,
+        ICategoryRepository categoryRepository,
+        ISupplierRepository supplierRepository,
+        IProductRepository productRepository)
     {
         RuleFor(x => x.ProductName)
             .NotEmpty().WithMessage("Ürün adı boş bırakılamaz.")
@@ -20,20 +24,38 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
 
         RuleFor(x => x.Barcode)
             .NotEmpty().WithMessage("Barkod boş bırakılamaz.")
-            .MaximumLength(50).WithMessage("Barkod en fazla 50 karakter olabilir.");
+            .MaximumLength(50).WithMessage("Barkod en fazla 50 karakter olabilir.")
+            .MustAsync(async (barcode, cancellationToken) =>
+            {
+                var existing = await productRepository.GetByBarcodeAsync(barcode);
+                return existing == null;
+            })
+            .WithMessage("Bu barkod başka bir ürün tarafından kullanılıyor.");
 
         RuleFor(x => x.StockQuantity)
             .GreaterThanOrEqualTo(0).WithMessage("Stok miktarı negatif olamaz.");
 
         RuleFor(x => x.CategoryId)
-            .GreaterThan(0).WithMessage("Geçerli bir kategori seçiniz.");
+            .GreaterThan(0).WithMessage("Geçerli bir kategori seçiniz.")
+            .MustAsync(async (categoryId, cancellationToken) =>
+            {
+                var category = await categoryRepository.GetByIdAsync(categoryId);
+                return category != null;
+            })
+            .WithMessage("Belirtilen kategori bulunamadı.");
 
         RuleFor(x => x.BrandName)
             .NotEmpty().WithMessage("Marka adı boş bırakılamaz.")
             .MaximumLength(100).WithMessage("Marka adı en fazla 100 karakter olabilir.");
 
         RuleFor(x => x.SupplierId)
-            .GreaterThan(0).WithMessage("Geçerli bir tedarikçi seçiniz.");
+            .GreaterThan(0).WithMessage("Geçerli bir tedarikçi seçiniz.")
+            .MustAsync(async (supplierId, cancellationToken) =>
+            {
+                var supplier = await supplierRepository.GetByIdAsync(supplierId);
+                return supplier != null;
+            })
+            .WithMessage("Belirtilen tedarikçi bulunamadı.");
 
         RuleFor(x => x.LocationId)
             .MustAsync(async (locationId, cancellationToken) =>

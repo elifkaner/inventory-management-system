@@ -49,9 +49,16 @@ public class CategoryService : ICategoryService
     }
 
     // Kategori silme
-    public Task<bool> DeleteCategoryAsync(int id)
+    public async Task<bool> DeleteCategoryAsync(int id)
     {
-        return _categoryRepository.DeleteAsync(id);
+        var hasProducts = await _categoryRepository.HasProductsAsync(id);
+
+        if (hasProducts)
+        {
+            throw new InvalidOperationException("Bu kategoriye bağlı ürünler var, önce onları silin ya da başka bir kategoriye taşıyın.");
+        }
+
+        return await _categoryRepository.DeleteAsync(id);
     }
 
     private static CategoryDto ToDto(Category c)

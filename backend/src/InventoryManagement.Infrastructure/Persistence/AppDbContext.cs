@@ -29,22 +29,34 @@ public class AppDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Product -> Supplier (Many to One)
+        // Restrict: bağlı ürünü olan bir tedarikçi silinemesin (cascade ile ürünler sessizce silinmesin diye).
         modelBuilder.Entity<Product>()
             .HasOne(p => p.Supplier)
             .WithMany(s => s.Products)
-            .HasForeignKey(p => p.SupplierId);
+            .HasForeignKey(p => p.SupplierId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Product -> Category (Many to One)
+        // Restrict: bağlı ürünü olan bir kategori silinemesin (cascade ile ürünler sessizce silinmesin diye).
         modelBuilder.Entity<Product>()
             .HasOne(p => p.Category)
             .WithMany(c => c.Products)
-            .HasForeignKey(p => p.CategoryId);
+            .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // StockMovement -> Product (Many to One)
         modelBuilder.Entity<StockMovement>()
             .HasOne(sm => sm.Product)
             .WithMany(p => p.StockMovements)
             .HasForeignKey(sm => sm.ProductId);
+
+        // StockMovement -> User (Many to One, opsiyonel: kullanıcı silinse bile hareket kaydı kalsın)
+        modelBuilder.Entity<StockMovement>()
+            .HasOne(sm => sm.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(sm => sm.CreatedByUserId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // Product -> WarehouseLocation (Many to One, opsiyonel)
         modelBuilder.Entity<Product>()

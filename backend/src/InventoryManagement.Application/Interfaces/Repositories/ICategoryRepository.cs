@@ -13,4 +13,6 @@ public interface ICategoryRepository
     Task<Category?> UpdateAsync(int id, string name);
 
     Task<bool> DeleteAsync(int id);
+
+    Task<bool> HasProductsAsync(int categoryId);
 }

@@ -13,4 +13,6 @@ public interface ISupplierRepository
     Task<Supplier?> UpdateAsync(Supplier supplier);
 
     Task<bool> DeleteAsync(int id);
+
+    Task<bool> HasProductsAsync(int supplierId);
 }
