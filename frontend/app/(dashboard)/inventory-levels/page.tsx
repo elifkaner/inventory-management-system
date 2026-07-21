@@ -10,9 +10,6 @@ export default function InventoryLevelsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // Geliştirici Test Butonu için Admin State'i
-    const [isAdmin, setIsAdmin] = useState(false);
-
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -40,7 +37,7 @@ export default function InventoryLevelsPage() {
         prod.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Konum detaylarını (Depo / Koridor / Raf / Bölüm) ayrıştıran fonksiyon
+    // Konum detaylarını (Koridor / Raf / Bölüm) ayrıştıran fonksiyon
     const getLocationDetails = (locationId: number) => {
         if (!locationId) return { corridor: "-", shelf: "-", section: "-" };
         const loc = locations.find(l => l.id === locationId);
@@ -60,17 +57,6 @@ export default function InventoryLevelsPage() {
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Envanter Miktarı</h1>
                     <p className="text-slate-500 mt-1 text-sm">Fiziksel depo konumlarına ve tedarikçilere göre stok durumunuzu anlık takip edin.</p>
-                </div>
-
-                {/* Geliştirici Test Butonu (Finansal Verileri Gizle/Göster) */}
-                <div className="flex items-center gap-3 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Test Rolü:</span>
-                    <button
-                        onClick={() => setIsAdmin(!isAdmin)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${isAdmin ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                    >
-                        {isAdmin ? 'Admin (Para İşlemleri Açık)' : 'Depo Görevlisi (Para Gizli)'}
-                    </button>
                 </div>
             </div>
 
@@ -93,69 +79,49 @@ export default function InventoryLevelsPage() {
             </div>
 
             {/* LİSTELEME TABLOSU */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <table className="w-full text-left border-collapse">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
                         <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider">
-                            <th className="p-4 pl-6">Ürün Adı & Barkod</th>
+                            <th className="p-4 pl-6">Ürün Adı</th>
+                            <th className="p-4">Barkod</th>
                             <th className="p-4 text-center">Stok Sayısı</th>
-                            <th className="p-4">Depo & Konum (Koridor/Raf/Bölüm)</th>
+                            <th className="p-4 text-center">Koridor</th>
+                            <th className="p-4 text-center">Raf</th>
+                            <th className="p-4 text-center">Bölüm</th>
                             <th className="p-4">Tedarikçi</th>
-                            {isAdmin && (
-                                <th className="p-4 text-right">Para İşlemleri (Maliyet/Değer)</th>
-                            )}
                             <th className="p-4 pr-6 text-right">Durum</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
                         {isLoading ? (
-                            <tr><td colSpan={isAdmin ? 6 : 5} className="p-8 text-center text-slate-500 animate-pulse">Veriler Yükleniyor...</td></tr>
+                            <tr><td colSpan={8} className="p-8 text-center text-slate-500 animate-pulse">Veriler Yükleniyor...</td></tr>
                         ) : filteredProducts.length === 0 ? (
-                            <tr><td colSpan={isAdmin ? 6 : 5} className="p-8 text-center text-slate-500">Kayıt bulunamadı.</td></tr>
+                            <tr><td colSpan={8} className="p-8 text-center text-slate-500">Kayıt bulunamadı.</td></tr>
                         ) : (
                             filteredProducts.map((prod) => {
                                 const isCritical = prod.stockQuantity <= 10;
+                                const isOutOfStock = prod.stockQuantity === 0;
                                 const loc = getLocationDetails(prod.locationId);
-                                const totalValue = (prod.stockQuantity || 0) * (prod.purchasePrice || 0);
 
                                 return (
                                     <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="p-4 pl-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-slate-900 font-bold">{prod.productName}</span>
-                                                <span className="text-xs text-slate-400 font-mono mt-0.5">{prod.barcode}</span>
-                                            </div>
+                                        <td className="p-4 pl-6 text-slate-900 font-bold">{prod.productName}</td>
+                                        <td className="p-4 font-mono text-xs text-slate-500">
+                                            <span className="bg-slate-100 border border-slate-200 rounded px-2 py-1">{prod.barcode}</span>
                                         </td>
                                         <td className="p-4 text-center">
-                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${isCritical ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>
-                                                {prod.stockQuantity} Adet
+                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${isOutOfStock ? 'bg-slate-200 text-slate-500' : isCritical ? 'bg-rose-100 text-rose-700' : 'bg-blue-50 text-blue-700'}`}>
+                                                {prod.stockQuantity}
                                             </span>
                                         </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-1.5 text-xs">
-                                                <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded border border-indigo-100 font-semibold">Ana Depo</span>
-                                                <span className="text-slate-400">/</span>
-                                                <span className="bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200">Kor: {loc.corridor}</span>
-                                                <span className="text-slate-400">/</span>
-                                                <span className="bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200">Raf: {loc.shelf}</span>
-                                                <span className="text-slate-400">/</span>
-                                                <span className="bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200">Böl: {loc.section}</span>
-                                            </div>
-                                        </td>
+                                        <td className="p-4 text-center text-slate-600">{loc.corridor}</td>
+                                        <td className="p-4 text-center text-slate-600">{loc.shelf}</td>
+                                        <td className="p-4 text-center text-slate-600">{loc.section}</td>
                                         <td className="p-4 text-slate-600">{getSupplierName(prod.supplierId)}</td>
-
-                                        {isAdmin && (
-                                            <td className="p-4 text-right">
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-xs text-slate-500 font-medium">B. Maliyet: ₺{(prod.purchasePrice || 0).toLocaleString()}</span>
-                                                    <span className="text-slate-900 font-bold mt-0.5">Top. Değer: ₺{totalValue.toLocaleString()}</span>
-                                                </div>
-                                            </td>
-                                        )}
-
                                         <td className="p-4 pr-6 text-right">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${!isCritical ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
-                                                {!isCritical ? 'Yeterli' : 'Kritik'}
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${isOutOfStock ? 'bg-slate-100 text-slate-600 border border-slate-200' : !isCritical ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
+                                                {isOutOfStock ? 'Tükendi' : !isCritical ? 'Yeterli' : 'Kritik'}
                                             </span>
                                         </td>
                                     </tr>
