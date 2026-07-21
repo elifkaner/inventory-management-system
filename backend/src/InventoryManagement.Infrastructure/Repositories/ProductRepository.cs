@@ -14,7 +14,7 @@ public class ProductRepository : IProductRepository
         _context = context;
     }
 
-    public async Task<List<Product>> GetAllAsync(string? search = null, int? categoryId = null)
+    public async Task<List<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null)
     {
         var query = _context.Products
             .Include(p => p.Supplier)
@@ -33,6 +33,11 @@ public class ProductRepository : IProductRepository
         if (categoryId.HasValue && categoryId.Value > 0)
         {
             query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
+
+        if (page.HasValue && pageSize.HasValue)
+        {
+            query = query.Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value);
         }
 
         return await query.ToListAsync();

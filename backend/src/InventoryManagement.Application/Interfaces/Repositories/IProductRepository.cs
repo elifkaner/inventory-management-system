@@ -11,7 +11,7 @@ public record ProductSummaryStats(
 
 public interface IProductRepository
 {
-    Task<List<Product>> GetAllAsync(string? search = null, int? categoryId = null);
+    Task<List<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null);
 
     Task<Product?> GetByIdAsync(int id);
 
