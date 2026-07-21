@@ -8,6 +8,7 @@ type LoginFormData = {
     email: string;
     password: string;
 };
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost';
 
 export default function LoginSayfasi() {
     const router = useRouter();
@@ -22,13 +23,18 @@ export default function LoginSayfasi() {
 
     const onSubmit = async (data: LoginFormData) => {
         try {
+            console.log(API_BASE_URL)
             setIsLoading(true);
             setLoginError(null);
 
+
             // Backend'e POST isteği atıyoruz
-            const response = await fetch('/api/Auth/login', {
+            const response = await fetch(API_BASE_URL + '/api/Auth/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true' // Ngrok kalkanını aşması için eklendi
+                },
                 body: JSON.stringify(data) // { email, password }
             });
 
