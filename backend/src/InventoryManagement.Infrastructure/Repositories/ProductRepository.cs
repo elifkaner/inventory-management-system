@@ -79,6 +79,7 @@ public class ProductRepository : IProductRepository
         product.StockQuantity = updatedProduct.StockQuantity;
         product.CategoryId = updatedProduct.CategoryId;
         product.BrandName = updatedProduct.BrandName;
+        product.Model = updatedProduct.Model;
         product.IsActive = updatedProduct.IsActive;
         product.SupplierId = updatedProduct.SupplierId;
         product.LocationId = updatedProduct.LocationId;

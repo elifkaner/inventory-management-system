@@ -158,6 +158,7 @@ public class ProductService : IProductService
             Barcode = p.Barcode,
             StockQuantity = p.StockQuantity,
             BrandName = p.BrandName,
+            Model = p.Model,
             IsActive = p.IsActive,
             Supplier = p.Supplier != null ? p.Supplier.CompanyName : "",
             Category = p.Category != null ? p.Category.Name : "",

@@ -50,6 +50,10 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
             .NotEmpty().WithMessage("Marka adı boş bırakılamaz.")
             .MaximumLength(100).WithMessage("Marka adı en fazla 100 karakter olabilir.");
 
+        RuleFor(x => x.Model)
+            .NotEmpty().WithMessage("Marka adı boş bırakılamaz.")
+            .MaximumLength(100).WithMessage("Marka adı en fazla 100 karakter olabilir.");
+
         RuleFor(x => x.SupplierId)
             .GreaterThan(0).WithMessage("Geçerli bir tedarikçi seçiniz.")
             .MustAsync(async (supplierId, cancellationToken) =>

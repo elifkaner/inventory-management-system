@@ -16,6 +16,8 @@ public class ProductResponseDto
 
     public string BrandName { get; set; } = "";
 
+    public string Model { get; set; } = "";
+
     public bool IsActive { get; set; }
 
     public string Supplier { get; set; } = "";

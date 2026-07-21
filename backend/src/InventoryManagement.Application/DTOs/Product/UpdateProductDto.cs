@@ -14,6 +14,8 @@ public class UpdateProductDto
 
     public string BrandName { get; set; } = "";
 
+    public string Model { get; set; } = "";
+
     public bool IsActive { get; set; }
 
     public int SupplierId { get; set; }
