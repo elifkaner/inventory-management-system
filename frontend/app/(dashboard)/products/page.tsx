@@ -2,7 +2,9 @@
 import { useState, useEffect } from 'react';
 import { getProductByBarcode, ProductResponseDto } from '@/app/lib/api';
 import { useForm } from 'react-hook-form'; // YENİ: Kütüphanemizi çağırdık
-import { authFetch } from '@/app/lib/api';
+import { authFetch, API_BASE_URL } from '@/app/lib/api';
+
+
 
 // YENİ: Formumuzdaki verilerin tiplerini (TypeScript için) bir kez tanımlıyoruz.
 type ProductFormData = {
@@ -55,9 +57,9 @@ export default function UrunEnvanterSayfasi() {
             try {
                 // YENİ: Ürünleri (Product) de fetch listesine ekledik.
                 const [catRes, supRes, prodRes] = await Promise.all([
-                    authFetch('http://192.168.2.176:5000/api/Category'),
-                    authFetch('http://192.168.2.176:5000/api/Supplier'),
-                    authFetch('http://192.168.2.176:5000/api/Product')
+                    authFetch(`${API_BASE_URL}/api/Category`),
+                    authFetch(`${API_BASE_URL}/api/Supplier`),
+                    authFetch(`${API_BASE_URL}/api/Product`)
                 ]);
                 if (catRes.ok) {
                     const catData = await catRes.json();

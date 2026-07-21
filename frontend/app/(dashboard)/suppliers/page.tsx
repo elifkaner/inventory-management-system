@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { authFetch } from '@/app/lib/api';
+import { authFetch, API_BASE_URL } from '@/app/lib/api';
 
 export default function TedarikcilerSayfasi() {
     const [suppliers, setSuppliers] = useState<any[]>([]);
@@ -18,7 +18,7 @@ export default function TedarikcilerSayfasi() {
     const fetchSuppliers = async () => {
         try {
             setIsLoading(true);
-            const res = await authFetch('http://192.168.2.176:5000/api/Supplier');
+            const res = await authFetch(`${API_BASE_URL}/api/Supplier`);
             if (res.ok) {
                 const data = await res.json();
                 // Backend'deki 'contactPerson' alanını bizim 'contactName' ile eşleştiriyoruz
@@ -64,8 +64,10 @@ export default function TedarikcilerSayfasi() {
             }
         });
 
-        setErrors(newErrors);
-        if (hasError) return;
+        if (hasError) {
+            setErrors(newErrors);
+            return;
+        }
 
         // Backend'in beklediği DTO formatına çeviriyoruz
         const payload = {
@@ -80,9 +82,10 @@ export default function TedarikcilerSayfasi() {
         };
 
         try {
+            // API_BASE_URL kullanılarak Nginx/Docker uyumlu hale getirildi
             const url = formData.id
-                ? `http://192.168.2.176:5000/api/Supplier/${formData.id}`
-                : 'http://192.168.2.176:5000/api/Supplier';
+                ? `${API_BASE_URL}/api/Supplier/${formData.id}`
+                : `${API_BASE_URL}/api/Supplier`;
 
             const method = formData.id ? 'PUT' : 'POST';
 
@@ -101,19 +104,22 @@ export default function TedarikcilerSayfasi() {
         }
     };
 
-    // 3. BACKEND'DEN SİLME (DELETE)
+    // 3. BACKEND'DEN SİLME (DELETE) - Eksik olan fonksiyon eklendi
     const handleDelete = async (id: number, companyName: string) => {
-        if (!window.confirm(`"${companyName}" firmasını silmek istediğinize emin misiniz?`)) return;
+        if (!window.confirm(`${companyName} firmasını silmek istediğinize emin misiniz?`)) return;
 
         try {
-            const res = await authFetch(`http://192.168.2.176:5000/api/Supplier/${id}`, { method: 'DELETE' });
+            const res = await authFetch(`${API_BASE_URL}/api/Supplier/${id}`, {
+                method: 'DELETE'
+            });
+
             if (res.ok) {
-                setSuppliers(prev => prev.filter(s => s.id !== id));
+                fetchSuppliers(); // Başarılıysa listeyi yenile
             } else {
                 alert("Silme işlemi başarısız oldu.");
             }
         } catch (error) {
-            alert("Sunucu ile iletişim kurulamadı.");
+            alert("Sunucuya bağlanılırken bir hata oluştu.");
         }
     };
 

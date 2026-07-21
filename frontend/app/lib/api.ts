@@ -1,4 +1,7 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://192.168.2.176:5000';
+// En üst satırı şu şekilde değiştirin:
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost';
+
+// Aşağıdaki authFetch ve getProductByBarcode fonksiyonları aynı kalacak...
 
 export type ProductResponseDto = {
     id: number;
