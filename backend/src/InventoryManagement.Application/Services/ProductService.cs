@@ -19,9 +19,9 @@ public class ProductService : IProductService
     }
 
     // Arama ve kategori filtresine göre ürünleri listeler
-    public async Task<List<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null)
+    public async Task<List<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null)
     {
-        var products = await _productRepository.GetAllAsync(search, categoryId);
+        var products = await _productRepository.GetAllAsync(search, categoryId, page, pageSize);
 
         return products.Select(ToResponseDto).ToList();
     }
@@ -102,6 +102,8 @@ public class ProductService : IProductService
     // Listeyi (arama/kategori filtresi uygulanmış haliyle) CSV olarak dışa aktarır
     public async Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null)
     {
+        // Sayfalama parametresi kasıtlı olarak yok — export, ekranda görünen sayfayı değil,
+        // arama/filtreyle eşleşen TÜM ürünleri içermeli.
         var products = await GetAllProductsAsync(search, categoryId);
 
         var csv = new StringBuilder();

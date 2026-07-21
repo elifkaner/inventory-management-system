@@ -28,9 +28,9 @@ public class ProductController : ControllerBase
 
     // GET /api/Product?search=kahve&categoryId=3
     [HttpGet]
-    public async Task<IActionResult> GetAllProducts([FromQuery] string? search, [FromQuery] int? categoryId)
+    public async Task<IActionResult> GetAllProducts([FromQuery] string? search, [FromQuery] int? categoryId, [FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        var products = await _productService.GetAllProductsAsync(search, categoryId);
+        var products = await _productService.GetAllProductsAsync(search, categoryId, page, pageSize);
 
         return Ok(products);
     }
