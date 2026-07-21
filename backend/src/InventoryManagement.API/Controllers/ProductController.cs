@@ -108,9 +108,11 @@ public class ProductController : ControllerBase
             StockQuantity = dto.StockQuantity,
             CategoryId = dto.CategoryId,
             BrandName = dto.BrandName,
+            Model = dto.Model,
             IsActive = dto.IsActive,
             SupplierId = dto.SupplierId,
             LocationId = dto.LocationId
+            
         };
 
         var createdProduct = await _productService.CreateProductAsync(product);
@@ -140,6 +142,7 @@ public class ProductController : ControllerBase
             Barcode = dto.Barcode,
             CategoryId = dto.CategoryId,
             BrandName = dto.BrandName,
+            Model = dto.Model,
             IsActive = dto.IsActive,
             SupplierId = dto.SupplierId,
             LocationId = dto.LocationId
