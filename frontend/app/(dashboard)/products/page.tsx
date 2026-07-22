@@ -215,6 +215,23 @@ export default function UrunEnvanterSayfasi() {
         setIsModalOpen(true);
     };
 
+    const handleDelete = async (id: number, productName: string) => {
+        if (!window.confirm(`${productName} adlı ürünü katalogdan tamamen silmek istediğinize emin misiniz?`)) return;
+
+        try {
+            const res = await authFetch(`${API_BASE_URL}/api/Product/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                alert("Ürün başarıyla silindi.");
+                window.location.reload(); // Tabloyu güncellemek için sayfayı yenile
+            } else {
+                const errorText = await res.text();
+                alert(`Silme işlemi başarısız oldu. (Backend bu ürünü silmenize izin vermiyor olabilir, ürünü 'Pasif' yapmayı deneyin): ${errorText}`);
+            }
+        } catch (error) {
+            alert("Sunucuya bağlanırken hata oluştu.");
+        }
+    };
+
     const ErrorMessage = () => (
         <div className="flex items-center gap-1.5 mt-1.5 text-rose-500 text-xs font-semibold animate-pulse">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -287,7 +304,10 @@ export default function UrunEnvanterSayfasi() {
                                 </td>
                                 <td className="p-4 text-right text-slate-900 font-bold">₺{prod.salePrice?.toLocaleString()}</td>
                                 <td className="p-4 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>{prod.stockQuantity} Adet</span></td>
-                                <td className="p-4 pr-6 text-right"><button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors mr-3 font-semibold">Düzenle</button></td>
+                                <td className="p-4 pr-6 text-right">
+                                    <button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors mr-3 font-semibold">Düzenle</button>
+                                    <button onClick={() => handleDelete(prod.id, prod.productName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
+                                </td>
                             </tr>
                         ))}
                         {!isLoading && !error && filteredProducts.length === 0 && (
