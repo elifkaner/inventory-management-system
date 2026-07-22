@@ -4,6 +4,7 @@ using InventoryManagement.Infrastructure.Persistence;
 using InventoryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using InventoryManagement.Application.Interfaces;
 
 namespace InventoryManagement.Infrastructure;
 
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<IStockMovementRepository,StockMovementRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }
