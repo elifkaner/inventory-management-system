@@ -1,4 +1,5 @@
 using InventoryManagement.Application.DTOs.StockMovement;
+using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Domain.Entities;
@@ -10,15 +11,18 @@ public class StockMovementService : IStockMovementService
     private readonly IStockMovementRepository _stockMovementRepository;
     private readonly IProductRepository _productRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public StockMovementService(
         IStockMovementRepository stockMovementRepository,
         IProductRepository productRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IUnitOfWork unitOfWork)
     {
         _stockMovementRepository = stockMovementRepository;
         _productRepository = productRepository;
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<List<StockMovementResponseDto>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null)
@@ -37,10 +41,13 @@ public class StockMovementService : IStockMovementService
 
     public async Task<StockMovementResponseDto?> CreateAsync(CreateStockMovementDto dto, int? userId)
     {
+        await _unitOfWork.BeginTransactionAsync();
+        try {
         var product = await _productRepository.GetByIdAsync(dto.ProductId);
 
         if (product == null)
         {
+            await _unitOfWork.RollbackAsync();
             return null;
         }
 
@@ -66,16 +73,26 @@ public class StockMovementService : IStockMovementService
         var created = await _stockMovementRepository.AddAsync(movement);
         created.Product = product;
         created.CreatedByUser = userId.HasValue ? await _userRepository.GetByIdAsync(userId.Value) : null;
-
+        await _unitOfWork.CommitAsync();
         return ToDto(created);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackAsync();
+            throw;
+        }
     }
+    
 
     public async Task<bool> DeleteAsync(int id)
     {
+        await _unitOfWork.BeginTransactionAsync();
+    try {
         var movement = await _stockMovementRepository.GetByIdAsync(id);
 
         if (movement == null)
         {
+            await _unitOfWork.RollbackAsync();
             return false;
         }
 
@@ -94,7 +111,15 @@ public class StockMovementService : IStockMovementService
             await _productRepository.UpdateAsync(product.Id, product);
         }
 
-        return await _stockMovementRepository.DeleteAsync(id);
+        var result = await _stockMovementRepository.DeleteAsync(id);
+        await _unitOfWork.CommitAsync();
+        return result;
+    }
+    catch
+        {
+            await _unitOfWork.RollbackAsync();
+            throw;
+        }
     }
 
     private static StockMovementResponseDto ToDto(StockMovement movement)
