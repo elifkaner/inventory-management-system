@@ -13,6 +13,7 @@ type ProductFormData = {
     barcode: string;
     categoryId: number | string;
     brandName: string;
+    model: string;
     purchasePrice: number | string;
     salePrice: number | string;
     stockQuantity: number | string;
@@ -137,6 +138,7 @@ export default function UrunEnvanterSayfasi() {
                 categoryId: Number(data.categoryId),
                 supplierId: Number(data.supplierId) || null,
                 brandName: data.brandName ? formatName(data.brandName) : null,
+                model: data.model ? formatName(data.model) : null,
                 locationId: null,
                 isActive: data.isActive
             };
@@ -172,26 +174,43 @@ export default function UrunEnvanterSayfasi() {
     };
 
     const handleEditClick = (product: any) => {
+        // 1. Kategori ID'sini isminden bularak eşleştiriyoruz
+        const foundCat = categories.find(c => c.name === product.category);
+        const catId = foundCat ? String(foundCat.id) : '';
+
+        // 2. Tedarikçi ID'sini firma isminden bularak eşleştiriyoruz
+        const foundSup = suppliers.find(s => s.companyName === product.supplier);
+        const supId = foundSup ? String(foundSup.id) : '';
+
+        // 3. Formu bulduğumuz bu kesin ID'lerle sıfırlıyoruz
         reset({
-            id: product.id, // EKSİK OLAN KRİTİK SATIR: Form artık hangi ürünü düzenlediğini bilecek
+            id: product.id,
             productName: product.productName,
             purchasePrice: product.purchasePrice,
             salePrice: product.salePrice,
             barcode: product.barcode,
             stockQuantity: product.stockQuantity,
-            categoryId: product.categoryId ? String(product.categoryId) : '', // Dropdown eşleşmesi için String yapıldı
+            categoryId: catId,         // Artık ID'yi bulup veriyoruz
             brandName: product.brandName || '',
-            supplierId: product.supplierId ? String(product.supplierId) : '', // Dropdown eşleşmesi için String yapıldı
+            model: product.model || '',
+            supplierId: supId,         // Artık ID'yi bulup veriyoruz
             isActive: product.isActive
         });
+
         setIsModalOpen(true);
+
+        // 4. ModalDOM'a çizildikten milisaniyeler sonra değerleri çiviliyoruz
+        setTimeout(() => {
+            setValue('categoryId', catId);
+            setValue('supplierId', supId);
+        }, 50);
     };
 
     const handleAddNewClick = () => {
         reset({
             id: null, // Yeni kayıtta ID boş olmalı
             productName: '', purchasePrice: '', salePrice: '', barcode: '',
-            stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: ''
+            stockQuantity: '', categoryId: '', brandName: '', isActive: true, supplierId: '', model: ''
         });
         setIsModalOpen(true);
     };
@@ -258,8 +277,8 @@ export default function UrunEnvanterSayfasi() {
                             <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
                                 <td className="p-4 pl-6"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${prod.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>{prod.isActive ? 'Aktif' : 'Pasif'}</span></td>
                                 <td className="p-4 text-slate-900 font-semibold">{prod.productName}</td>
-                                <td className="p-4 text-slate-500">
-                                    {categories.find(c => c.id === prod.categoryId)?.name || 'Kategorisiz'}
+                                <td className="p-4 text-slate-500 font-medium">
+                                    {prod.category || 'Kategorisiz'}
                                 </td>
                                 <td className="p-4 align-middle">
                                     <span className="font-mono text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded px-2 py-1">
@@ -310,11 +329,11 @@ export default function UrunEnvanterSayfasi() {
                                         {errors.barcode && <ErrorMessage />}
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Kategori *</label>
                                             <select {...register("categoryId", { required: true })} className={`w-full p-2.5 border rounded-lg bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none ${errors.categoryId ? 'border-rose-500' : 'border-slate-200'}`}>
-                                                <option value="">Kategori Seçiniz...</option>
+                                                <option value="">Seçiniz...</option>
                                                 {categories.map((cat) => (
                                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                                                 ))}
@@ -325,6 +344,11 @@ export default function UrunEnvanterSayfasi() {
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Marka *</label>
                                             <input type="text" {...register("brandName", { required: true })} className={`w-full p-2.5 border rounded-lg ${errors.brandName ? 'border-rose-500' : 'border-slate-200'}`} />
                                             {errors.brandName && <ErrorMessage />}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Model *</label>
+                                            <input type="text" {...register("model", { required: true })} className={`w-full p-2.5 border rounded-lg ${errors.model ? 'border-rose-500' : 'border-slate-200'}`} />
+                                            {errors.model && <ErrorMessage />}
                                         </div>
                                     </div>
                                 </div>
