@@ -13,9 +13,12 @@ public class ProductService : IProductService
 
     private readonly IProductRepository _productRepository;
 
-    public ProductService(IProductRepository productRepository)
+    private readonly IStockMovementRepository _stockMovementRepository;
+
+    public ProductService(IProductRepository productRepository, IStockMovementRepository stockMovementRepository)
     {
         _productRepository = productRepository;
+        _stockMovementRepository = stockMovementRepository;
     }
 
     // Arama ve kategori filtresine göre ürünleri listeler
@@ -45,6 +48,19 @@ public class ProductService : IProductService
     public async Task<ProductResponseDto> CreateProductAsync(Product product)
     {
         var created = await _productRepository.AddAsync(product);
+
+        if (created.StockQuantity > 0)
+        {
+            var stock = new StockMovement {
+                    ProductId = product.Id,
+                    TransactionType = "IN",
+                    Quantity = product.StockQuantity,
+                    Description = "İlk stok girişi",
+                    CreatedAt = DateTime.UtcNow
+            };
+
+        await _stockMovementRepository.AddAsync(stock);
+        }
 
         return ToResponseDto(created);
     }
