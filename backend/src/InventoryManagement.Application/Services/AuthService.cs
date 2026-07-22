@@ -218,7 +218,7 @@ public class AuthService : IAuthService
             issuer: Environment.GetEnvironmentVariable("JWT_ISSUER"),
             audience: Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(10),
+            expires: DateTime.UtcNow.AddMinutes(300),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

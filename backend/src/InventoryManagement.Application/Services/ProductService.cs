@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Text;
 using InventoryManagement.Application.DTOs.Product;
+using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Domain.Entities;
@@ -15,10 +16,15 @@ public class ProductService : IProductService
 
     private readonly IStockMovementRepository _stockMovementRepository;
 
-    public ProductService(IProductRepository productRepository, IStockMovementRepository stockMovementRepository)
+    private readonly IUnitOfWork _unitOfWork;
+
+    public ProductService(IProductRepository productRepository,
+     IStockMovementRepository stockMovementRepository,
+     IUnitOfWork unitOfWork)
     {
         _productRepository = productRepository;
         _stockMovementRepository = stockMovementRepository;
+        _unitOfWork = unitOfWork;
     }
 
     // Arama ve kategori filtresine göre ürünleri listeler
@@ -47,6 +53,10 @@ public class ProductService : IProductService
     // Yeni ürün oluşturur
     public async Task<ProductResponseDto> CreateProductAsync(Product product)
     {
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+             
         var created = await _productRepository.AddAsync(product);
 
         if (created.StockQuantity > 0)
@@ -58,11 +68,17 @@ public class ProductService : IProductService
                     Description = "İlk stok girişi",
                     CreatedAt = DateTime.UtcNow
             };
-
-        await _stockMovementRepository.AddAsync(stock);
+            await _stockMovementRepository.AddAsync(stock);
+        }
+        await _unitOfWork.CommitAsync();
+        return ToResponseDto(created);
+    }
+    catch
+        {
+            await _unitOfWork.RollbackAsync();
+            throw;
         }
 
-        return ToResponseDto(created);
     }
 
     // Ürün güncelleme. Stok miktarına burada dokunulmaz — sadece StockMovement üzerinden değişir,

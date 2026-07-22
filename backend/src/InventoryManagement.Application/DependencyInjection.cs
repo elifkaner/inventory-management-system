@@ -1,4 +1,5 @@
 using FluentValidation;
+using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +18,6 @@ public static class DependencyInjection
         services.AddScoped<IWarehouseLocationService, WarehouseLocationService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IStockMovementService, StockMovementService>();
-        services.AddScoped<IStockMovementService, StockMovementService>();
-        
 
         return services;
     }
