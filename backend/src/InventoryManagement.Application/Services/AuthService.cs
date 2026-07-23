@@ -118,6 +118,7 @@ public class AuthService : IAuthService
         }
 
         var user = await _userRepository.GetByIdAsync(userId);
+
         if (user == null)
         {
             return false;
@@ -148,9 +149,7 @@ public class AuthService : IAuthService
 
         if (existingToken.IsRevoked)
         {
-            // Zaten kullanılmış/iptal edilmiş bir token tekrar sunuldu — bu, token'ın çalınmış
-            // olabileceğinin işareti. Bu kullanıcının tüm oturumlarını kapatıyoruz ki hem
-            // saldırgan hem de (varsa) meşru kullanıcı tekrar login olmak zorunda kalsın.
+            
             await _refreshTokenRepository.RevokeAllForUserAsync(existingToken.UserId);
             return null;
         }
@@ -229,11 +228,7 @@ public class AuthService : IAuthService
         var randomBytes = RandomNumberGenerator.GetBytes(64);
         return Convert.ToBase64String(randomBytes);
     }
-
-    // Refresh token'ı veritabanına yazmadan önce hash'ler — şifrelerde BCrypt kullandığımız
-    // mantığın aynısı: DB sızarsa saldırganın eline çalışır token değil, geri döndürülemeyen
-    // bir hash geçsin. BCrypt'in aksine burada kasıtlı yavaşlığa gerek yok (token zaten 512-bit
-    // rastgele, kaba kuvvetle tahmin edilemez), bu yüzden hızlı SHA256 yeterli.
+    
     private static string HashToken(string token)
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));

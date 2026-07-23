@@ -114,15 +114,7 @@ builder.Services.AddRateLimiter(options =>
 var app = builder.Build();
 
 
-// Ngrok tüneli üzerinden dışarıya açıldığımızda, Kestrel'e TCP seviyesinde
-// bağlanan taraf ngrok olur (gerçek istemci değil). Bu middleware, ngrok'un
-// eklediği X-Forwarded-For/X-Forwarded-Proto header'larını okuyup gerçek istemci
-// IP'sini HttpContext.Connection.RemoteIpAddress'in üzerine yazar — aksi halde
-// rate limiter (AuthPolicy) tüm istemcileri ngrok'un tek IP'si sanır.
-// NOT: KnownNetworks/KnownProxies boş bırakıldığı için bu header'lar HERHANGİ bir
-// kaynaktan (doğrudan 5050 portuna bağlanan biri dahil) geliyorsa güvenilir sayılır —
-// artık bu portu tek bir sabit reverse proxy (nginx) korumadığı için, doğrudan porta
-// erişimi olan biri X-Forwarded-For'u sahteleyip rate limiter'ı atlatabilir.
+
 var forwardedHeadersOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto

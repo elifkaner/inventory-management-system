@@ -36,6 +36,8 @@ public class AppDbContext : DbContext
             .HasForeignKey(p => p.SupplierId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Product>().HasIndex(p => p.Barcode).IsUnique();
+
         // Product -> Category (Many to One)
         // Restrict: bağlı ürünü olan bir kategori silinemesin (cascade ile ürünler sessizce silinmesin diye).
         modelBuilder.Entity<Product>()
