@@ -1,5 +1,6 @@
 using InventoryManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace InventoryManagement.Infrastructure.Persistence;
 
@@ -38,6 +39,7 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Product>().HasIndex(p => p.Barcode).IsUnique();
         modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
+        modelBuilder.Entity<Product>().Property<uint>("xmin").HasColumnName("xmin").IsRowVersion();
 
         // Product -> Category (Many to One)
         // Restrict: bağlı ürünü olan bir kategori silinemesin (cascade ile ürünler sessizce silinmesin diye).

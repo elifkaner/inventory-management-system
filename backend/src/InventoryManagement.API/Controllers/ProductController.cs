@@ -1,5 +1,6 @@
 using FluentValidation;
 using InventoryManagement.Application.DTOs.Product;
+using InventoryManagement.Application.Exceptions;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -115,9 +116,16 @@ public class ProductController : ControllerBase
             
         };
 
-        var createdProduct = await _productService.CreateProductAsync(product);
+        try
+        {
+            var createdProduct = await _productService.CreateProductAsync(product);
 
-        return Ok(createdProduct);
+            return Ok(createdProduct);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     // PUT /api/Product/{id}

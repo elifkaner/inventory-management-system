@@ -82,7 +82,7 @@ public class StockMovementService : IStockMovementService
             throw;
         }
     }
-    
+
 
     public async Task<bool> DeleteAsync(int id)
     {

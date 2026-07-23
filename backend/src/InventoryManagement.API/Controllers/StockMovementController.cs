@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using FluentValidation;
 using InventoryManagement.Application.DTOs.StockMovement;
+using InventoryManagement.Application.Exceptions;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Domain.Entities;
@@ -71,12 +72,16 @@ namespace InventoryManagement.API.Controllers;
 
             return Ok(created);
     }
+    catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(ex.Message);
+        }
     catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
         }
     }
-    
+
 
     // DELETE /api/StockMovement/{id}
 
@@ -91,6 +96,10 @@ namespace InventoryManagement.API.Controllers;
                 return NotFound();
             }
             return NoContent();
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(ex.Message);
         }
         catch (InvalidOperationException ex)
         {

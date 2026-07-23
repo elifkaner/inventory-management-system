@@ -1,3 +1,4 @@
+using InventoryManagement.Application.Exceptions;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Domain.Entities;
 using InventoryManagement.Infrastructure.Persistence;
@@ -89,7 +90,14 @@ public class ProductRepository : IProductRepository
         product.SupplierId = updatedProduct.SupplierId;
         product.LocationId = updatedProduct.LocationId;
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyConflictException("Bu ürün başka biri tarafından aynı anda güncellendi, lütfen tekrar deneyin.");
+        }
 
         return await GetByIdAsync(id);
     }
