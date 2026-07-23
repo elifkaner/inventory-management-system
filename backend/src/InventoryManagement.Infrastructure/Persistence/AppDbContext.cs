@@ -37,6 +37,7 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Product>().HasIndex(p => p.Barcode).IsUnique();
+        modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
 
         // Product -> Category (Many to One)
         // Restrict: bağlı ürünü olan bir kategori silinemesin (cascade ile ürünler sessizce silinmesin diye).

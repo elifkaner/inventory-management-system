@@ -25,7 +25,7 @@ public class AuthService : IAuthService
 
     public async Task<bool> CreateUserByAdminAsync(CreateUserByAdminDto dto)
     {
-        var existingUser = await _userRepository.GetByEmailAsync(dto.Email);
+        var existingUser = await _userRepository.GetByEmailAsync(dto.Email.ToLower());
         if (existingUser != null)
         {
             return false;
@@ -34,7 +34,7 @@ public class AuthService : IAuthService
         var user = new User()
         {
             Name = dto.Name,
-            Email = dto.Email,
+            Email = dto.Email.ToLower(),
             Role = dto.Role,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
         };
@@ -45,7 +45,7 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto?> LoginAsync(LoginDto dto)
     {
-        var existingUser = await _userRepository.GetByEmailAsync(dto.Email);
+        var existingUser = await _userRepository.GetByEmailAsync(dto.Email.ToLower());
         if (existingUser==null)
         {
             return null;
@@ -84,7 +84,7 @@ public class AuthService : IAuthService
             return;
         }
 
-        var existing = await _userRepository.GetByEmailAsync(email);
+        var existing = await _userRepository.GetByEmailAsync(email.ToLower());
         if (existing != null)
         {
             // Bu email'le zaten bir kullanıcı var (ör. eskiden açık register üzerinden User
@@ -102,7 +102,7 @@ public class AuthService : IAuthService
         var admin = new User
         {
             Name = Environment.GetEnvironmentVariable("ADMIN_NAME") ?? "Admin",
-            Email = email,
+            Email = email.ToLower(),
             Role = "Admin",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
         };
