@@ -29,6 +29,14 @@ export default function UrunEnvanterSayfasi() {
     const [searchTerm, setSearchTerm] = useState("");
     const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
     const [suppliers, setSuppliers] = useState<{ id: number; companyName: string }[]>([]);
+    // İşlem yapılıyor (Loading) state'i
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Silme Onay Pop-up State'i
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: number | null; productName: string }>({ isOpen: false, id: null, productName: '' });
+
+    // Bilgi/Uyarı Pop-up State'i (Eskiden alert ile yapılanlar için)
+    const [infoModal, setInfoModal] = useState<{ isOpen: boolean; message: string; type: 'success' | 'error' | 'info' }>({ isOpen: false, message: '', type: 'info' });
 
     // --- YENİ NESİL FORM YÖNETİMİ BAŞLANGICI ---
     // ESKİDEN BURADA OLAN formData, errors, setErrors, handleInputChange GİBİ MANUEL YAPILARIN HEPSİ SİLİNDİ!
@@ -126,10 +134,9 @@ export default function UrunEnvanterSayfasi() {
     // YENİ: KAYDETME FONKSİYONU
     // data parametresi formdaki tüm verileri otomatik ve hatasız olarak getirir. "fieldsToValidate" ameleliğine gerek kalmadı!
     const onSubmit = async (data: ProductFormData) => {
+        setIsSubmitting(true); // Loading ekranını başlat
         try {
             const isEditing = !!data.id;
-
-            // Swagger'a göre hem POST hem de PUT işleminde ortak olan veriler
             const basePayload = {
                 productName: data.productName,
                 barcode: data.barcode,
@@ -143,8 +150,6 @@ export default function UrunEnvanterSayfasi() {
                 isActive: data.isActive
             };
 
-            // YENİ: Eğer YENİ KAYIT (POST) ise CreateProductDto'ya göre 'stockQuantity' Ekle!
-            // Eğer GÜNCELLEME (PUT) ise UpdateProductDto'ya göre 'stockQuantity' GÖNDERME!
             const finalPayload = isEditing
                 ? basePayload
                 : { ...basePayload, stockQuantity: Number(data.stockQuantity) || 0 };
@@ -160,16 +165,22 @@ export default function UrunEnvanterSayfasi() {
 
             if (!response.ok) {
                 const errorData = await response.text();
-                console.error("Backend'den dönen gerçek hata:", errorData);
                 throw new Error(`Kayıt Başarısız! Sunucu mesajı: ${errorData}`);
             }
 
-            alert(isEditing ? "Harika! Ürün başarıyla güncellendi." : "Harika! Ürün başarıyla eklendi.");
+            // alert(...) YERİNE:
+            setInfoModal({
+                isOpen: true,
+                message: isEditing ? "Harika! Ürün başarıyla güncellendi." : "Harika! Ürün başarıyla eklendi.",
+                type: 'success'
+            });
             setIsModalOpen(false);
-            window.location.reload();
+
         } catch (error: any) {
-            console.error("Kaydetme Hatası:", error);
-            alert(error?.message || "Bağlantı Hatası.");
+            // alert(...) YERİNE:
+            setInfoModal({ isOpen: true, message: error?.message || "Bağlantı Hatası.", type: 'error' });
+        } finally {
+            setIsSubmitting(false); // İşlem bitti, loading'i kapat
         }
     };
 
@@ -215,20 +226,29 @@ export default function UrunEnvanterSayfasi() {
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id: number, productName: string) => {
-        if (!window.confirm(`${productName} adlı ürünü katalogdan tamamen silmek istediğinize emin misiniz?`)) return;
+    // Tablodaki 'Sil' butonuna basıldığında sadece Pop-up'ı açar
+    const handleDeleteClick = (id: number, productName: string) => {
+        setDeleteModal({ isOpen: true, id, productName });
+    };
+
+    // Pop-up içindeki kırmızı 'Evet, Sil' butonuna basıldığında çalışır
+    const confirmDelete = async () => {
+        if (!deleteModal.id) return;
+        setIsSubmitting(true); // Silinirken de loading göster
 
         try {
-            const res = await authFetch(`${API_BASE_URL}/api/Product/${id}`, { method: 'DELETE' });
+            const res = await authFetch(`${API_BASE_URL}/api/Product/${deleteModal.id}`, { method: 'DELETE' });
             if (res.ok) {
-                alert("Ürün başarıyla silindi.");
-                window.location.reload(); // Tabloyu güncellemek için sayfayı yenile
+                setInfoModal({ isOpen: true, message: "Ürün başarıyla silindi.", type: 'success' });
+                setDeleteModal({ isOpen: false, id: null, productName: '' });
             } else {
                 const errorText = await res.text();
-                alert(`Silme işlemi başarısız oldu. (Backend bu ürünü silmenize izin vermiyor olabilir, ürünü 'Pasif' yapmayı deneyin): ${errorText}`);
+                setInfoModal({ isOpen: true, message: `Silme işlemi başarısız: ${errorText}`, type: 'error' });
             }
         } catch (error) {
-            alert("Sunucuya bağlanırken hata oluştu.");
+            setInfoModal({ isOpen: true, message: "Sunucuya bağlanırken hata oluştu.", type: 'error' });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -306,7 +326,7 @@ export default function UrunEnvanterSayfasi() {
                                 <td className="p-4 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>{prod.stockQuantity} Adet</span></td>
                                 <td className="p-4 pr-6 text-right">
                                     <button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors mr-3 font-semibold">Düzenle</button>
-                                    <button onClick={() => handleDelete(prod.id, prod.productName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
+                                    <button onClick={() => handleDeleteClick(prod.id, prod.productName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
                                 </td>
                             </tr>
                         ))}
