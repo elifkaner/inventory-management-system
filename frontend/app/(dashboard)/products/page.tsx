@@ -525,6 +525,148 @@ export default function UrunEnvanterSayfasi() {
                     </form>
                 </div>
             )}
+
+            {/* 1. SİLME ONAY POP-UP'I */}
+
+            {deleteModal.isOpen && (
+
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+
+                        <div className="p-6 text-center">
+
+                            <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+
+                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+
+                                </svg>
+
+                            </div>
+
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">Ürünü Silmek İstediğinize Emin Misiniz?</h3>
+
+                            <p className="text-slate-500 text-sm">
+
+                                <strong className="text-slate-700">{deleteModal.productName}</strong> adlı ürün katalogdan kalıcı olarak silinecektir. Bu işlem geri alınamaz.
+
+                            </p>
+
+                        </div>
+
+                        <div className="bg-slate-50 px-6 py-4 flex justify-end gap-3">
+
+                            <button
+
+                                disabled={isSubmitting}
+
+                                onClick={() => setDeleteModal({ isOpen: false, id: null, productName: '' })}
+
+                                className="px-4 py-2 text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl font-medium text-sm transition-colors disabled:opacity-50"
+
+                            >
+
+                                İptal
+
+                            </button>
+
+                            <button
+
+                                disabled={isSubmitting}
+
+                                onClick={confirmDelete}
+
+                                className="px-4 py-2 text-white bg-rose-600 hover:bg-rose-700 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 disabled:opacity-70"
+
+                            >
+
+                                {isSubmitting ? (
+
+                                    <span className="flex items-center gap-2">
+
+                                        <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+
+                                        Siliniyor...
+
+                                    </span>
+
+                                ) : 'Evet, Sil'}
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+
+
+
+            {/* 2. BİLGİ VE UYARI POP-UP'I (Alert Yerine Geçen) */}
+
+            {infoModal.isOpen && (
+
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+
+                        <div className="p-6 text-center">
+
+                            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${infoModal.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+
+                                {infoModal.type === 'success' ? (
+
+                                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+
+                                ) : (
+
+                                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+
+                                )}
+
+                            </div>
+
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">
+
+                                {infoModal.type === 'success' ? 'İşlem Başarılı' : 'Bir Hata Oluştu'}
+
+                            </h3>
+
+                            <p className="text-slate-500 text-sm">{infoModal.message}</p>
+
+                        </div>
+
+                        <div className="bg-slate-50 px-6 py-4 flex justify-center">
+
+                            <button
+
+                                onClick={() => {
+
+                                    setInfoModal({ ...infoModal, isOpen: false });
+
+                                    if (infoModal.type === 'success') window.location.reload(); // Başarılıysa sayfayı yenile
+
+                                }}
+
+                                className={`w-full py-2.5 rounded-xl font-medium text-sm transition-colors text-white ${infoModal.type === 'success' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}`}
+
+                            >
+
+                                Tamam
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
         </div>
     );
 }
