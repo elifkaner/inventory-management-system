@@ -1,3 +1,4 @@
+using FluentValidation;
 using FluentValidation.TestHelper;
 using InventoryManagement.Application.DTOs.Product;
 using InventoryManagement.Application.Interfaces.Repositories;
@@ -6,19 +7,19 @@ using Moq;
 using ProductEntity = InventoryManagement.Domain.Entities.Product;
 using CategoryEntity = InventoryManagement.Domain.Entities.Category;
 using SupplierEntity = InventoryManagement.Domain.Entities.Supplier;
-using FluentValidation;
+using BrandEntity = InventoryManagement.Domain.Entities.Brand;
+using ModelEntity = InventoryManagement.Domain.Entities.Model;
 
 namespace InventoryManagement.Application.Tests.Validators.Product;
-
 
 public class UpdateProductDtoValidatorTests
 {
     private readonly UpdateProductDtoValidator _validator;
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
-
-     private readonly Mock<ISupplierRepository> _supplierRepository = new();
-
-      private readonly Mock<IProductRepository> _productRepository = new();
+    private readonly Mock<ISupplierRepository> _supplierRepository = new();
+    private readonly Mock<IProductRepository> _productRepository = new();
+    private readonly Mock<IBrandRepository> _brandRepository = new();
+    private readonly Mock<IModelRepository> _modelRepository = new();
 
     public UpdateProductDtoValidatorTests()
     {
@@ -34,21 +35,30 @@ public class UpdateProductDtoValidatorTests
         .Setup(r => r.GetByBarcodeAsync(It.IsAny<string>()))
         .ReturnsAsync((ProductEntity?)null);
 
+        _brandRepository
+        .Setup(r => r.GetByIdAsync(It.IsAny<int>()))
+        .ReturnsAsync(new BrandEntity { Id = 1 });
+
+        _modelRepository
+        .Setup(r => r.GetByIdAsync(It.IsAny<int>()))
+        .ReturnsAsync(new ModelEntity { Id = 1, BrandId = 1 });
+
         _validator = new UpdateProductDtoValidator
         (
             _categoryRepository.Object,
             _supplierRepository.Object,
-            _productRepository.Object
+            _productRepository.Object,
+            _brandRepository.Object,
+            _modelRepository.Object
             );
     }
 
     private ValidationContext<UpdateProductDto> ContextFor(UpdateProductDto dto, int productId = 1)
-{
-    var context = new ValidationContext<UpdateProductDto>(dto);   // 1) Formu bir pakete koy
-    context.RootContextData["ProductId"] = productId;             // 2) Pakete yapışkan notu yapıştır: "1 numaralı ürün için"
-    return context;                                                // 3) Hazır paketi geri ver
-}   
-    
+    {
+        var context = new ValidationContext<UpdateProductDto>(dto);
+        context.RootContextData["ProductId"] = productId;
+        return context;
+    }
 
     [Fact]
     public async Task ProductName_IsEmpty_HasValidationError()
@@ -56,7 +66,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto {ProductName = ""};
         // When
-        var result =  await _validator.TestValidateAsync(dto);    
+        var result =  await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldHaveValidationErrorFor(x =>x.ProductName);
     }
@@ -67,7 +77,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto {ProductName = new string('a',101)};
         // When
-        var result = await _validator.TestValidateAsync(dto);    
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldHaveValidationErrorFor(x =>x.ProductName);
     }
@@ -78,7 +88,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto {ProductName = new string('a',100)};
         // When
-        var result = await _validator.TestValidateAsync(dto);     
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldNotHaveValidationErrorFor(x =>x.ProductName);
     }
@@ -89,7 +99,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto {PurchasePrice = -10};
         // When
-        var result = await _validator.TestValidateAsync(dto);    
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldHaveValidationErrorFor(x =>x.PurchasePrice);
     }
@@ -101,7 +111,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto {SalePrice = -10};
         // When
-        var result = await _validator.TestValidateAsync(dto);   
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldHaveValidationErrorFor(x =>x.SalePrice);
     }
@@ -111,7 +121,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto { Barcode = "" };
         // When
-        var result = await _validator.TestValidateAsync(dto); 
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldHaveValidationErrorFor(x => x.Barcode);
     }
@@ -122,7 +132,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto { Barcode = new string('9',51) };
         // When
-        var result = await _validator.TestValidateAsync(dto); 
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldHaveValidationErrorFor(x => x.Barcode);
     }
@@ -133,7 +143,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto { Barcode = new string('9',50) };
         // When
-        var result = await _validator.TestValidateAsync(dto); 
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldNotHaveValidationErrorFor(x => x.Barcode);
     }
@@ -147,7 +157,7 @@ public class UpdateProductDtoValidatorTests
         .ReturnsAsync(new ProductEntity { Id = 99, Barcode = "999"});
 
         var dto = new UpdateProductDto {Barcode = "999"};
-        var result = await _validator.TestValidateAsync(ContextFor(dto)); 
+        var result = await _validator.TestValidateAsync(ContextFor(dto));
         // When
         result.ShouldHaveValidationErrorFor(x => x.Barcode);
         // Then
@@ -162,7 +172,7 @@ public class UpdateProductDtoValidatorTests
         .ReturnsAsync(new ProductEntity { Id = 1, Barcode = "999"});
 
         var dto = new UpdateProductDto {Barcode = "999"};
-        var result = await _validator.TestValidateAsync(ContextFor(dto)); 
+        var result = await _validator.TestValidateAsync(ContextFor(dto));
         // When
         result.ShouldNotHaveValidationErrorFor(x => x.Barcode);
         // Then
@@ -174,7 +184,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto { CategoryId = -31 };
         // When
-        var result = await _validator.TestValidateAsync(dto); 
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldHaveValidationErrorFor(x => x.CategoryId);
     }
@@ -189,75 +199,82 @@ public class UpdateProductDtoValidatorTests
 
         var dto = new UpdateProductDto { CategoryId = 999 };
         // When
-        var result = await _validator.TestValidateAsync(dto); 
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldHaveValidationErrorFor(x => x.CategoryId);
     }
 
-        [Fact]
-    public async Task BrandName_IsEmpty_HasValidationError()
+    [Fact]
+    public async Task BrandId_LessThanZero_HasValidationError()
     {
         // Given
-        var dto = new UpdateProductDto {BrandName = ""};
+        var dto = new UpdateProductDto { BrandId = -1 };
         // When
-        var result = await _validator.TestValidateAsync(dto);   
+        var result = await _validator.TestValidateAsync(dto);
         // Then
-        result.ShouldHaveValidationErrorFor(x =>x.BrandName);
+        result.ShouldHaveValidationErrorFor(x => x.BrandId);
     }
 
     [Fact]
-    public async Task BrandName_ExceedLength_HasValidationError()
+    public async Task BrandId_BrandDoesNotExist_HasValidationError()
     {
         // Given
-        var dto = new UpdateProductDto {BrandName = new string('a',101)};
+        _brandRepository.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((BrandEntity?)null);
+        var dto = new UpdateProductDto { BrandId = 999 };
         // When
-        var result = await _validator.TestValidateAsync(dto);    
+        var result = await _validator.TestValidateAsync(dto);
         // Then
-        result.ShouldHaveValidationErrorFor(x =>x.BrandName);
+        result.ShouldHaveValidationErrorFor(x => x.BrandId);
     }
 
     [Fact]
-    public async Task BrandName_AtMaxLength_HasNoValidationError()
+    public async Task ModelId_LessThanZero_HasValidationError()
     {
         // Given
-        var dto = new UpdateProductDto {BrandName = new string('a',100)};
+        var dto = new UpdateProductDto { ModelId = -1 };
         // When
-        var result = await _validator.TestValidateAsync(dto);    
+        var result = await _validator.TestValidateAsync(dto);
         // Then
-        result.ShouldNotHaveValidationErrorFor(x =>x.BrandName);
-    }
-
-        [Fact]
-    public async Task Model_IsEmpty_HasValidationError()
-    {
-        // Given
-        var dto = new UpdateProductDto {Model = ""};
-        // When
-        var result = await _validator.TestValidateAsync(dto);     
-        // Then
-        result.ShouldHaveValidationErrorFor(x =>x.Model);
+        result.ShouldHaveValidationErrorFor(x => x.ModelId);
     }
 
     [Fact]
-    public async Task Model_ExceedLength_HasValidationError()
+    public async Task ModelId_ModelDoesNotExist_HasValidationError()
     {
         // Given
-        var dto = new UpdateProductDto {Model = new string('a',101)};
+        _modelRepository.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((ModelEntity?)null);
+        var dto = new UpdateProductDto { ModelId = 999 };
         // When
-        var result = await _validator.TestValidateAsync(dto);     
+        var result = await _validator.TestValidateAsync(dto);
         // Then
-        result.ShouldHaveValidationErrorFor(x =>x.Model);
+        result.ShouldHaveValidationErrorFor(x => x.ModelId);
     }
 
     [Fact]
-    public async Task Model_AtMaxLength_HasNoValidationError()
+    public async Task ModelId_DoesNotBelongToSelectedBrand_HasValidationError()
     {
-        // Given
-        var dto = new UpdateProductDto {Model = new string('a',100)};
+        // Given: BrandId=2 seçildi ama ModelId=1'in gerçek markası 1 (default mock setup)
+        var dto = new UpdateProductDto { BrandId = 2, ModelId = 1 };
+        _brandRepository.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(new BrandEntity { Id = 2 });
+
         // When
-        var result = await _validator.TestValidateAsync(dto);    
+        var result = await _validator.TestValidateAsync(dto);
+
         // Then
-        result.ShouldNotHaveValidationErrorFor(x =>x.Model);
+        result.ShouldHaveValidationErrorFor(x => x.ModelId);
+    }
+
+    [Fact]
+    public async Task ModelId_BelongsToSelectedBrand_HasNoValidationError()
+    {
+        // Given: hem BrandId hem ModelId varsayılan mock'taki gibi tutarlı (1 - 1)
+        var dto = new UpdateProductDto { BrandId = 1, ModelId = 1, CategoryId = 1, SupplierId = 1 };
+
+        // When
+        var result = await _validator.TestValidateAsync(dto);
+
+        // Then
+        result.ShouldNotHaveValidationErrorFor(x => x.ModelId);
     }
 
     [Fact]
@@ -266,7 +283,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto { SupplierId = -31 };
         // When
-        var result = await _validator.TestValidateAsync(dto); 
+        var result = await _validator.TestValidateAsync(dto);
         // Then
         result.ShouldHaveValidationErrorFor(x => x.SupplierId);
     }
@@ -280,33 +297,29 @@ public class UpdateProductDtoValidatorTests
             .ReturnsAsync((SupplierEntity?) null);
         var dto = new UpdateProductDto {SupplierId = 999};
         // When
-        var result = await _validator.TestValidateAsync(dto); 
+        var result = await _validator.TestValidateAsync(dto);
         // Then
-        result.ShouldHaveValidationErrorFor(x => x.SupplierId); 
+        result.ShouldHaveValidationErrorFor(x => x.SupplierId);
     }
 
     [Fact]
     public async Task ValidDto_HasNoValidationError()
     {
         // Given
-        var dto = new UpdateProductDto 
+        var dto = new UpdateProductDto
         {
             ProductName = "Telefon",
             PurchasePrice = 300,
             SalePrice = 600,
             Barcode = "98973792",
             CategoryId = 3,
-            BrandName = "Apple",
-            Model = "Iphone 16",
+            BrandId = 1,
+            ModelId = 1,
             SupplierId = 3,
         };
         // When
-        var result = await _validator.TestValidateAsync(dto); 
+        var result = await _validator.TestValidateAsync(dto);
         // Then
-        result.ShouldNotHaveAnyValidationErrors(); 
+        result.ShouldNotHaveAnyValidationErrors();
     }
-
-
-
-
 }

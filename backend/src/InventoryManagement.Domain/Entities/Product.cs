@@ -16,9 +16,9 @@ public class Product
 
     public int CategoryId { get; set; }
 
-    public string BrandName { get; set; } = "";
+    public int BrandId { get; set; }
 
-    public string Model { get; set; } = "";
+    public int ModelId { get; set; }
 
     public bool IsActive { get; set; }
 
@@ -29,6 +29,10 @@ public class Product
     public Supplier? Supplier { get; set; }
 
     public Category? Category { get; set; }
+
+    public Brand? Brand { get; set; }
+
+    public Model? Model { get; set; }
 
     public WarehouseLocation? Location { get; set; }
 

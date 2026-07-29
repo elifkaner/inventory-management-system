@@ -9,7 +9,9 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
     public UpdateProductDtoValidator(
         ICategoryRepository categoryRepository,
         ISupplierRepository supplierRepository,
-        IProductRepository productRepository)
+        IProductRepository productRepository,
+        IBrandRepository brandRepository,
+        IModelRepository modelRepository)
     {
         RuleFor(x => x.ProductName)
             .NotEmpty().WithMessage("Ürün adı boş bırakılamaz.")
@@ -46,13 +48,37 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
             })
             .WithMessage("Belirtilen kategori bulunamadı.");
 
-        RuleFor(x => x.BrandName)
-            .NotEmpty().WithMessage("Marka adı boş bırakılamaz.")
-            .MaximumLength(100).WithMessage("Marka adı en fazla 100 karakter olabilir.");
+        RuleFor(x => x.BrandId)
+            .GreaterThan(0).WithMessage("Geçerli bir marka seçiniz.")
+            .MustAsync(async (brandId, cancellationToken) =>
+            {
+                var brand = await brandRepository.GetByIdAsync(brandId);
+                return brand != null;
+            })
+            .WithMessage("Belirtilen marka bulunamadı.");
 
-        RuleFor(x => x.Model)
-            .NotEmpty().WithMessage("Marka adı boş bırakılamaz.")
-            .MaximumLength(100).WithMessage("Marka adı en fazla 100 karakter olabilir.");
+        RuleFor(x => x.ModelId)
+            .GreaterThan(0).WithMessage("Geçerli bir model seçiniz.")
+            .MustAsync(async (modelId, cancellationToken) =>
+            {
+                var model = await modelRepository.GetByIdAsync(modelId);
+                return model != null;
+            })
+            .WithMessage("Belirtilen model bulunamadı.");
+
+        RuleFor(x => x)
+            .MustAsync(async (dto, cancellationToken) =>
+            {
+                if (dto.ModelId <= 0 || dto.BrandId <= 0)
+                {
+                    return true; // yukarıdaki kurallar zaten yakalayacak, burada tekrar hata üretme
+                }
+
+                var model = await modelRepository.GetByIdAsync(dto.ModelId);
+                return model == null || model.BrandId == dto.BrandId;
+            })
+            .WithMessage("Seçilen model, seçilen markaya ait değil.")
+            .OverridePropertyName("ModelId");
 
         RuleFor(x => x.SupplierId)
             .GreaterThan(0).WithMessage("Geçerli bir tedarikçi seçiniz.")

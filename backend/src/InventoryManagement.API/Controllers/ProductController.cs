@@ -108,12 +108,12 @@ public class ProductController : ControllerBase
             Barcode = dto.Barcode,
             StockQuantity = dto.StockQuantity,
             CategoryId = dto.CategoryId,
-            BrandName = dto.BrandName,
-            Model = dto.Model,
+            BrandId = dto.BrandId,
+            ModelId = dto.ModelId,
             IsActive = dto.IsActive,
             SupplierId = dto.SupplierId,
             LocationId = dto.LocationId
-            
+
         };
 
         try
@@ -149,8 +149,8 @@ public class ProductController : ControllerBase
             SalePrice = dto.SalePrice,
             Barcode = dto.Barcode,
             CategoryId = dto.CategoryId,
-            BrandName = dto.BrandName,
-            Model = dto.Model,
+            BrandId = dto.BrandId,
+            ModelId = dto.ModelId,
             IsActive = dto.IsActive,
             SupplierId = dto.SupplierId,
             LocationId = dto.LocationId

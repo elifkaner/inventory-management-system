@@ -1,0 +1,77 @@
+using InventoryManagement.Application.Interfaces.Repositories;
+using InventoryManagement.Domain.Entities;
+using InventoryManagement.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace InventoryManagement.Infrastructure.Repositories;
+
+public class BrandRepository : IBrandRepository
+{
+    private readonly AppDbContext _context;
+
+    public BrandRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<List<Brand>> GetAllAsync()
+    {
+        return await _context.Brands.ToListAsync();
+    }
+
+    public async Task<Brand?> GetByIdAsync(int id)
+    {
+        return await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
+    }
+
+    public async Task<Brand> AddAsync(Brand brand)
+    {
+        _context.Brands.Add(brand);
+
+        await _context.SaveChangesAsync();
+
+        return brand;
+    }
+
+    public async Task<Brand?> UpdateAsync(int id, string name)
+    {
+        var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
+
+        if (brand == null)
+        {
+            return null;
+        }
+
+        brand.Name = name;
+
+        await _context.SaveChangesAsync();
+
+        return brand;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
+
+        if (brand == null)
+        {
+            return false;
+        }
+
+        _context.Brands.Remove(brand);
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> HasModelsAsync(int brandId)
+    {
+        return await _context.Models.AnyAsync(m => m.BrandId == brandId);
+    }
+
+    public async Task<bool> HasProductsAsync(int brandId)
+    {
+        return await _context.Products.AnyAsync(p => p.BrandId == brandId);
+    }
+}
