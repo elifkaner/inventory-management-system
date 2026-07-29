@@ -37,7 +37,7 @@ public class ModelRepository : IModelRepository
 
         await _context.SaveChangesAsync();
 
-        return model;
+        return (await GetByIdAsync(model.Id))!;
     }
 
     public async Task<Model?> UpdateAsync(int id, string name, int brandId)
@@ -54,7 +54,7 @@ public class ModelRepository : IModelRepository
 
         await _context.SaveChangesAsync();
 
-        return model;
+        return await GetByIdAsync(id);
     }
 
     public async Task<bool> DeleteAsync(int id)
