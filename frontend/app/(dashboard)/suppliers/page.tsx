@@ -1,27 +1,46 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { authFetch, API_BASE_URL } from '@/app/lib/api';
+// Yeni eklenen bileşenlerimiz
+import Toast from '../../ui/toast';
+import ConfirmDeleteModal from '../../ui/confirm-delete-modal';
 
 export default function TedarikcilerSayfasi() {
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-
     const [formData, setFormData] = useState<any>({
         id: null, companyName: '', contactName: '', phone: '', email: '',
         taxOffice: '', taxNumber: '', address: '', isActive: true
     });
     const [errors, setErrors] = useState<Record<string, boolean>>({});
 
-    // 1. BACKEND'DEN VERİLERİ ÇEKME
+    // Toast State'leri
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastType, setToastType] = useState<'success' | 'error'>('success');
+    const [showToast, setShowToast] = useState(false);
+
+    // Modal State'leri
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deletingSupplierId, setDeletingSupplierId] = useState<number | null>(null);
+    const [deletingSupplierName, setDeletingSupplierName] = useState("");
+
+    // Toast Gösterme Fonksiyonu
+    const showToastMessage = (message: string, type: 'success' | 'error') => {
+        setToastMessage(message);
+        setToastType(type);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+    };
+
+    // 1. BACKEND'DEN VERİ ÇEKME     
     const fetchSuppliers = async () => {
         try {
             setIsLoading(true);
             const res = await authFetch(`${API_BASE_URL}/api/Supplier`);
             if (res.ok) {
                 const data = await res.json();
-                // Backend'deki 'contactPerson' alanını bizim 'contactName' ile eşleştiriyoruz
                 const mappedData = data.map((sup: any) => ({
                     ...sup,
                     contactName: sup.contactPerson || ''
@@ -51,28 +70,25 @@ export default function TedarikcilerSayfasi() {
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: false }));
     };
 
-    // 2. BACKEND'E KAYDETME (POST / PUT)
+    // 2. BACKEND'E KAYDETME (POST / PUT)     
     const handleSave = async () => {
         const newErrors: Record<string, boolean> = {};
         let hasError = false;
         const fieldsToValidate = ['companyName', 'taxOffice', 'taxNumber', 'contactName', 'phone'];
-
         fieldsToValidate.forEach(field => {
             if (!formData[field] || String(formData[field]).trim() === '') {
                 newErrors[field] = true;
                 hasError = true;
             }
         });
-
         if (hasError) {
             setErrors(newErrors);
             return;
         }
 
-        // Backend'in beklediği DTO formatına çeviriyoruz
         const payload = {
             companyName: formData.companyName,
-            contactPerson: formData.contactName, // backend eşleşmesi
+            contactPerson: formData.contactName,
             phone: formData.phone,
             email: formData.email,
             taxOffice: formData.taxOffice,
@@ -82,11 +98,9 @@ export default function TedarikcilerSayfasi() {
         };
 
         try {
-            // API_BASE_URL kullanılarak Nginx/Docker uyumlu hale getirildi
             const url = formData.id
                 ? `${API_BASE_URL}/api/Supplier/${formData.id}`
                 : `${API_BASE_URL}/api/Supplier`;
-
             const method = formData.id ? 'PUT' : 'POST';
 
             const res = await authFetch(url, {
@@ -98,28 +112,40 @@ export default function TedarikcilerSayfasi() {
             if (!res.ok) throw new Error("İşlem başarısız");
 
             setIsModalOpen(false);
-            fetchSuppliers(); // Listeyi yenile
+            showToastMessage(formData.id ? "Tedarikçi başarıyla güncellendi." : "Yeni tedarikçi eklendi.", "success");
+            fetchSuppliers();
         } catch (error) {
-            alert("Sunucuya bağlanılamadı veya bir hata oluştu.");
+            showToastMessage("Sunucuya bağlanamadı veya bir hata oluştu.", "error");
         }
     };
 
-    // 3. BACKEND'DEN SİLME (DELETE) - Eksik olan fonksiyon eklendi
-    const handleDelete = async (id: number, companyName: string) => {
-        if (!window.confirm(`${companyName} firmasını silmek istediğinize emin misiniz?`)) return;
+    // 3. SİLME İŞLEMİ İÇİN MODAL AÇMA
+    const handleDeleteClick = (id: number, companyName: string) => {
+        setDeletingSupplierId(id);
+        setDeletingSupplierName(companyName);
+        setIsDeleteModalOpen(true);
+    };
+
+    // 4. BACKEND'DEN SİLME (MODAL ONAYI SONRASI)
+    const handleDeleteConfirm = async () => {
+        if (!deletingSupplierId) return;
 
         try {
-            const res = await authFetch(`${API_BASE_URL}/api/Supplier/${id}`, {
+            const res = await authFetch(`${API_BASE_URL}/api/Supplier/${deletingSupplierId}`, {
                 method: 'DELETE'
             });
 
             if (res.ok) {
-                fetchSuppliers(); // Başarılıysa listeyi yenile
+                showToastMessage("Tedarikçi başarıyla silindi.", "success");
+                fetchSuppliers();
             } else {
-                alert("Silme işlemi başarısız oldu.");
+                showToastMessage("Silme işlemi başarısız oldu.", "error");
             }
         } catch (error) {
-            alert("Sunucuya bağlanılırken bir hata oluştu.");
+            showToastMessage("Sunucuya bağlanırken bir hata oluştu.", "error");
+        } finally {
+            setIsDeleteModalOpen(false);
+            setDeletingSupplierId(null);
         }
     };
 
@@ -167,7 +193,7 @@ export default function TedarikcilerSayfasi() {
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider ">
+                        <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider">
                             <th className="p-4 pl-6">Durum</th>
                             <th className="p-4">Firma Ünvanı</th>
                             <th className="p-4">Yetkili Kişi</th>
@@ -203,7 +229,7 @@ export default function TedarikcilerSayfasi() {
                                     <td className="p-4 font-mono text-xs text-slate-500 bg-slate-50 rounded px-2 py-1 inline-block mt-2">{sup.taxNumber}</td>
                                     <td className="p-4 pr-6 text-right">
                                         <button onClick={() => handleEditClick(sup)} className="text-blue-600 hover:text-blue-800 transition-colors font-semibold mr-4">Düzenle</button>
-                                        <button onClick={() => handleDelete(sup.id, sup.companyName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
+                                        <button onClick={() => handleDeleteClick(sup.id, sup.companyName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
                                     </td>
                                 </tr>
                             ))
@@ -212,6 +238,7 @@ export default function TedarikcilerSayfasi() {
                 </table>
             </div>
 
+            {/* Yeni/Düzenle Form Modalı */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
@@ -236,7 +263,7 @@ export default function TedarikcilerSayfasi() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Vergi No / TCKN *</label>
-                                            <input type="number" name="taxNumber" value={formData.taxNumber} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm font-mono ${errors.taxNumber ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'}`} placeholder="10 Haneli VN" />
+                                            <input type="number" name="taxNumber" value={formData.taxNumber} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm font-mono ${errors.taxNumber ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'}`} placeholder="10 Haneli VKN" />
                                             {errors.taxNumber && <ErrorMessage />}
                                         </div>
                                     </div>
@@ -279,12 +306,29 @@ export default function TedarikcilerSayfasi() {
                         <div className="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
                             <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl font-medium text-sm">İptal Et</button>
                             <button onClick={handleSave} className="px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 rounded-xl font-medium text-sm">
-                                {formData.id ? 'Güncelle' : 'Firma Kaydını Tamamla'}
+                                {formData.id ? 'Güncelle' : 'Firma Kaydı Tamamla'}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* Yeni Eklenen Toast ve Silme Modalı Bileşenlerimiz */}
+            {showToast && (
+                <Toast
+                    isOpen={showToast}
+                    message={toastMessage}
+                    type={toastType}
+                    onClose={() => setShowToast(false)}
+                />
+            )}
+            <ConfirmDeleteModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDeleteConfirm}
+                targetName={deletingSupplierName}
+                isSubmitting={false}
+            />
         </div>
     );
 }
