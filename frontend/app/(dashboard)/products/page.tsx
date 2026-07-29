@@ -285,7 +285,7 @@ export default function UrunEnvanterSayfasi() {
                                                     register={register} setValue={setValue} watch={watch}
                                                     error={!!errors.brandName}
                                                     placeholder="Seç veya Yaz..."
-                                                    allowCustom={true}
+
                                                 />
                                             </div>
                                             <div>
@@ -296,7 +296,7 @@ export default function UrunEnvanterSayfasi() {
                                                     register={register} setValue={setValue} watch={watch}
                                                     error={!!errors.model}
                                                     placeholder="Seç veya Yaz..."
-                                                    allowCustom={true}
+
                                                 />
                                             </div>
                                         </div>
