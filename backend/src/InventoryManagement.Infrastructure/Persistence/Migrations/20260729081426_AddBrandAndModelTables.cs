@@ -19,20 +19,6 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                 name: "Model",
                 table: "Products");
 
-            migrationBuilder.AddColumn<int>(
-                name: "BrandId",
-                table: "Products",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
-
-            migrationBuilder.AddColumn<int>(
-                name: "ModelId",
-                table: "Products",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
-
             migrationBuilder.CreateTable(
                 name: "Brands",
                 columns: table => new
@@ -65,6 +51,32 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
+
+            // Mevcut ürünlerin (varsa) yeni zorunlu BrandId/ModelId kolonlarında işaret edebileceği
+            // bir "Bilinmiyor" marka/model satırı — FK kısıtlaması eklenmeden önce var olmalı.
+            migrationBuilder.InsertData(
+                table: "Brands",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 1, "Bilinmiyor" });
+
+            migrationBuilder.InsertData(
+                table: "Models",
+                columns: new[] { "Id", "Name", "BrandId" },
+                values: new object[] { 1, "Bilinmiyor", 1 });
+
+            migrationBuilder.AddColumn<int>(
+                name: "BrandId",
+                table: "Products",
+                type: "integer",
+                nullable: false,
+                defaultValue: 1);
+
+            migrationBuilder.AddColumn<int>(
+                name: "ModelId",
+                table: "Products",
+                type: "integer",
+                nullable: false,
+                defaultValue: 1);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_BrandId",
