@@ -276,8 +276,11 @@ public class CreateProductDtoValidatorTests
         _modelRepository
             .Setup(x => x.GetByIdAsync(1))
             .ReturnsAsync(new ModelEntity { Id = 1, BrandId = 2} );
+
             var dto = new CreateProductDto { ModelId = 1, BrandId = 2 };
+
             var result = await _validator.TestValidateAsync(dto);
+            
             result.ShouldNotHaveValidationErrorFor(x => x.ModelId);
     }
 

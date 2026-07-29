@@ -104,7 +104,6 @@ public class UpdateProductDtoValidatorTests
         result.ShouldHaveValidationErrorFor(x =>x.PurchasePrice);
     }
 
-
     [Fact]
     public async Task SalePrice_LessThanOrZero_HasValidationError()
     {
