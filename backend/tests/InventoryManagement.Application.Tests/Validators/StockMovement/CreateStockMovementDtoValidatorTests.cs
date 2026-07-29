@@ -3,7 +3,7 @@ using InventoryManagement.Application.DTOs.StockMovement;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Validators.StockMovement;
 using Moq;
-using InventoryManagement.Domain.Entities;
+using ProductEntity = InventoryManagement.Domain.Entities.Product;
 
 
 namespace InventoryManagement.Application.Tests.Validators.StockMovement;
@@ -15,16 +15,22 @@ public class CreateStockMovementDtoValidatorTests
 
     public CreateStockMovementDtoValidatorTests()
     {
-        _productRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>()))
-        .ReturnsAsync(new Product {Id = 1});
-          _validator = new CreateStockMovementDtoValidator(_productRepository.Object);
+        _productRepository
+        .Setup(r => r.GetByIdAsync(It.IsAny<int>())) //Bunun gerçek anlamı: "GetByIdAsync metoduna hangi sayı verilirse verilsin (It.IsAny<int>()), 
+                                                    // sen hiç bakmadan, düşünmeden, hep aynı Product {Id=1} nesnesini geri ver."
+        .ReturnsAsync(new ProductEntity {Id = 1});
+
+        _validator = new CreateStockMovementDtoValidator(_productRepository.Object);
      }
 
 
     [Fact]
     public async Task ProductId_ProductDoesNotExist_HasValidationError()
     {
-        _productRepository.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Product?) null);
+        _productRepository
+        .Setup(r => r.GetByIdAsync(999))
+        .ReturnsAsync((ProductEntity?) null);
+
         var dto = new CreateStockMovementDto { TransactionType = "IN", Quantity = 1, ProductId = 999};
 
         var result = await _validator.TestValidateAsync(dto);
@@ -45,8 +51,6 @@ public class CreateStockMovementDtoValidatorTests
         result.ShouldHaveValidationErrorFor(x=>x.ProductId);
     }
 
-
-
     [Fact]
     public async Task TransactionType_IsEmpty_HasValidationError()
     {
@@ -61,6 +65,7 @@ public class CreateStockMovementDtoValidatorTests
 
     [Theory]
     [InlineData("IN")]
+    [InlineData("OUT")]
     public async Task TransactionType_IsIn_HasNoValidationError(string validType)
     {
         // Given
@@ -71,21 +76,6 @@ public class CreateStockMovementDtoValidatorTests
         // Then
         result.ShouldNotHaveValidationErrorFor(x=>x.TransactionType);
     }
-
-
-    [Theory]
-    [InlineData("OUT")]
-    public async Task TransactionType_IsOut_HasNoValidationError(string validType)
-    {
-        // Given
-    var dto = new CreateStockMovementDto {TransactionType = validType };
-    
-        // When
-    var result = await _validator.TestValidateAsync(dto);
-        // Then
-        result.ShouldNotHaveValidationErrorFor(x=>x.TransactionType);
-    }
-
 
     [Theory]
     [InlineData("BETWEEN")]
