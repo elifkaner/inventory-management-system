@@ -14,9 +14,9 @@ public class CreateProductDto
 
     public int CategoryId { get; set; }
 
-    public string BrandName { get; set; } = "";
+    public int BrandId { get; set; }
 
-    public string Model { get; set; } = "";
+    public int ModelId { get; set; }
 
     public bool IsActive { get; set; }
 

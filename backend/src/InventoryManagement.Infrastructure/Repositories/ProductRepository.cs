@@ -20,6 +20,8 @@ public class ProductRepository : IProductRepository
         var query = _context.Products
             .Include(p => p.Supplier)
             .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .Include(p => p.Model)
             .Include(p => p.Location)
             .AsQueryable();
 
@@ -49,6 +51,8 @@ public class ProductRepository : IProductRepository
         return await _context.Products
             .Include(p => p.Supplier)
             .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .Include(p => p.Model)
             .Include(p => p.Location)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
@@ -57,6 +61,8 @@ public class ProductRepository : IProductRepository
         return await _context.Products
             .Include(p => p.Supplier)
             .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .Include(p => p.Model)
             .Include(p => p.Location)
             .FirstOrDefaultAsync(p => p.Barcode == Barcode);
     }
@@ -84,8 +90,8 @@ public class ProductRepository : IProductRepository
         product.Barcode = updatedProduct.Barcode;
         product.StockQuantity = updatedProduct.StockQuantity;
         product.CategoryId = updatedProduct.CategoryId;
-        product.BrandName = updatedProduct.BrandName;
-        product.Model = updatedProduct.Model;
+        product.BrandId = updatedProduct.BrandId;
+        product.ModelId = updatedProduct.ModelId;
         product.IsActive = updatedProduct.IsActive;
         product.SupplierId = updatedProduct.SupplierId;
         product.LocationId = updatedProduct.LocationId;

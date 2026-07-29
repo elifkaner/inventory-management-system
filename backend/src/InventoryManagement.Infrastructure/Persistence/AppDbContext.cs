@@ -25,6 +25,10 @@ public class AppDbContext : DbContext
 
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+    public DbSet<Brand> Brands { get; set; }
+
+    public DbSet<Model> Models { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -75,5 +79,29 @@ public class AppDbContext : DbContext
             .HasOne(rt => rt.User)
             .WithMany(u => u.RefreshTokens)
             .HasForeignKey(rt => rt.UserId);
+
+        // Model -> Brand (Many to One)
+        // Restrict: bağlı modeli olan bir marka silinemesin.
+        modelBuilder.Entity<Model>()
+            .HasOne(m => m.Brand)
+            .WithMany(b => b.Models)
+            .HasForeignKey(m => m.BrandId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Product -> Brand (Many to One)
+        // Restrict: bağlı ürünü olan bir marka silinemesin.
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.Brand)
+            .WithMany(b => b.Products)
+            .HasForeignKey(p => p.BrandId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Product -> Model (Many to One)
+        // Restrict: bağlı ürünü olan bir model silinemesin.
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.Model)
+            .WithMany(m => m.Products)
+            .HasForeignKey(p => p.ModelId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
