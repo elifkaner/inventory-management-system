@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { API_BASE_URL } from '@/app/lib/api';
 
-// Menü yapımızı güncelliyoruz: Alt menüsü olanlar için "subLinks" dizisi ekledik.
+// Menü yapısını güncelliyoruz: Alt menüsü olanlar için "subLinks" dizisi ekledik.
 const menuItems = [
     {
         name: 'Genel Bakış',
@@ -24,7 +25,6 @@ const menuItems = [
             </svg>
         )
     },
-    // YENİ EKLENEN DROPDOWN MENÜ: Envanter İşlemleri
     {
         name: 'Envanter İşlemleri',
         icon: (
@@ -34,7 +34,7 @@ const menuItems = [
         ),
         subLinks: [
             { name: 'Depo Hareketleri', href: '/stock-movements' },
-            { name: 'Envanter Miktarı', href: '/inventory-levels' } // Yeni sayfamız için link
+            { name: 'Envanter Miktarı', href: '/inventory-levels' }
         ]
     },
     {
@@ -68,11 +68,38 @@ const menuItems = [
 
 export default function SideNav() {
     const pathname = usePathname();
-    // Dropdown menünün açık/kapalı durumunu tutacak state (Varsayılan olarak kapalı)
+    const router = useRouter();
+
+    // Dropdown menü açık/kapalı durumunu tutacak state (Varsayılan olarak kapalı)
     const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+
+    // Çıkış Yapma Fonksiyonu
+    const handleLogout = async () => {
+        try {
+            const refreshToken = localStorage.getItem('stokpro_refresh_token');
+            if (refreshToken) {
+                await fetch(`${API_BASE_URL}/api/Auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({ refreshToken })
+                });
+            }
+        } catch (error) {
+            console.error("Logout sırasında sunucu hatası:", error);
+        } finally {
+            // Frontend tarafında her halükarda tokenları temizleyip yönlendiriyoruz
+            localStorage.removeItem('stokpro_token');
+            localStorage.removeItem('stokpro_refresh_token');
+            router.push('/login');
+        }
+    };
 
     return (
         <div className="flex h-full flex-col px-3 py-4 md:px-2 bg-white border-r border-gray-200 shadow-sm">
+            {/* Logo Alanı */}
             <div className="mb-6 flex h-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 p-4 md:h-32 shadow-lg shadow-blue-600/30 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 rounded-full bg-white/10 blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
                 <div className="flex items-center gap-3 relative z-10 w-full md:justify-center px-2">
@@ -93,6 +120,7 @@ export default function SideNav() {
                 </div>
             </div>
 
+            {/* Menü Linkleri */}
             <div className="flex flex-row space-x-2 md:flex-col md:gap-2 py-1 md:space-x-0 flex-grow overflow-y-auto">
                 {menuItems.map((item) => {
                     // Eğer menünün alt linkleri varsa (Dropdown ise)
@@ -130,8 +158,8 @@ export default function SideNav() {
                                                     key={sub.name}
                                                     href={sub.href}
                                                     className={`flex items-center justify-start gap-3 w-full rounded-xl py-2 px-3 text-[13px] font-medium transition-colors ${isActive
-                                                            ? 'bg-blue-600 text-white shadow-md'
-                                                            : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                                                        ? 'bg-blue-600 text-white shadow-md'
+                                                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
                                                         }`}
                                                 >
                                                     <div className="w-5 flex justify-center items-center flex-shrink-0">
@@ -165,6 +193,19 @@ export default function SideNav() {
                         </Link>
                     );
                 })}
+            </div>
+
+            {/* Çıkış Yap Butonu */}
+            <div className="mt-auto pt-4 border-t border-slate-100">
+                <button
+                    onClick={handleLogout}
+                    className="group flex h-[48px] w-full items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium text-rose-600 transition-all md:justify-start md:px-4 hover:bg-rose-50 border border-transparent hover:border-rose-100"
+                >
+                    <svg className="w-5 h-5 text-rose-500 group-hover:text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span className="hidden md:block">Çıkış Yap</span>
+                </button>
             </div>
         </div>
     );
