@@ -2,13 +2,12 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '../lib/api';
 
 type LoginFormData = {
     email: string;
     password: string;
 };
-
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost';
 
 export default function LoginSayfasi() {
     const router = useRouter();
