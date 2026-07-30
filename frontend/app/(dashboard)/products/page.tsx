@@ -217,7 +217,15 @@ export default function UrunEnvanterSayfasi() {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider">
-                            <th className="p-4 pl-6">Durum</th><th className="p-4">Açıklaması</th><th className="p-4">Kategori</th><th className="p-4">SKU Kodu</th><th className="p-4 text-right">Satış Fiyatı</th><th className="p-4 text-center">Stok</th><th className="p-4 pr-9 text-right">İşlemler</th>
+                            <th className="p-4 pl-6">Durum</th>
+                            <th className="p-4">Açıklaması</th>
+                            {/* YENİ EKLENDİ: Marka ve Model Başlığı */}
+                            <th className="p-4">Marka / Model</th>
+                            <th className="p-4">Kategori</th>
+                            <th className="p-4">SKU Kodu</th>
+                            <th className="p-4 text-right">Satış Fiyatı</th>
+                            <th className="p-4 text-center">Stok</th>
+                            <th className="p-4 pr-9 text-right">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
@@ -232,6 +240,15 @@ export default function UrunEnvanterSayfasi() {
                                         <StatusBadge isActive={prod.isActive} />
                                     </td>
                                     <td className="p-4 text-slate-900 font-semibold">{prod.productName}</td>
+
+                                    {/* YENİ EKLENDİ: Marka ve Model Verisi (Alt alta şık bir görünüm) */}
+                                    <td className="p-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-slate-700 font-semibold text-sm">{prod.brand || prod.brandName || '-'}</span>
+                                            <span className="text-slate-400 text-xs">{prod.model || prod.modelName || '-'}</span>
+                                        </div>
+                                    </td>
+
                                     <td className="p-4 text-slate-500 font-medium">{prod.category || 'Kategorisiz'}</td>
                                     <td className="p-4 align-middle"><span className="font-mono text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded px-2 py-1">{prod.barcode}</span></td>
                                     <td className="p-4 text-right text-slate-900 font-bold">₺ {prod.salePrice?.toLocaleString()}</td>
