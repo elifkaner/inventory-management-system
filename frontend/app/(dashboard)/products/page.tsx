@@ -140,9 +140,37 @@ export default function UrunEnvanterSayfasi() {
         }
     };
 
-    const handleEditClick = (product: any) => {
+    // DEĞİŞTİRİLDİ: Fonksiyonu "async" yaptık çünkü model listesini beklememiz gerekebilir.
+    const handleEditClick = async (product: any) => {
         const foundCat = categories.find(c => c.name === product.category);
         const foundSup = suppliers.find(s => s.companyName === product.supplier);
+
+        // DEĞİŞTİRİLDİ: Markayı isminden bularak ID'sini tespit ediyoruz.
+        const brandName = product.brand || product.brandName;
+        const foundBrand = brands.find(b => b.name === brandName);
+        const resolvedBrandId = product.brandId || (foundBrand ? foundBrand.id : '');
+
+        let resolvedModelId = product.modelId || '';
+
+        // DEĞİŞTİRİLDİ: Eğer elimizde Marka ID var ama Model ID yoksa, form açılmadan önce
+        // o markanın modellerini backend'den çekip doğru model ID'sini eşleştiriyoruz.
+        if (!resolvedModelId && resolvedBrandId) {
+            try {
+                const res = await authFetch(`${API_BASE_URL}/api/Model?brandId=${resolvedBrandId}`);
+                if (res.ok) {
+                    const brandModels = await res.json();
+                    setModels(brandModels); // Modeller state'ini doldur ki dropdown boş kalmasın
+
+                    const modelName = product.model || product.modelName;
+                    const foundModel = brandModels.find((m: any) => m.name === modelName);
+                    if (foundModel) {
+                        resolvedModelId = foundModel.id;
+                    }
+                }
+            } catch (err) {
+                console.error("Model verileri eşleştirilirken hata oluştu:", err);
+            }
+        }
 
         reset({
             id: product.id,
@@ -152,8 +180,8 @@ export default function UrunEnvanterSayfasi() {
             barcode: product.barcode,
             stockQuantity: product.stockQuantity,
             categoryId: foundCat ? String(foundCat.id) : '',
-            brandId: product.brandId ? String(product.brandId) : '', // DEĞİŞTİRİLDİ: Güncelleme ekranına ID veriyoruz
-            modelId: product.modelId ? String(product.modelId) : '', // DEĞİŞTİRİLDİ: Güncelleme ekranına ID veriyoruz
+            brandId: resolvedBrandId ? String(resolvedBrandId) : '', // DEĞİŞTİRİLDİ: Bulunan doğru ID'yi veriyoruz
+            modelId: resolvedModelId ? String(resolvedModelId) : '', // DEĞİŞTİRİLDİ: Bulunan doğru ID'yi veriyoruz
             supplierId: foundSup ? String(foundSup.id) : '',
             locationId: product.locationId ? String(product.locationId) : null,
             isActive: product.isActive
