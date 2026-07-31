@@ -10,6 +10,8 @@ public class CreateProductDto
 
     public string Barcode { get; set; } = "";
 
+    public string SkuCode { get; set; } = "";
+
     public int StockQuantity { get; set; }
 
     public int CategoryId { get; set; }

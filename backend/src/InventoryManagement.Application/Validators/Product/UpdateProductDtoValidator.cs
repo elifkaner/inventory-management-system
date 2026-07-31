@@ -39,6 +39,11 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
             })
             .WithMessage("Bu barkod başka bir ürün tarafından kullanılıyor.");
 
+         RuleFor(x => x.SkuCode)
+            .NotEmpty().WithMessage("Sku Kodu boş bırakılamaz.")
+            .MaximumLength(50).WithMessage("Sku Kodu en fazla 50 karakter olabilir.");
+          
+
         RuleFor(x => x.CategoryId)
             .GreaterThan(0).WithMessage("Geçerli bir kategori seçiniz.")
             .MustAsync(async (categoryId, cancellationToken) =>

@@ -88,6 +88,7 @@ public class ProductRepository : IProductRepository
         product.PurchasePrice = updatedProduct.PurchasePrice;
         product.SalePrice = updatedProduct.SalePrice;
         product.Barcode = updatedProduct.Barcode;
+        product.SkuCode = updatedProduct.SkuCode;
         product.StockQuantity = updatedProduct.StockQuantity;
         product.CategoryId = updatedProduct.CategoryId;
         product.BrandId = updatedProduct.BrandId;

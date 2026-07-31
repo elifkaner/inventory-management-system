@@ -190,6 +190,7 @@ public class ProductService : IProductService
             PurchasePrice = p.PurchasePrice,
             SalePrice = p.SalePrice,
             Barcode = p.Barcode,
+            SkuCode = p.SkuCode,
             StockQuantity = p.StockQuantity,
             BrandName = p.Brand != null ? p.Brand.Name : "",
             ModelName = p.Model != null ? p.Model.Name : "",

@@ -44,6 +44,7 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Product>().HasIndex(p => p.Barcode).IsUnique();
+        modelBuilder.Entity<Product>().HasIndex(p => p.SkuCode).IsUnique();
         modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
         modelBuilder.Entity<Product>().Property<uint>("xmin").HasColumnName("xmin").IsRowVersion();
 

@@ -12,6 +12,8 @@ public class ProductResponseDto
 
     public string Barcode { get; set; } = "";
 
+    public string SkuCode { get; set; } = "";
+
     public int StockQuantity { get; set; }
 
     public string BrandName { get; set; } = "";
