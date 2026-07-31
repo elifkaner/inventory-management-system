@@ -11,10 +11,11 @@ import StatusBadge from '@/app/ui/status-badge';
 type ProductFormData = {
     id?: number | null;
     productName: string;
+    skuCode: string;
     barcode: string;
     categoryId: number | string;
-    brandId: number | string; // DEĞİŞTİRİLDİ: brandName (string) yerine brandId (integer) bekliyoruz
-    modelId: number | string; // DEĞİŞTİRİLDİ: model (string) yerine modelId (integer) bekliyoruz
+    brandId: number | string;
+    modelId: number | string;
     purchasePrice: number | string;
     salePrice: number | string;
     stockQuantity: number | string;
@@ -28,8 +29,6 @@ export default function UrunEnvanterSayfasi() {
     const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
     const [suppliers, setSuppliers] = useState<{ id: number; companyName: string }[]>([]);
     const [locations, setLocations] = useState<any[]>([]);
-
-    // YENİ EKLENDİ: Markaları ve Modelleri tutacağımız state'ler
     const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
     const [models, setModels] = useState<{ id: number; name: string }[]>([]);
 
@@ -44,7 +43,6 @@ export default function UrunEnvanterSayfasi() {
         defaultValues: { isActive: true }
     });
 
-    // YENİ EKLENDİ: Formdaki brandId değerini anlık olarak izliyoruz
     const selectedBrandId = watch("brandId");
 
     const fetchData = useCallback(async () => {
@@ -55,14 +53,14 @@ export default function UrunEnvanterSayfasi() {
                 authFetch(`${API_BASE_URL}/api/Supplier`),
                 authFetch(`${API_BASE_URL}/api/Product`),
                 authFetch(`${API_BASE_URL}/api/WarehouseLocation`),
-                authFetch(`${API_BASE_URL}/api/Brand`) // YENİ EKLENDİ: Sayfa açıldığında tüm markaları çekiyoruz
+                authFetch(`${API_BASE_URL}/api/Brand`)
             ]);
 
             if (catRes.ok) setCategories(await catRes.json());
             if (supRes.ok) setSuppliers(await supRes.json());
             if (prodRes.ok) setProducts(await prodRes.json());
             if (locRes.ok) setLocations(await locRes.json());
-            if (brandRes.ok) setBrands(await brandRes.json()); // YENİ EKLENDİ: Markaları state'e kaydediyoruz
+            if (brandRes.ok) setBrands(await brandRes.json());
 
         } catch (err) {
             setInfoModal({ isOpen: true, message: "Veriler sunucudan çekilemedi.", type: 'error' });
@@ -75,7 +73,6 @@ export default function UrunEnvanterSayfasi() {
         fetchData();
     }, [fetchData]);
 
-    // YENİ EKLENDİ: Eğer seçili marka (selectedBrandId) değişirse, o markaya ait modelleri backend'den çek
     useEffect(() => {
         const fetchModelsByBrand = async () => {
             if (selectedBrandId) {
@@ -88,7 +85,7 @@ export default function UrunEnvanterSayfasi() {
                     console.error("Modeller çekilirken hata oluştu", error);
                 }
             } else {
-                setModels([]); // Marka seçili değilse model listesini boşalt
+                setModels([]);
             }
         };
 
@@ -97,6 +94,7 @@ export default function UrunEnvanterSayfasi() {
 
     const filteredProducts = products.filter(prod =>
         prod.productName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prod.skuCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         prod.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -106,14 +104,15 @@ export default function UrunEnvanterSayfasi() {
             const isEditing = !!data.id;
             const basePayload = {
                 productName: data.productName,
+                skuCode: data.skuCode,
                 barcode: data.barcode,
                 purchasePrice: Number(String(data.purchasePrice).replace(',', '.')) || 0,
                 salePrice: Number(String(data.salePrice).replace(',', '.')) || 0,
                 categoryId: Number(data.categoryId),
                 supplierId: Number(data.supplierId) || null,
                 locationId: data.locationId ? Number(data.locationId) : null,
-                brandId: Number(data.brandId), // DEĞİŞTİRİLDİ: Metin yerine doğrudan ID (integer) gönderiyoruz
-                modelId: Number(data.modelId), // DEĞİŞTİRİLDİ: Metin yerine doğrudan ID (integer) gönderiyoruz
+                brandId: Number(data.brandId),
+                modelId: Number(data.modelId),
                 isActive: data.isActive
             };
 
@@ -140,26 +139,22 @@ export default function UrunEnvanterSayfasi() {
         }
     };
 
-    // DEĞİŞTİRİLDİ: Fonksiyonu "async" yaptık çünkü model listesini beklememiz gerekebilir.
     const handleEditClick = async (product: any) => {
         const foundCat = categories.find(c => c.name === product.category);
         const foundSup = suppliers.find(s => s.companyName === product.supplier);
 
-        // DEĞİŞTİRİLDİ: Markayı isminden bularak ID'sini tespit ediyoruz.
         const brandName = product.brand || product.brandName;
         const foundBrand = brands.find(b => b.name === brandName);
         const resolvedBrandId = product.brandId || (foundBrand ? foundBrand.id : '');
 
         let resolvedModelId = product.modelId || '';
 
-        // DEĞİŞTİRİLDİ: Eğer elimizde Marka ID var ama Model ID yoksa, form açılmadan önce
-        // o markanın modellerini backend'den çekip doğru model ID'sini eşleştiriyoruz.
         if (!resolvedModelId && resolvedBrandId) {
             try {
                 const res = await authFetch(`${API_BASE_URL}/api/Model?brandId=${resolvedBrandId}`);
                 if (res.ok) {
                     const brandModels = await res.json();
-                    setModels(brandModels); // Modeller state'ini doldur ki dropdown boş kalmasın
+                    setModels(brandModels);
 
                     const modelName = product.model || product.modelName;
                     const foundModel = brandModels.find((m: any) => m.name === modelName);
@@ -177,11 +172,12 @@ export default function UrunEnvanterSayfasi() {
             productName: product.productName,
             purchasePrice: product.purchasePrice,
             salePrice: product.salePrice,
-            barcode: product.barcode,
+            skuCode: product.skuCode || '',
+            barcode: product.barcode || '',
             stockQuantity: product.stockQuantity,
             categoryId: foundCat ? String(foundCat.id) : '',
-            brandId: resolvedBrandId ? String(resolvedBrandId) : '', // DEĞİŞTİRİLDİ: Bulunan doğru ID'yi veriyoruz
-            modelId: resolvedModelId ? String(resolvedModelId) : '', // DEĞİŞTİRİLDİ: Bulunan doğru ID'yi veriyoruz
+            brandId: resolvedBrandId ? String(resolvedBrandId) : '',
+            modelId: resolvedModelId ? String(resolvedModelId) : '',
             supplierId: foundSup ? String(foundSup.id) : '',
             locationId: product.locationId ? String(product.locationId) : null,
             isActive: product.isActive
@@ -191,7 +187,7 @@ export default function UrunEnvanterSayfasi() {
 
     const handleAddNewClick = () => {
         reset({
-            id: null, productName: '', purchasePrice: '', salePrice: '', barcode: '',
+            id: null, productName: '', purchasePrice: '', salePrice: '', skuCode: '', barcode: '',
             stockQuantity: '', categoryId: '', brandId: '', isActive: true, supplierId: '', modelId: '', locationId: null
         });
         setIsModalOpen(true);
@@ -237,53 +233,67 @@ export default function UrunEnvanterSayfasi() {
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
                 <div className="relative w-full md:w-96">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
-                    <input type="text" placeholder="Ürün adı veya SKU koduna göre ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm" />
+                    <input type="text" placeholder="Ürün adı, SKU veya Barkod ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm" />
                 </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse table-auto">
                     <thead>
                         <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider">
-                            <th className="p-4 pl-6">Durum</th>
-                            <th className="p-4">Açıklaması</th>
-                            {/* YENİ EKLENDİ: Marka ve Model Başlığı */}
-                            <th className="p-4">Marka / Model</th>
-                            <th className="p-4">Kategori</th>
-                            <th className="p-4">SKU Kodu</th>
-                            <th className="p-4 text-right">Satış Fiyatı</th>
-                            <th className="p-4 text-center">Stok</th>
-                            <th className="p-4 pr-9 text-right">İşlemler</th>
+                            <th className="px-3 py-3 pl-6 w-1 whitespace-nowrap">Durum</th>
+                            <th className="px-3 py-3">Ürün Adı</th>
+                            <th className="px-3 py-3">Marka / Model</th>
+                            <th className="px-3 py-3">Kategori</th>
+                            <th className="px-3 py-3">SKU Kodu</th>
+                            <th className="px-3 py-3">Barkod</th>
+                            <th className="px-3 py-3 text-right w-1 whitespace-nowrap">Satış Fiyatı</th>
+                            <th className="px-3 py-3 text-center w-1 whitespace-nowrap">Stok</th>
+                            <th className="px-3 py-3 pr-6 text-right w-1 whitespace-nowrap">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
                         {isLoading ? (
-                            <tr><td colSpan={7} className="p-8 text-center text-slate-500 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
+                            <tr><td colSpan={9} className="p-8 text-center text-slate-500 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
                         ) : filteredProducts.length === 0 ? (
-                            <tr><td colSpan={7} className="p-8 text-center text-slate-500">Kayıt bulunamadı.</td></tr>
+                            <tr><td colSpan={9} className="p-8 text-center text-slate-500">Kayıt bulunamadı.</td></tr>
                         ) : (
                             filteredProducts.map((prod) => (
                                 <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="p-4 pl-6">
+                                    <td className="px-3 py-3 pl-6 w-1 whitespace-nowrap">
                                         <StatusBadge isActive={prod.isActive} />
                                     </td>
-                                    <td className="p-4 text-slate-900 font-semibold">{prod.productName}</td>
-
-                                    {/* YENİ EKLENDİ: Marka ve Model Verisi (Alt alta şık bir görünüm) */}
-                                    <td className="p-4">
+                                    <td className="px-3 py-3 text-slate-900 font-semibold">{prod.productName}</td>
+                                    <td className="px-3 py-3">
                                         <div className="flex flex-col">
                                             <span className="text-slate-700 font-semibold text-sm">{prod.brand || prod.brandName || '-'}</span>
                                             <span className="text-slate-400 text-xs">{prod.model || prod.modelName || '-'}</span>
                                         </div>
                                     </td>
+                                    <td className="px-3 py-3 text-slate-500 font-medium">{prod.category || 'Kategorisiz'}</td>
 
-                                    <td className="p-4 text-slate-500 font-medium">{prod.category || 'Kategorisiz'}</td>
-                                    <td className="p-4 align-middle"><span className="font-mono text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded px-2 py-1">{prod.barcode}</span></td>
-                                    <td className="p-4 text-right text-slate-900 font-bold">₺ {prod.salePrice?.toLocaleString()}</td>
-                                    <td className="p-4 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>{prod.stockQuantity} Adet</span></td>
-                                    <td className="p-4 pr-6 text-right">
-                                        <button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors mr-3 font-semibold">Düzenle</button>
-                                        <button onClick={() => handleDeleteClick(prod.id, prod.productName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
+                                    <td className="px-3 py-3 align-middle">
+                                        <span className="font-mono text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded px-2 py-1 break-all">
+                                            {prod.skuCode || '-'}
+                                        </span>
+                                    </td>
+                                    <td className="px-3 py-3 align-middle">
+                                        <span className="font-mono text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded px-2 py-1 break-all">
+                                            {prod.barcode || '-'}
+                                        </span>
+                                    </td>
+
+                                    <td className="px-3 py-3 text-right text-slate-900 font-bold w-1 whitespace-nowrap">₺ {prod.salePrice?.toLocaleString()}</td>
+                                    <td className="px-3 py-3 text-center w-1 whitespace-nowrap">
+                                        <span className={`inline-flex items-center justify-center gap-1 min-w-[70px] px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>
+                                            {prod.stockQuantity} Adet
+                                        </span>
+                                    </td>
+                                    <td className="px-3 py-3 pr-6 text-right w-1 whitespace-nowrap">
+                                        <div className="flex justify-end gap-3">
+                                            <button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors font-semibold">Düzenle</button>
+                                            <button onClick={() => handleDeleteClick(prod.id, prod.productName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -312,11 +322,20 @@ export default function UrunEnvanterSayfasi() {
                                             <input type="text" {...register("productName", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.productName ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200'}`} />
                                             {errors.productName && <ErrorMessage />}
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">SKU / Barkod *</label>
-                                            <input type="text" {...register("barcode", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm font-mono ${errors.barcode ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200'}`} />
-                                            {errors.barcode && <ErrorMessage />}
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">SKU Kodu *</label>
+                                                <input type="text" {...register("skuCode", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm font-mono ${errors.skuCode ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200'}`} />
+                                                {errors.skuCode && <ErrorMessage />}
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Barkod *</label>
+                                                <input type="text" {...register("barcode", { required: true })} className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm font-mono ${errors.barcode ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200'}`} />
+                                                {errors.barcode && <ErrorMessage />}
+                                            </div>
                                         </div>
+
                                         <SearchableSelect
                                             label="Kategori *"
                                             name="categoryId"
@@ -327,7 +346,6 @@ export default function UrunEnvanterSayfasi() {
                                         />
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                {/* DEĞİŞTİRİLDİ: Marka verilerini backend'den gelen "brands" state'inden okuyoruz */}
                                                 <SearchableSelect
                                                     label="Marka *"
                                                     name="brandId"
@@ -338,7 +356,6 @@ export default function UrunEnvanterSayfasi() {
                                                 />
                                             </div>
                                             <div>
-                                                {/* DEĞİŞTİRİLDİ: Model verilerini seçilen markaya göre dolan "models" state'inden okuyoruz */}
                                                 <SearchableSelect
                                                     label="Model *"
                                                     name="modelId"
