@@ -30,7 +30,7 @@ public class BrandService : IBrandService
 
     public async Task<BrandDto> CreateBrandAsync(CreateBrandDto dto)
     {
-        var brand = new Brand { Name = dto.Name };
+        var brand = new Brand { Name = dto.Name, CategoryId = dto.CategoryId };
 
         var created = await _brandRepository.AddAsync(brand);
 
@@ -39,7 +39,7 @@ public class BrandService : IBrandService
 
     public async Task<BrandDto?> UpdateBrandAsync(int id, UpdateBrandDto dto)
     {
-        var brand = await _brandRepository.UpdateAsync(id, dto.Name);
+        var brand = await _brandRepository.UpdateAsync(id, dto.Name, dto.CategoryId);
 
         return brand == null ? null : ToDto(brand);
     }
@@ -65,6 +65,12 @@ public class BrandService : IBrandService
 
     private static BrandDto ToDto(Brand b)
     {
-        return new BrandDto { Id = b.Id, Name = b.Name };
+        return new BrandDto
+        {
+            Id = b.Id,
+            Name = b.Name,
+            CategoryId = b.CategoryId,
+            CategoryName = b.Category?.Name ?? ""
+        };
     }
 }

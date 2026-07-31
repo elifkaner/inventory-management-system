@@ -106,5 +106,11 @@ public class AppDbContext : DbContext
             .WithMany(m => m.Products)
             .HasForeignKey(p => p.ModelId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Brand>()
+            .HasOne(m => m.Category)
+            .WithMany(b => b.Brands)
+            .HasForeignKey(m => m.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -6,6 +6,10 @@ public class Brand
 
     public string Name { get; set; } = "";
 
+    public int CategoryId { get; set; }
+
+    public Category? Category { get; set;}
+
     // Navigation Properties
     public List<Model> Models { get; set; } = new(); // bir markanın birden çok modeli olabilir.
 

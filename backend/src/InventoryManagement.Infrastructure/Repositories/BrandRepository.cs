@@ -16,12 +16,12 @@ public class BrandRepository : IBrandRepository
 
     public async Task<List<Brand>> GetAllAsync()
     {
-        return await _context.Brands.ToListAsync();
+        return await _context.Brands.Include(b => b.Category).ToListAsync();
     }
 
     public async Task<Brand?> GetByIdAsync(int id)
     {
-        return await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
+        return await _context.Brands.Include(b => b.Category).FirstOrDefaultAsync(b => b.Id == id);
     }
 
     public async Task<Brand> AddAsync(Brand brand)
@@ -30,10 +30,10 @@ public class BrandRepository : IBrandRepository
 
         await _context.SaveChangesAsync();
 
-        return brand;
+        return (await GetByIdAsync(brand.Id))!;
     }
 
-    public async Task<Brand?> UpdateAsync(int id, string name)
+    public async Task<Brand?> UpdateAsync(int id, string name, int categoryId)
     {
         var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
 
@@ -43,10 +43,11 @@ public class BrandRepository : IBrandRepository
         }
 
         brand.Name = name;
+        brand.CategoryId = categoryId;
 
         await _context.SaveChangesAsync();
 
-        return brand;
+        return await GetByIdAsync(id);
     }
 
     public async Task<bool> DeleteAsync(int id)
