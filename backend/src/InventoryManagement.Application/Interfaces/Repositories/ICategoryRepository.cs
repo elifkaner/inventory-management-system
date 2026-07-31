@@ -15,4 +15,8 @@ public interface ICategoryRepository
     Task<bool> DeleteAsync(int id);
 
     Task<bool> HasProductsAsync(int categoryId);
+
+    Task<int> GetProductCountAsync(int categoryId);
+
+    Task ReassignProductsAsync(int fromCategoryId, int toCategoryId);
 }

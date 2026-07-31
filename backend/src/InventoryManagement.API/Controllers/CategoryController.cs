@@ -1,5 +1,6 @@
 using FluentValidation;
 using InventoryManagement.Application.DTOs.Category;
+using InventoryManagement.Application.Exceptions;
 using InventoryManagement.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -87,11 +88,15 @@ public class CategoryController : ControllerBase
 
     // DELETE /api/Category/{id:int}
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteCategory(int id)
+    // DELETE /api/Category/{id}?reassignToCategoryId=5
+    // reassignToCategoryId verilmezse ve kategoriye bağlı ürün varsa, 409 Conflict + ürün
+    // sayısı döner — istemci bu bilgiyle kullanıcıya "ürünleri hangi kategoriye taşıyalım?"
+    // diye sorup, seçilen id ile isteği tekrar atabilir.
+    public async Task<IActionResult> DeleteCategory(int id, int? reassignToCategoryId = null)
     {
         try
         {
-            var deleted = await _categoryService.DeleteCategoryAsync(id);
+            var deleted = await _categoryService.DeleteCategoryAsync(id, reassignToCategoryId);
 
             if (!deleted)
             {
@@ -99,6 +104,10 @@ public class CategoryController : ControllerBase
             }
 
             return NoContent();
+        }
+        catch (CategoryHasProductsException ex)
+        {
+            return Conflict(new { message = ex.Message, productCount = ex.ProductCount });
         }
         catch (InvalidOperationException ex)
         {

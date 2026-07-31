@@ -12,5 +12,5 @@ public interface ICategoryService
 
     Task<CategoryDto?> UpdateCategoryAsync(int id, UpdateCategoryDto dto);
 
-    Task<bool> DeleteCategoryAsync(int id);
+    Task<bool> DeleteCategoryAsync(int id, int? reassignToCategoryId = null);
 }

@@ -69,4 +69,25 @@ public class CategoryRepository : ICategoryRepository
     {
         return await _context.Products.AnyAsync(p => p.CategoryId == categoryId);
     }
+
+    public async Task<int> GetProductCountAsync(int categoryId)
+    {
+        return await _context.Products.CountAsync(p => p.CategoryId == categoryId);
+    }
+
+    // Ürünleri tek tek, ChangeTracker üzerinden taşıyoruz (toplu SQL ile değil) —
+    // böylece AuditSaveChangesInterceptor her ürün için ayrı bir "Update, ChangedColumns:
+    // CategoryId" kaydı düşebiliyor. Toplu SQL (ExecuteUpdateAsync) ChangeTracker'ı hiç
+    // kullanmadığı için audit log bu değişiklikleri hiç göremezdi.
+    public async Task ReassignProductsAsync(int fromCategoryId, int toCategoryId)
+    {
+        var products = await _context.Products.Where(p => p.CategoryId == fromCategoryId).ToListAsync();
+
+        foreach (var product in products)
+        {
+            product.CategoryId = toCategoryId;
+        }
+
+        await _context.SaveChangesAsync();
+    }
 }
