@@ -69,21 +69,22 @@ public class AuditSaveChangesInterceptor : SaveChangesInterceptor
                 }
                 else if (entry.State == EntityState.Modified)
                 {
-                    var degisenAlanlar = entry.Properties.Where(p => p.IsModified).ToList();
-
+                    var degisenAlanlar = entry.Properties.Where(p=>p.IsModified).ToList();
+                    
                     var eskiDegerler = new Dictionary<string, object?>();
-                    var yeniDegerler = new Dictionary<string, object?>();
+                    var yeniDegerler = new Dictionary<string,object?>();
 
                     foreach (var prop in degisenAlanlar)
                     {
-                        eskiDegerler[prop.Metadata.Name] = prop.OriginalValue;
-                        yeniDegerler[prop.Metadata.Name] = prop.CurrentValue;
+                        eskiDegerler[prop.Metadata.Name]=prop.OriginalValue;
+                        yeniDegerler[prop.Metadata.Name]=prop.CurrentValue;
                     }
-
                     log.OldValues = System.Text.Json.JsonSerializer.Serialize(eskiDegerler);
                     log.NewValues = System.Text.Json.JsonSerializer.Serialize(yeniDegerler);
-                    log.ChangedColumns = string.Join(",", degisenAlanlar.Select(p => p.Metadata.Name));
+                    log.ChangedColumns = string.Join(",",degisenAlanlar.Select(x=>x.Metadata.Name));
+
                 }
+
 
                 else if (entry.State == EntityState.Deleted)
                 {
