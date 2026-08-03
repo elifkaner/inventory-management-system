@@ -36,7 +36,13 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
 
         RuleFor(x => x.SkuCode)
             .NotEmpty().WithMessage("Sku Kodu boş bırakılamaz.")
-            .MaximumLength(50).WithMessage("Sku Kodu en fazla 50 karakter olabilir.");
+            .MaximumLength(50).WithMessage("Sku Kodu en fazla 50 karakter olabilir.")
+            .MustAsync(async(skucode,cancellationToken) =>
+            {
+                var existing = await productRepository.GetBySkuCodeAsync(skucode);
+                return existing == null;
+            })
+            .WithMessage("Bu SKU başka bir ürün tarafından kullanılıyor.");
             
         RuleFor(x => x.StockQuantity)
             .GreaterThanOrEqualTo(0).WithMessage("Stok miktarı negatif olamaz.");

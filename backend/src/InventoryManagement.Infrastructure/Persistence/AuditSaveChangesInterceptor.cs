@@ -101,7 +101,7 @@ public class AuditSaveChangesInterceptor : SaveChangesInterceptor
 
 
                 auditEntries.Add(log);
-                Console.WriteLine($"Kamera not düştü: {log.Action} | {log.EntityName}#{log.EntityId} | Kim: {log.UserName}");
+                
             }
 
             if (auditEntries.Count > 0)

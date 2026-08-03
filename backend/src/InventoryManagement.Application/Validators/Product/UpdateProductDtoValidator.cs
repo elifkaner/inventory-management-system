@@ -11,7 +11,8 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
         ISupplierRepository supplierRepository,
         IProductRepository productRepository,
         IBrandRepository brandRepository,
-        IModelRepository modelRepository)
+        IModelRepository modelRepository,
+        IWarehouseLocationRepository warehouseLocationRepository)
     {
         RuleFor(x => x.ProductName)
             .NotEmpty().WithMessage("Ürün adı boş bırakılamaz.")
@@ -39,9 +40,21 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
             })
             .WithMessage("Bu barkod başka bir ürün tarafından kullanılıyor.");
 
-         RuleFor(x => x.SkuCode)
+        RuleFor(x => x.SkuCode)
             .NotEmpty().WithMessage("Sku Kodu boş bırakılamaz.")
-            .MaximumLength(50).WithMessage("Sku Kodu en fazla 50 karakter olabilir.");
+            .MaximumLength(50).WithMessage("Sku Kodu en fazla 50 karakter olabilir.")
+            .MustAsync(async (dto, skucode, context, cancellationToken) =>
+            {
+                var existing = await productRepository.GetBySkuCodeAsync(skucode);
+                if (existing == null)
+                {
+                    return true;
+                }
+
+                var currentProductId = (int)context.RootContextData["ProductId"];
+                return existing.Id == currentProductId;
+            })
+            .WithMessage("Bu Sku başka bir ürün tarafından kullanılıyor.");
           
 
         RuleFor(x => x.CategoryId)
@@ -93,5 +106,18 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
                 return supplier != null;
             })
             .WithMessage("Belirtilen tedarikçi bulunamadı.");
+            
+            RuleFor(x => x.LocationId)
+            .MustAsync(async (locationId, cancellationToken) =>
+            {
+                if (locationId == null)
+                {
+                    return true; // konum opsiyonel, boş bırakılabilir
+                }
+
+                var location = await warehouseLocationRepository.GetByIdAsync(locationId.Value);
+                return location != null;
+            })
+            .WithMessage("Belirtilen depo konumu bulunamadı.");
     }
 }
