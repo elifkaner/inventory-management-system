@@ -77,7 +77,7 @@ public class UpdateProductDtoValidatorTests
         // Given
         var dto = new UpdateProductDto {ProductName = new string('a',101)};
         // When
-        var result = await _validator.TestValidateAsync(dto);
+        var result = await _validator.TestValidateAsync(ContextFor(dto));
         // Then
         result.ShouldHaveValidationErrorFor(x =>x.ProductName);
     }
@@ -313,6 +313,7 @@ public class UpdateProductDtoValidatorTests
             Barcode = "98973792",
             CategoryId = 3,
             BrandId = 1,
+            SkuCode = "SKU-TEST-001",
             ModelId = 1,
             SupplierId = 3,
         };
