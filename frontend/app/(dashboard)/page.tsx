@@ -91,6 +91,9 @@ export default function Dashboard() {
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
             </div>
           </div>
+          <div className="mt-4 flex items-center text-xs font-medium text-slate-500">
+            <span>Sistemde kayıtlı toplam ürün çeşidi</span>
+          </div>
         </div>
 
         {/* Kart 2 */}
@@ -141,6 +144,9 @@ export default function Dashboard() {
             <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
             </div>
+          </div>
+          <div className="mt-4 flex items-center text-xs font-medium text-slate-500">
+            <span>Satışa açık, aktif durumdaki stoklar</span>
           </div>
         </div>
       </div>
