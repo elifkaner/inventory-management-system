@@ -1,7 +1,59 @@
 'use client';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { authFetch, API_BASE_URL } from '@/app/lib/api';
+import MovementBadge from '@/app/ui/stock-movements/movement-badge';
 
 export default function Dashboard() {
+  const [summary, setSummary] = useState<any>(null);
+  const [criticalProducts, setCriticalProducts] = useState<any[]>([]);
+  const [recentMovements, setRecentMovements] = useState<any[]>([]);
+  const [supplierCount, setSupplierCount] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        const [summaryRes, productsRes, movementsRes, suppliersRes] = await Promise.all([
+          authFetch(`${API_BASE_URL}/api/Product/summary`),
+          authFetch(`${API_BASE_URL}/api/Product`),
+          authFetch(`${API_BASE_URL}/api/StockMovement?pageSize=5`), // Assuming backend respects pageSize or we slice frontend
+          authFetch(`${API_BASE_URL}/api/Supplier`)
+        ]);
+
+        if (summaryRes.ok) setSummary(await summaryRes.json());
+        
+        if (productsRes.ok) {
+          const allProducts = await productsRes.json();
+          // HACK: Backend isCritical filtresi gelene kadar frontend'de stockQuantity <= 10 olanları filtrele
+          const criticals = Array.isArray(allProducts) ? allProducts : allProducts.items || [];
+          setCriticalProducts(criticals.filter((p: any) => p.stockQuantity <= 10).slice(0, 5));
+        }
+
+        if (movementsRes.ok) {
+          const movs = await movementsRes.json();
+          const movsArray = Array.isArray(movs) ? movs : movs.items || [];
+          // Get the latest 5 (assuming backend sorts by date desc, if not we slice)
+          setRecentMovements(movsArray.slice(0, 5));
+        }
+
+        if (suppliersRes.ok) {
+          const sups = await suppliersRes.json();
+          const supsArray = Array.isArray(sups) ? sups : sups.items || [];
+          setSupplierCount(supsArray.length);
+        }
+
+      } catch (error) {
+        console.error("Dashboard verileri yüklenirken hata:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <div className="p-8 bg-slate-50 min-h-screen font-sans text-slate-800">
 
@@ -31,15 +83,13 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Toplam Stok Kalemi</p>
-              <h3 className="text-3xl font-extrabold text-slate-800">1,248</h3>
+              <h3 className="text-3xl font-extrabold text-slate-800">
+                {isLoading ? '...' : (summary?.totalProducts || 0)}
+              </h3>
             </div>
             <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
             </div>
-          </div>
-          <div className="mt-4 flex items-center text-xs font-medium text-emerald-600">
-            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-            <span>Geçen aya göre +12% artış</span>
           </div>
         </div>
 
@@ -48,7 +98,9 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Düşük Stok Alarmı</p>
-              <h3 className="text-3xl font-extrabold text-rose-600">24</h3>
+              <h3 className="text-3xl font-extrabold text-rose-600">
+                {isLoading ? '...' : (summary?.criticalStockCount || 0)}
+              </h3>
             </div>
             <div className="p-3 bg-rose-50 text-rose-600 rounded-xl group-hover:scale-110 transition-transform">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -64,14 +116,16 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Aktif B2B Portföyü</p>
-              <h3 className="text-3xl font-extrabold text-slate-800">45</h3>
+              <h3 className="text-3xl font-extrabold text-slate-800">
+                {isLoading ? '...' : supplierCount}
+              </h3>
             </div>
             <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:scale-110 transition-transform">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             </div>
           </div>
           <div className="mt-4 flex items-center text-xs font-medium text-slate-500">
-            <span>Sistemde kayıtlı aktif iş ortakları</span>
+            <span>Sistemde kayıtlı aktif iş ortakları (Tedarikçi)</span>
           </div>
         </div>
 
@@ -79,16 +133,14 @@ export default function Dashboard() {
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Aylık Depo Girişi</p>
-              <h3 className="text-3xl font-extrabold text-slate-800">8.4K <span className="text-lg text-slate-500 font-medium">Birim</span></h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Aktif Satış Oranı</p>
+              <h3 className="text-3xl font-extrabold text-slate-800">
+                {isLoading ? '...' : `%${summary?.activeSalesRate || 0}`}
+              </h3>
             </div>
             <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
             </div>
-          </div>
-          <div className="mt-4 flex items-center text-xs font-medium text-emerald-600">
-            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-            <span>Son 30 gündeki operasyon hacmi</span>
           </div>
         </div>
       </div>
@@ -96,39 +148,82 @@ export default function Dashboard() {
       {/* 3. İKİLİ PANELLER (Hızlı Tablolar) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Sol Panel: Kritik Stoklar (Şimdilik Boş State) */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-96">
-          <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+        {/* Sol Panel: Kritik Stoklar */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-96 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-white z-10 relative">
             <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
               Acil Sipariş Bekleyenler
             </h2>
-            <Link href="/products" className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Envantere Git</Link>
+            <Link href="/inventory-levels" className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Envantere Git</Link>
           </div>
-          <div className="p-8 flex-1 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-            </div>
-            <h3 className="text-slate-700 font-bold mb-1">Kritik Stok Bulunamadı</h3>
-            <p className="text-sm text-slate-500 max-w-xs">Şu an için belirlenen minimum stok seviyesinin altına düşen bir bileşen bulunmuyor.</p>
+          <div className="flex-1 overflow-y-auto">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center p-8 text-slate-400">Yükleniyor...</div>
+            ) : criticalProducts.length === 0 ? (
+              <div className="p-8 flex h-full flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                </div>
+                <h3 className="text-slate-700 font-bold mb-1">Kritik Stok Bulunamadı</h3>
+                <p className="text-sm text-slate-500 max-w-xs">Şu an için belirlenen minimum stok seviyesinin altına düşen bir bileşen bulunmuyor.</p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {criticalProducts.map(p => (
+                  <li key={p.id} className="p-4 hover:bg-slate-50 flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">{p.productName}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">SKU: {p.skuCode || '-'}</p>
+                    </div>
+                    <div className="bg-rose-50 text-rose-700 px-3 py-1 rounded-full font-bold text-sm border border-rose-100">
+                      {p.stockQuantity} Adet
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
-        {/* Sağ Panel: Son Hareketler (Şimdilik Boş State) */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-96">
-          <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+        {/* Sağ Panel: Son Hareketler */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-96 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-white z-10 relative">
             <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               Son Depo Operasyonları
             </h2>
             <Link href="/stock-movements" className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Tümünü Gör</Link>
           </div>
-          <div className="p-8 flex-1 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-            </div>
-            <h3 className="text-slate-700 font-bold mb-1">Kayıt Bekleniyor</h3>
-            <p className="text-sm text-slate-500 max-w-xs">Veritabanına henüz yeni bir işlem kaydı düşmedi. Sistem verileri analiz ediyor.</p>
+          <div className="flex-1 overflow-y-auto">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center p-8 text-slate-400">Yükleniyor...</div>
+            ) : recentMovements.length === 0 ? (
+              <div className="p-8 flex h-full flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
+                <h3 className="text-slate-700 font-bold mb-1">Kayıt Bekleniyor</h3>
+                <p className="text-sm text-slate-500 max-w-xs">Veritabanına henüz yeni bir işlem kaydı düşmedi.</p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {recentMovements.map(m => (
+                  <li key={m.id} className="p-4 hover:bg-slate-50 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <MovementBadge type={m.transactionType || m.type} />
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">{m.productName}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{new Date(m.createdAt || m.date).toLocaleString('tr-TR')}</p>
+                      </div>
+                    </div>
+                    <div className="font-semibold text-slate-700 text-sm">
+                      {(m.transactionType || m.type) === 'IN' ? '+' : '-'}{m.quantity}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
