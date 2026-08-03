@@ -81,21 +81,19 @@ export default function BrandsClient() {
         <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-slate-50 text-slate-600 font-medium border-b border-slate-200">
             <tr>
-              <th className="px-6 py-4 w-24">ID</th>
               <th className="px-6 py-4">Marka Adı</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
             {isLoading ? (
-              <tr><td colSpan={2} className="px-6 py-8 text-center text-slate-500">Yükleniyor...</td></tr>
+              <tr><td colSpan={1} className="px-6 py-8 text-center text-slate-500">Yükleniyor...</td></tr>
             ) : error ? (
-              <tr><td colSpan={2} className="px-6 py-8 text-center text-rose-500">{error}</td></tr>
+              <tr><td colSpan={1} className="px-6 py-8 text-center text-rose-500">{error}</td></tr>
             ) : brands.length === 0 ? (
-              <tr><td colSpan={2} className="px-6 py-8 text-center text-slate-500">Henüz marka bulunmuyor.</td></tr>
+              <tr><td colSpan={1} className="px-6 py-8 text-center text-slate-500">Henüz marka bulunmuyor.</td></tr>
             ) : (
               brands.map((b) => (
                 <tr key={b.id} className="hover:bg-slate-50/50">
-                  <td className="px-6 py-4 font-mono text-xs text-slate-500">{b.id}</td>
                   <td className="px-6 py-4 font-medium text-slate-900">{b.brandName || b.name}</td>
                 </tr>
               ))

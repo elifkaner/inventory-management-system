@@ -95,22 +95,20 @@ export default function ModelsClient() {
         <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-slate-50 text-slate-600 font-medium border-b border-slate-200">
             <tr>
-              <th className="px-6 py-4 w-24">ID</th>
               <th className="px-6 py-4">Model Adı</th>
               <th className="px-6 py-4">Bağlı Marka</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
             {isLoading ? (
-              <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500">Yükleniyor...</td></tr>
+              <tr><td colSpan={2} className="px-6 py-8 text-center text-slate-500">Yükleniyor...</td></tr>
             ) : error ? (
-              <tr><td colSpan={3} className="px-6 py-8 text-center text-rose-500">{error}</td></tr>
+              <tr><td colSpan={2} className="px-6 py-8 text-center text-rose-500">{error}</td></tr>
             ) : models.length === 0 ? (
-              <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500">Henüz model bulunmuyor.</td></tr>
+              <tr><td colSpan={2} className="px-6 py-8 text-center text-slate-500">Henüz model bulunmuyor.</td></tr>
             ) : (
               models.map((m) => (
                 <tr key={m.id} className="hover:bg-slate-50/50">
-                  <td className="px-6 py-4 font-mono text-xs text-slate-500">{m.id}</td>
                   <td className="px-6 py-4 font-medium text-slate-900">{m.modelName || m.name}</td>
                   <td className="px-6 py-4">
                     <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-semibold">
