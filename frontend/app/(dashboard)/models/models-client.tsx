@@ -2,6 +2,8 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { API_BASE_URL, authFetch } from '@/app/lib/api';
+import Toast from '@/app/ui/toast';
+import ConfirmDeleteModal from '@/app/ui/confirm-delete-modal';
 
 export default function ModelsClient() {
   const [models, setModels] = useState<any[]>([]);
@@ -11,8 +13,13 @@ export default function ModelsClient() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  
   const [formData, setFormData] = useState({ id: null as number | null, name: '', brandId: '' });
+
+  const [toast, setToast] = useState<{isOpen: boolean, message: string, type: 'success' | 'error' | 'info'}>({isOpen: false, message: '', type: 'info'});
+  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, id: number | null, name: string}>({isOpen: false, id: null, name: ''});
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => setToast({isOpen: true, message, type});
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -65,7 +72,6 @@ export default function ModelsClient() {
       const url = formData.id ? `${API_BASE_URL}/api/Model/${formData.id}` : `${API_BASE_URL}/api/Model`;
       const method = formData.id ? 'PUT' : 'POST';
       
-      // Some backends expect 'Name', some expect 'ModelName'. Providing both.
       const payload = { 
           name: formData.name, 
           modelName: formData.name, 
@@ -81,33 +87,53 @@ export default function ModelsClient() {
       if (res.ok) {
         setIsModalOpen(false);
         fetchData();
+        showToast(formData.id ? 'Model başarıyla güncellendi.' : 'Model başarıyla eklendi.');
       } else {
-        alert('İşlem sırasında bir hata oluştu.');
+        const errText = await res.text();
+        showToast(errText || 'İşlem sırasında bir hata oluştu.', 'error');
       }
     } catch (err) {
-      alert('Sunucu hatası.');
+      showToast('Sunucu hatası.', 'error');
     } finally {
       setIsAdding(false);
     }
   };
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!window.confirm(`"${name}" modelini silmek istediğinize emin misiniz?`)) return;
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.id) return;
+    setIsDeleting(true);
     
     try {
-      const res = await authFetch(`${API_BASE_URL}/api/Model/${id}`, { method: 'DELETE' });
+      const res = await authFetch(`${API_BASE_URL}/api/Model/${deleteModal.id}`, { method: 'DELETE' });
       if (res.ok) {
-        setModels(prev => prev.filter(m => m.id !== id));
+        setModels(prev => prev.filter(m => m.id !== deleteModal.id));
+        showToast('Model başarıyla silindi.');
+        setDeleteModal({isOpen: false, id: null, name: ''});
       } else {
-        alert("Silme işlemi başarısız oldu.");
+        const errText = await res.text();
+        showToast(errText || "Silme işlemi başarısız oldu.", 'error');
+        setDeleteModal({isOpen: false, id: null, name: ''});
       }
     } catch (error) {
-      alert("Sunucuyla iletişim kurulamadı.");
+      showToast("Sunucuyla iletişim kurulamadı.", 'error');
+      setDeleteModal({isOpen: false, id: null, name: ''});
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto relative">
+      <Toast isOpen={toast.isOpen} message={toast.message} type={toast.type} onClose={() => setToast({...toast, isOpen: false})} />
+      
+      <ConfirmDeleteModal 
+        isOpen={deleteModal.isOpen} 
+        targetName={deleteModal.name} 
+        isSubmitting={isDeleting} 
+        onClose={() => setDeleteModal({...deleteModal, isOpen: false})} 
+        onConfirm={handleDeleteConfirm} 
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <div>
@@ -151,7 +177,7 @@ export default function ModelsClient() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button onClick={() => openModal(m)} className="text-blue-600 hover:text-blue-800 font-semibold mr-4">Düzenle</button>
-                    <button onClick={() => handleDelete(m.id, m.modelName || m.name)} className="text-rose-500 hover:text-rose-700 font-semibold">Sil</button>
+                    <button onClick={() => setDeleteModal({isOpen: true, id: m.id, name: m.modelName || m.name})} className="text-rose-500 hover:text-rose-700 font-semibold">Sil</button>
                   </td>
                 </tr>
               ))

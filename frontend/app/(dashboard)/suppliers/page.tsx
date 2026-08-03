@@ -109,13 +109,16 @@ export default function TedarikcilerSayfasi() {
                 body: JSON.stringify(payload)
             });
 
-            if (!res.ok) throw new Error("İşlem başarısız");
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText || "İşlem başarısız");
+            }
 
             setIsModalOpen(false);
             showToastMessage(formData.id ? "Tedarikçi başarıyla güncellendi." : "Yeni tedarikçi eklendi.", "success");
             fetchSuppliers();
-        } catch (error) {
-            showToastMessage("Sunucuya bağlanamadı veya bir hata oluştu.", "error");
+        } catch (error: any) {
+            showToastMessage(error.message || "Sunucuya bağlanamadı veya bir hata oluştu.", "error");
         }
     };
 
@@ -139,7 +142,8 @@ export default function TedarikcilerSayfasi() {
                 showToastMessage("Tedarikçi başarıyla silindi.", "success");
                 fetchSuppliers();
             } else {
-                showToastMessage("Silme işlemi başarısız oldu.", "error");
+                const errText = await res.text();
+                showToastMessage(errText || "Silme işlemi başarısız oldu.", "error");
             }
         } catch (error) {
             showToastMessage("Sunucuya bağlanırken bir hata oluştu.", "error");

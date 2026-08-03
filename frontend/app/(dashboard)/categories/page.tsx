@@ -1,11 +1,31 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { authFetch, API_BASE_URL } from '@/app/lib/api';
+import Toast from '../../ui/toast';
+import ConfirmDeleteModal from '../../ui/confirm-delete-modal';
+
 export default function KategorilerSayfasi() {
     const [categories, setCategories] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({ id: null, name: '' });
+
+    // Toast State
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
+    const [showToast, setShowToast] = useState(false);
+
+    // Modal State
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deletingCategoryId, setDeletingCategoryId] = useState<number | null>(null);
+    const [deletingCategoryName, setDeletingCategoryName] = useState("");
+
+    const showToastMsg = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+        setToastMessage(message);
+        setToastType(type);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+    };
 
     const fetchCategories = async () => {
         try {
@@ -28,7 +48,7 @@ export default function KategorilerSayfasi() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name.trim()) return alert("Kategori adı boş olamaz!");
+        if (!formData.name.trim()) return showToastMsg("Kategori adı boş olamaz!", "error");
 
         try {
             const url = formData.id ? `${API_BASE_URL}/api/Category/${formData.id}` : `${API_BASE_URL}/api/Category`;
@@ -40,27 +60,42 @@ export default function KategorilerSayfasi() {
                 body: JSON.stringify({ name: formData.name })
             });
 
-            if (!res.ok) throw new Error("İşlem başarısız");
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText || "İşlem başarısız");
+            }
 
             setIsModalOpen(false);
+            showToastMsg(formData.id ? "Kategori başarıyla güncellendi." : "Kategori başarıyla eklendi.", "success");
             fetchCategories();
-        } catch (error) {
-            alert("Sunucuyla iletişim kurulamadı.");
+        } catch (error: any) {
+            showToastMsg(error.message || "Sunucuyla iletişim kurulamadı.", "error");
         }
     };
 
-    const handleDelete = async (id: number, name: string) => {
-        if (!window.confirm(`"${name}" kategorisini silmek istediğinize emin misiniz?`)) return;
+    const handleDeleteClick = (id: number, name: string) => {
+        setDeletingCategoryId(id);
+        setDeletingCategoryName(name);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!deletingCategoryId) return;
 
         try {
-            const res = await authFetch(`${API_BASE_URL}/api/Category/${id}`, { method: 'DELETE' });
+            const res = await authFetch(`${API_BASE_URL}/api/Category/${deletingCategoryId}`, { method: 'DELETE' });
             if (res.ok) {
-                setCategories(prev => prev.filter(c => c.id !== id));
+                setCategories(prev => prev.filter(c => c.id !== deletingCategoryId));
+                showToastMsg("Kategori başarıyla silindi.", "success");
             } else {
-                alert("Silme işlemi başarısız oldu.");
+                const errText = await res.text();
+                showToastMsg(errText || "Silme işlemi başarısız oldu.", "error");
             }
-        } catch (error) {
-            alert("Sunucuyla iletişim kurulamadı.");
+        } catch (error: any) {
+            showToastMsg(error.message || "Sunucuyla iletişim kurulamadı.", "error");
+        } finally {
+            setIsDeleteModalOpen(false);
+            setDeletingCategoryId(null);
         }
     };
 
@@ -70,7 +105,25 @@ export default function KategorilerSayfasi() {
     };
 
     return (
-        <div className="p-8 bg-slate-50 min-h-screen text-slate-800 font-sans">
+        <div className="p-8 bg-slate-50 min-h-screen text-slate-800 font-sans relative">
+            
+            {showToast && (
+                <Toast
+                    isOpen={showToast}
+                    message={toastMessage}
+                    type={toastType}
+                    onClose={() => setShowToast(false)}
+                />
+            )}
+
+            <ConfirmDeleteModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDeleteConfirm}
+                targetName={deletingCategoryName}
+                isSubmitting={false}
+            />
+
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Envanter Grupları</h1>
@@ -101,7 +154,7 @@ export default function KategorilerSayfasi() {
                                     <td className="p-4 pl-12 text-slate-900 font-bold">{cat.name}</td>
                                     <td className="p-4 pr-6 text-right">
                                         <button onClick={() => openModal(cat)} className="text-blue-600 hover:text-blue-800 font-semibold mr-4">Düzenle</button>
-                                        <button onClick={() => handleDelete(cat.id, cat.name)} className="text-rose-500 hover:text-rose-700 font-semibold">Sil</button>
+                                        <button onClick={() => handleDeleteClick(cat.id, cat.name)} className="text-rose-500 hover:text-rose-700 font-semibold">Sil</button>
                                     </td>
                                 </tr>
                             ))
