@@ -15,7 +15,16 @@ export default function AuditLogsClient() {
         const res = await authFetch(`${API_BASE_URL}/api/AuditLog`);
         if (res.ok) {
           const data = await res.json();
-          setLogs(Array.isArray(data) ? data : data.items || []);
+          const rawLogs = Array.isArray(data) ? data : data.items || [];
+          
+          // Senior backend yöneticisinin talebi üzerine "System" işlemlerini (otomatik token yenileme vb.) listeden gizle
+          const filteredLogs = rawLogs.filter((log: any) => {
+            const userStr = log.userName || log.userId;
+            if (!userStr) return false; // Eğer boşsa sistem işlemidir, gizle
+            return userStr.toString().toLowerCase() !== 'system' && userStr.toString().toLowerCase() !== 'sistem';
+          });
+          
+          setLogs(filteredLogs);
         } else {
           setError('Sistem günlükleri yüklenemedi.');
         }
