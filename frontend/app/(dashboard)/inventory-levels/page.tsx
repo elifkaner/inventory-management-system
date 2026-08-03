@@ -39,10 +39,11 @@ export default function InventoryLevelsPage() {
     const parseLocation = (locationString: string) => {
         if (!locationString) return { corridor: "-", shelf: "-", section: "-" };
         const parts = locationString.split('-');
-        if (parts.length === 3) {
-            return { corridor: parts[0], shelf: parts[1], section: parts[2] };
-        }
-        return { corridor: locationString, shelf: "-", section: "-" };
+        return { 
+            corridor: parts[0] ? parts[0].trim() : "-", 
+            shelf: parts[1] ? parts[1].trim() : "-", 
+            section: parts[2] ? parts[2].trim() : "-" 
+        };
     };
 
     const getSupplierName = (supplierId: number) => {
