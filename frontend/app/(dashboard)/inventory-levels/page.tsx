@@ -32,12 +32,13 @@ export default function InventoryLevelsPage() {
         fetchData();
     }, []);
 
+    // SKU Araması Eklendi
     const filteredProducts = products.filter(prod =>
         prod.productName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prod.skuCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         prod.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Konum detaylarını (Koridor / Raf / Bölüm) ayrıştıran fonksiyon
     const getLocationDetails = (locationId: number) => {
         if (!locationId) return { corridor: "-", shelf: "-", section: "-" };
         const loc = locations.find(l => l.id === locationId);
@@ -60,7 +61,6 @@ export default function InventoryLevelsPage() {
                 </div>
             </div>
 
-            {/* ARAMA VE FİLTRE */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
                 <div className="relative w-full md:w-[28rem]">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -70,7 +70,7 @@ export default function InventoryLevelsPage() {
                     </div>
                     <input
                         type="text"
-                        placeholder="Ürün adı veya barkoda göre ara..."
+                        placeholder="Ürün adı, SKU veya barkoda göre ara..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
@@ -78,12 +78,12 @@ export default function InventoryLevelsPage() {
                 </div>
             </div>
 
-            {/* LİSTELEME TABLOSU */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
                         <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider">
                             <th className="p-4 pl-6">Ürün Adı</th>
+                            <th className="p-4">SKU Kodu</th>
                             <th className="p-4">Barkod</th>
                             <th className="p-4 text-center">Stok Sayısı</th>
                             <th className="p-4 text-center">Koridor</th>
@@ -95,9 +95,9 @@ export default function InventoryLevelsPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
                         {isLoading ? (
-                            <tr><td colSpan={8} className="p-8 text-center text-slate-500 animate-pulse">Veriler Yükleniyor...</td></tr>
+                            <tr><td colSpan={9} className="p-8 text-center text-slate-500 animate-pulse">Veriler Yükleniyor...</td></tr>
                         ) : filteredProducts.length === 0 ? (
-                            <tr><td colSpan={8} className="p-8 text-center text-slate-500">Kayıt bulunamadı.</td></tr>
+                            <tr><td colSpan={9} className="p-8 text-center text-slate-500">Kayıt bulunamadı.</td></tr>
                         ) : (
                             filteredProducts.map((prod) => {
                                 const isCritical = prod.stockQuantity <= 10;
@@ -107,9 +107,17 @@ export default function InventoryLevelsPage() {
                                 return (
                                     <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="p-4 pl-6 text-slate-900 font-bold">{prod.productName}</td>
+
+                                        {/* SKU Kodu Sütunu */}
                                         <td className="p-4 font-mono text-xs text-slate-500">
-                                            <span className="bg-slate-100 border border-slate-200 rounded px-2 py-1">{prod.barcode}</span>
+                                            <span className="bg-slate-100 border border-slate-200 rounded px-2 py-1">{prod.skuCode || '-'}</span>
                                         </td>
+
+                                        {/* Barkod Sütunu */}
+                                        <td className="p-4 font-mono text-xs text-slate-500">
+                                            <span className="bg-slate-100 border border-slate-200 rounded px-2 py-1">{prod.barcode || '-'}</span>
+                                        </td>
+
                                         <td className="p-4 text-center">
                                             <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${isOutOfStock ? 'bg-slate-200 text-slate-500' : isCritical ? 'bg-rose-100 text-rose-700' : 'bg-blue-50 text-blue-700'}`}>
                                                 {prod.stockQuantity}

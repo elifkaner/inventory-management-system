@@ -1,8 +1,13 @@
+import StockMovementsClient from './stock-movements-client';
+
+export const metadata = {
+    title: 'Depo Hareketleri | StokPro',
+};
+
 export default function Page() {
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">🚧 Bu Sayfa Yapım Aşamasında</h1>
-            <p className="text-gray-600">Buraya yakında harika veriler gelecek!</p>
+        <div className="p-6 h-full max-w-7xl mx-auto">
+            <StockMovementsClient />
         </div>
     );
 }
