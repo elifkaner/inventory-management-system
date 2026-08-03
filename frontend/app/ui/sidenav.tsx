@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '@/app/lib/api';
 
 // Menü yapısını güncelliyoruz: Alt menüsü olanlar için "subLinks" dizisi ekledik.
@@ -38,13 +38,17 @@ const menuItems = [
         ]
     },
     {
-        name: 'Envanter Grupları',
-        href: '/categories',
+        name: 'Tanımlamalar',
         icon: (
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-        )
+        ),
+        subLinks: [
+            { name: 'Kategori Grupları', href: '/categories' },
+            { name: 'Markalar', href: '/brands' },
+            { name: 'Modeller', href: '/models' }
+        ]
     },
     {
         name: 'İş Ortakları',
@@ -79,8 +83,13 @@ export default function SideNav() {
     const pathname = usePathname();
     const router = useRouter();
 
-    // Dropdown menü açık/kapalı durumunu tutacak state (Varsayılan olarak kapalı)
-    const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+    // Dropdown menü açık/kapalı durumunu tutacak state
+    const [openMenuName, setOpenMenuName] = useState<string | null>(null);
+
+    // Sayfa değiştiğinde açık olan menüyü kapat (Eğer alt sayfasındaysa isChildActive sayesinde otomatik açık kalır)
+    useEffect(() => {
+        setOpenMenuName(null);
+    }, [pathname]);
 
     // Çıkış Yapma Fonksiyonu
     const handleLogout = async () => {
@@ -135,30 +144,33 @@ export default function SideNav() {
                     // Eğer menünün alt linkleri varsa (Dropdown ise)
                     if (item.subLinks) {
                         const isChildActive = item.subLinks.some(sub => pathname === sub.href);
+                        // Alt sayfa aktifse veya menü ismine tıklanarak açılmışsa
+                        const isOpen = openMenuName === item.name || (openMenuName === null && isChildActive);
+
                         return (
                             <div key={item.name} className="flex flex-col gap-1">
                                 <button
-                                    onClick={() => setIsInventoryOpen(!isInventoryOpen)}
-                                    className={`group flex w-full items-center justify-between rounded-xl p-3 text-sm font-medium transition-all border ${isChildActive || isInventoryOpen
+                                    onClick={() => setOpenMenuName(isOpen ? 'closed' : item.name)}
+                                    className={`group flex w-full items-center justify-between rounded-xl p-3 text-sm font-medium transition-all border ${isChildActive || isOpen
                                         ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
                                         : 'bg-transparent text-slate-600 border-transparent hover:bg-slate-50 hover:text-slate-900'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`${isChildActive || isInventoryOpen ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                                        <div className={`${isChildActive || isOpen ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
                                             {item.icon}
                                         </div>
                                         <span className="hidden md:block">{item.name}</span>
                                     </div>
                                     <svg
-                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isInventoryOpen ? 'rotate-180 text-blue-700' : 'text-slate-400'}`}
+                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-700' : 'text-slate-400'}`}
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                     >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
                                 {/* Alt Menü Öğeleri */}
-                                {isInventoryOpen && (
+                                {isOpen && (
                                     <div className="hidden md:flex flex-col gap-1 mt-1 animate-in slide-in-from-top-2 fade-in duration-200">
                                         {item.subLinks.map((sub) => {
                                             const isActive = pathname === sub.href;
