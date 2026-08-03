@@ -16,20 +16,17 @@ public class BrandRepository : IBrandRepository
 
     public async Task<List<Brand>> GetAllAsync()
     {
-        return await _context.Brands.Include(b => b.Category).ToListAsync();
+       return await _context.Brands.Include(b => b.Category).ToListAsync();
     }
 
     public async Task<Brand?> GetByIdAsync(int id)
     {
-        return await _context.Brands.Include(b => b.Category).FirstOrDefaultAsync(b => b.Id == id);
+        return await _context.Brands.Include(x=>x.Category).FirstOrDefaultAsync(b=>b.Id==id);
     }
-
     public async Task<Brand> AddAsync(Brand brand)
     {
-        _context.Brands.Add(brand);
-
+        _context.Add(brand);
         await _context.SaveChangesAsync();
-
         return (await GetByIdAsync(brand.Id))!;
     }
 
