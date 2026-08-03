@@ -42,6 +42,21 @@ export default function AuditLogsClient() {
     }
   };
 
+  const formatLogValues = (val: string) => {
+    if (!val || val === "{}") return null;
+    try {
+      const parsed = JSON.parse(val);
+      return Object.entries(parsed)
+        .filter(([k]) => k !== 'xmin') // Entity Framework iç değişkenini gizle
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(' | ');
+    } catch {
+      return val.replace(/\\u[\dA-F]{4}/gi, (match) => 
+        String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16))
+      );
+    }
+  };
+
   return (
     <div className="p-8 bg-slate-50 min-h-screen text-slate-800 font-sans">
       <div className="flex justify-between items-start mb-8">
@@ -92,10 +107,10 @@ export default function AuditLogsClient() {
                          <div className="mb-2 text-blue-600 font-semibold border-b border-blue-100 pb-1">Değişen Alanlar: {log.changedColumns}</div>
                       )}
                       {log.oldValues && log.oldValues !== "{}" && (
-                        <div className="text-rose-600 mb-1.5"><span className="font-bold">Eski:</span> {log.oldValues}</div>
+                        <div className="text-rose-600 mb-1.5 leading-relaxed"><span className="font-bold">Eski:</span> {formatLogValues(log.oldValues)}</div>
                       )}
                       {log.newValues && log.newValues !== "{}" && (
-                        <div className="text-emerald-600"><span className="font-bold">Yeni:</span> {log.newValues}</div>
+                        <div className="text-emerald-600 leading-relaxed"><span className="font-bold">Yeni:</span> {formatLogValues(log.newValues)}</div>
                       )}
                       {(!log.oldValues || log.oldValues === "{}") && (!log.newValues || log.newValues === "{}") && (
                         <span>Detay yok</span>
