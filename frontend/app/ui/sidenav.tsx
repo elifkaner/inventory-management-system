@@ -151,19 +151,19 @@ export default function SideNav() {
                             <div key={item.name} className="flex flex-col gap-1">
                                 <button
                                     onClick={() => setOpenMenuName(isOpen ? 'closed' : item.name)}
-                                    className={`group flex w-full items-center justify-between rounded-xl p-3 text-sm font-medium transition-all border ${isChildActive || isOpen
+                                    className={`group flex w-full items-center justify-between rounded-xl p-3 text-sm font-medium transition-all border ${isChildActive
                                         ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
-                                        : 'bg-transparent text-slate-600 border-transparent hover:bg-slate-50 hover:text-slate-900'
+                                        : (isOpen ? 'bg-slate-50 text-slate-900 border-transparent' : 'bg-transparent text-slate-600 border-transparent hover:bg-slate-50 hover:text-slate-900')
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`${isChildActive || isOpen ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                                        <div className={`${isChildActive ? 'text-blue-700' : (isOpen ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600')}`}>
                                             {item.icon}
                                         </div>
                                         <span className="hidden md:block">{item.name}</span>
                                     </div>
                                     <svg
-                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-700' : 'text-slate-400'}`}
+                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive ? 'text-blue-700' : (isOpen ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600')}`}
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                     >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

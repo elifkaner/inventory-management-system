@@ -84,7 +84,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Toplam Stok Kalemi</p>
               <h3 className="text-3xl font-extrabold text-slate-800">
-                {isLoading ? '...' : (summary?.totalProducts || 0)}
+                {isLoading ? 'Yükleniyor...' : (summary?.totalProducts || 0)}
               </h3>
             </div>
             <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform">
@@ -102,7 +102,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Düşük Stok Alarmı</p>
               <h3 className="text-3xl font-extrabold text-rose-600">
-                {isLoading ? '...' : (summary?.criticalStockCount || 0)}
+                {isLoading ? 'Yükleniyor...' : (summary?.criticalStockCount || 0)}
               </h3>
             </div>
             <div className="p-3 bg-rose-50 text-rose-600 rounded-xl group-hover:scale-110 transition-transform">
@@ -120,7 +120,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Aktif B2B Portföyü</p>
               <h3 className="text-3xl font-extrabold text-slate-800">
-                {isLoading ? '...' : supplierCount}
+                {isLoading ? 'Yükleniyor...' : supplierCount}
               </h3>
             </div>
             <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:scale-110 transition-transform">
@@ -138,7 +138,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Aktif Satış Oranı</p>
               <h3 className="text-3xl font-extrabold text-slate-800">
-                {isLoading ? '...' : `%${summary?.activeSalesRate || 0}`}
+                {isLoading ? 'Yükleniyor...' : `%${summary?.activeSalesRate || 0}`}
               </h3>
             </div>
             <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
