@@ -12,8 +12,8 @@ export default function ConfirmDeleteModal({ isOpen, targetName, isSubmitting, o
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden p-6 text-center animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-[70] p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden p-6 text-center">
                 <p className="text-sm text-slate-600 mb-6 pt-2">
                     <span className="font-bold text-slate-900">{targetName}</span> kaydını silmek istediğinize emin misiniz?
                 </p>

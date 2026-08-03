@@ -245,7 +245,11 @@ export default function KategorilerSayfasi() {
                         ) : categories.length === 0 ? (
                             <tr><td colSpan={2} className="p-8 text-center text-slate-500">Henüz kategori bulunmuyor.</td></tr>
                         ) : (
-                            categories.map((cat) => (
+                            [...categories].sort((a, b) => {
+                                if (a.name.toLowerCase() === 'kategorisiz') return -1;
+                                if (b.name.toLowerCase() === 'kategorisiz') return 1;
+                                return a.name.localeCompare(b.name);
+                            }).map((cat) => (
                                 <tr key={cat.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="p-4 pl-12 text-slate-900 font-bold">{cat.name}</td>
                                     <td className="p-4 pr-6 text-right">
