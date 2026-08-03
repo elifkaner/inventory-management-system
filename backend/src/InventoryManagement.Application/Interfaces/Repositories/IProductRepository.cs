@@ -17,6 +17,8 @@ public interface IProductRepository
 
     Task<Product?> GetByBarcodeAsync(string Barcode);
 
+    Task<Product?> GetBySkuCodeAsync(string SkuCode);   
+    
     Task<Product> AddAsync(Product product);
 
     Task<Product?> UpdateAsync(int id, Product updatedProduct);

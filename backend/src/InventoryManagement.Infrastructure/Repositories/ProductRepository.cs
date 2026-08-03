@@ -66,6 +66,16 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Location)
             .FirstOrDefaultAsync(p => p.Barcode == Barcode);
     }
+    public async Task<Product?> GetBySkuCodeAsync(string SkuCode)
+    {
+        return await _context.Products
+            .Include(p => p.Supplier)
+            .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .Include(p => p.Model)
+            .Include(p => p.Location)
+            .FirstOrDefaultAsync(p => p.SkuCode == SkuCode);
+    }
     public async Task<Product> AddAsync(Product product)
     {
         _context.Products.Add(product);
