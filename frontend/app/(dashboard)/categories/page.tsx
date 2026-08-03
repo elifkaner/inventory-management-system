@@ -86,7 +86,7 @@ export default function KategorilerSayfasi() {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider">
-                            <th className="p-4 pl-6">Kategori Adı</th>
+                            <th className="p-4 pl-12">Kategori Adı</th>
                             <th className="p-4 pr-6 text-right">İşlemler</th>
                         </tr>
                     </thead>
@@ -98,7 +98,7 @@ export default function KategorilerSayfasi() {
                         ) : (
                             categories.map((cat) => (
                                 <tr key={cat.id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="p-4 pl-6 text-slate-900 font-bold">{cat.name}</td>
+                                    <td className="p-4 pl-12 text-slate-900 font-bold">{cat.name}</td>
                                     <td className="p-4 pr-6 text-right">
                                         <button onClick={() => openModal(cat)} className="text-blue-600 hover:text-blue-800 font-semibold mr-4">Düzenle</button>
                                         <button onClick={() => handleDelete(cat.id, cat.name)} className="text-rose-500 hover:text-rose-700 font-semibold">Sil</button>

@@ -128,7 +128,7 @@ export default function BrandsClient() {
         <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-slate-50 text-slate-600 font-medium border-b border-slate-200">
             <tr>
-              <th className="px-6 py-4">Marka Adı</th>
+              <th className="pl-12 pr-6 py-4">Marka Adı</th>
               <th className="px-6 py-4">Bağlı Kategori</th>
               <th className="px-6 py-4 text-right">İşlemler</th>
             </tr>
@@ -143,7 +143,7 @@ export default function BrandsClient() {
             ) : (
               brands.map((b) => (
                 <tr key={b.id} className="hover:bg-slate-50/50">
-                  <td className="px-6 py-4 font-medium text-slate-900">{b.brandName || b.name}</td>
+                  <td className="pl-12 pr-6 py-4 font-medium text-slate-900">{b.brandName || b.name}</td>
                   <td className="px-6 py-4">
                     <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-semibold">
                       {b.categoryName || getCategoryName(b.categoryId)}
