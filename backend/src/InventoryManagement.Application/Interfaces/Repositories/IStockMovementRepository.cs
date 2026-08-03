@@ -10,7 +10,5 @@ public interface IStockMovementRepository
 
     Task<StockMovement> AddAsync(StockMovement stockMovement);
 
-    Task<StockMovement?> UpdateAsync(int id, StockMovement stockMovement);
-
     Task<bool> DeleteAsync(int id);
 }
