@@ -87,15 +87,15 @@ export default function AuditLogsClient() {
                     {getActionBadge(log.action)}
                   </td>
                   <td className="p-4 pr-6">
-                    <div className="max-w-md overflow-hidden text-slate-500 text-xs font-mono bg-slate-50 p-2 rounded border border-slate-100" title={log.changedColumns}>
+                    <div className="max-w-2xl overflow-x-auto whitespace-pre-wrap break-words text-slate-600 text-xs font-mono bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm" title={log.changedColumns}>
                       {log.action === 'UPDATE' && log.changedColumns && (
-                         <div className="mb-1 text-blue-600 font-semibold">Değişen Alanlar: {log.changedColumns}</div>
+                         <div className="mb-2 text-blue-600 font-semibold border-b border-blue-100 pb-1">Değişen Alanlar: {log.changedColumns}</div>
                       )}
                       {log.oldValues && log.oldValues !== "{}" && (
-                        <div className="text-rose-600 mb-1">Eski: {log.oldValues}</div>
+                        <div className="text-rose-600 mb-1.5"><span className="font-bold">Eski:</span> {log.oldValues}</div>
                       )}
                       {log.newValues && log.newValues !== "{}" && (
-                        <div className="text-emerald-600">Yeni: {log.newValues}</div>
+                        <div className="text-emerald-600"><span className="font-bold">Yeni:</span> {log.newValues}</div>
                       )}
                       {(!log.oldValues || log.oldValues === "{}") && (!log.newValues || log.newValues === "{}") && (
                         <span>Detay yok</span>
