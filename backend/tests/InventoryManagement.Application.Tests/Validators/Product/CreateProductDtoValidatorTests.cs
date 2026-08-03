@@ -336,7 +336,8 @@ public class CreateProductDtoValidatorTests
             SupplierId = 1,
             LocationId = 1,
             CategoryId = 1,
-            ModelId = 1
+            ModelId = 1,
+            SkuCode = "SKU-TEST-001"
         };
         // When
         var result = await _validator.TestValidateAsync(dto);
