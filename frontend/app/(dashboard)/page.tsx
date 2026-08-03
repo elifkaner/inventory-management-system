@@ -64,10 +64,6 @@ export default function Dashboard() {
           <p className="text-slate-500 mt-1 text-sm">İşletmenizin anlık envanter durumu ve operasyonel özetini takip edin.</p>
         </div>
         <div className="flex gap-3">
-          <button className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-medium text-sm flex items-center gap-2 transition-colors shadow-sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-            Rapor İndir
-          </button>
           <Link href="/products" className="px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium text-sm flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-transform hover:-translate-y-0.5">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             Yeni Envanter Ekle
