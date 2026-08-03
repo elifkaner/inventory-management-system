@@ -202,9 +202,9 @@ export default function KategorilerSayfasi() {
                                 onChange={(e) => setTransferTargetId(Number(e.target.value))}
                                 className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 text-sm bg-white text-slate-900"
                             >
-                                <option value="">Kategori Seçiniz...</option>
+                                <option value="" className="bg-white text-slate-900">Kategori Seçiniz...</option>
                                 {categories.filter(c => c.id !== categoryToTransfer.id).map(c => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                    <option key={c.id} value={c.id} className="bg-white text-slate-900">{c.name}</option>
                                 ))}
                             </select>
                         </div>

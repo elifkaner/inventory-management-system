@@ -204,9 +204,9 @@ export default function BrandsClient() {
                   onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900"
                 >
-                  <option value="">Seçiniz...</option>
+                  <option value="" className="bg-white text-slate-900">Seçiniz...</option>
                   {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id} className="bg-white text-slate-900">{c.name}</option>
                   ))}
                 </select>
               </div>
