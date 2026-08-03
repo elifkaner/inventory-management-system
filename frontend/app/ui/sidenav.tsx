@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '@/app/lib/api';
 
 // Menü yapısını güncelliyoruz: Alt menüsü olanlar için "subLinks" dizisi ekledik.
@@ -85,6 +85,11 @@ export default function SideNav() {
 
     // Dropdown menü açık/kapalı durumunu tutacak state
     const [openMenuName, setOpenMenuName] = useState<string | null>(null);
+
+    // Sayfa değiştiğinde açık olan menüyü kapat (Eğer alt sayfasındaysa isChildActive sayesinde otomatik açık kalır)
+    useEffect(() => {
+        setOpenMenuName(null);
+    }, [pathname]);
 
     // Çıkış Yapma Fonksiyonu
     const handleLogout = async () => {
