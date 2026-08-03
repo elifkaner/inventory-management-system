@@ -77,7 +77,7 @@ export default function AuditLogsClient() {
                     <div className="text-xs text-slate-500 mt-0.5">{new Date(log.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                   </td>
                   <td className="p-4">
-                    <span className="bg-slate-100 px-2 py-1 rounded text-slate-600 font-mono text-xs">User: {log.userId || 'Sistem'}</span>
+                    <span className="bg-slate-100 px-2 py-1 rounded text-slate-600 font-mono text-xs">Kullanıcı: {log.userName || log.userId || 'Sistem'}</span>
                   </td>
                   <td className="p-4">
                     <div className="font-semibold text-slate-800">{log.entityName}</div>
@@ -87,8 +87,19 @@ export default function AuditLogsClient() {
                     {getActionBadge(log.action)}
                   </td>
                   <td className="p-4 pr-6">
-                    <div className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap text-slate-500 text-xs font-mono bg-slate-50 p-2 rounded border border-slate-100" title={log.changes}>
-                      {log.changes || 'Detay yok'}
+                    <div className="max-w-md overflow-hidden text-slate-500 text-xs font-mono bg-slate-50 p-2 rounded border border-slate-100" title={log.changedColumns}>
+                      {log.action === 'UPDATE' && log.changedColumns && (
+                         <div className="mb-1 text-blue-600 font-semibold">Değişen Alanlar: {log.changedColumns}</div>
+                      )}
+                      {log.oldValues && log.oldValues !== "{}" && (
+                        <div className="text-rose-600 mb-1">Eski: {log.oldValues}</div>
+                      )}
+                      {log.newValues && log.newValues !== "{}" && (
+                        <div className="text-emerald-600">Yeni: {log.newValues}</div>
+                      )}
+                      {(!log.oldValues || log.oldValues === "{}") && (!log.newValues || log.newValues === "{}") && (
+                        <span>Detay yok</span>
+                      )}
                     </div>
                   </td>
                 </tr>
