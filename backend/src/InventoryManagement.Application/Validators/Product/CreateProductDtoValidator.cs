@@ -13,7 +13,7 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
         IProductRepository productRepository,
         IBrandRepository brandRepository,
         IModelRepository modelRepository)
-    {
+    {   
         RuleFor(x => x.ProductName)
             .NotEmpty().WithMessage("Ürün adı boş bırakılamaz.")
             .MaximumLength(100).WithMessage("Ürün adı en fazla 100 karakter olabilir.");

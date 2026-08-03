@@ -5,12 +5,14 @@ using InventoryManagement.Application.Validators.Model;
 using Moq;
 using BrandEntity = InventoryManagement.Domain.Entities.Brand;
 
+
 namespace InventoryManagement.Application.Tests.Validators.Model;
 
 public class UpdateModelDtoValidatorTests
 {
     private readonly Mock<IBrandRepository> _brandRepository = new();
     private readonly UpdateModelDtoValidator _validator;
+
 
     public UpdateModelDtoValidatorTests()
     {
