@@ -11,7 +11,8 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
         ISupplierRepository supplierRepository,
         IProductRepository productRepository,
         IBrandRepository brandRepository,
-        IModelRepository modelRepository)
+        IModelRepository modelRepository,
+        IWarehouseLocationRepository warehouseLocationRepository)
     {
         RuleFor(x => x.ProductName)
             .NotEmpty().WithMessage("Ürün adı boş bırakılamaz.")
@@ -105,5 +106,18 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
                 return supplier != null;
             })
             .WithMessage("Belirtilen tedarikçi bulunamadı.");
+            
+            RuleFor(x => x.LocationId)
+            .MustAsync(async (locationId, cancellationToken) =>
+            {
+                if (locationId == null)
+                {
+                    return true; // konum opsiyonel, boş bırakılabilir
+                }
+
+                var location = await warehouseLocationRepository.GetByIdAsync(locationId.Value);
+                return location != null;
+            })
+            .WithMessage("Belirtilen depo konumu bulunamadı.");
     }
 }
