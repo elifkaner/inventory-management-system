@@ -18,11 +18,12 @@ interface SearchableSelectProps {
     errorMessage?: string;
     placeholder?: string;
     direction?: 'up' | 'down';
+    hideSearch?: boolean;
 }
 
 export default function SearchableSelect({
     label, name, options, register, setValue, watch, error,
-    errorMessage = "Bu alan zorunludur.", placeholder = "Seçiniz...", direction = 'down'
+    errorMessage = "Bu alan zorunludur.", placeholder = "Seçiniz...", direction = 'down', hideSearch = false
 }: SearchableSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -47,6 +48,10 @@ export default function SearchableSelect({
         opt.label.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Performans iyileştirmesi: DOM'a aynı anda en fazla 100 öğe basıyoruz.
+    // Kullanıcı zaten geri kalanını arama çubuğu ile bulacaktır.
+    const visibleOptions = filteredOptions.slice(0, 100);
+
     return (
         <div ref={wrapperRef}>
             <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
@@ -67,31 +72,38 @@ export default function SearchableSelect({
 
                 {isOpen && (
                     <div className={`absolute z-[60] w-full bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto flex flex-col ${direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
-                        <div className="p-2 sticky top-0 bg-white border-b border-slate-100 z-10">
-                            <div className="relative">
-                                <input
-                                    type="text" placeholder="Ara..."
-                                    className="w-full pl-3 pr-9 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                                    value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                                <MagnifyingGlassIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                        {!hideSearch && (
+                            <div className="p-2 sticky top-0 bg-white border-b border-slate-100 z-10">
+                                <div className="relative">
+                                    <input
+                                        type="text" placeholder="Ara..."
+                                        className="w-full pl-3 pr-9 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                        value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <MagnifyingGlassIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                                </div>
                             </div>
-                        </div>
+                        )}
                         <ul className="py-1">
                             <li className="px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm text-slate-500 italic"
                                 onClick={() => { setValue(name, "", { shouldValidate: true }); setIsOpen(false); setSearchTerm(""); }}>
                                 Seçimi Temizle
                             </li>
 
-                            {filteredOptions.map((opt) => (
+                            {visibleOptions.map((opt) => (
                                 <li key={opt.value} className={`px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm ${String(selectedValue) === String(opt.value) ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'text-slate-700'}`}
                                     onClick={() => { setValue(name, String(opt.value), { shouldValidate: true }); setIsOpen(false); setSearchTerm(""); }}>
                                     {opt.label}
                                 </li>
                             ))}
-                            {filteredOptions.length === 0 && (
+                            {visibleOptions.length === 0 && (
                                 <li className="px-3 py-2 text-sm text-slate-500 text-center">Sonuç bulunamadı.</li>
+                            )}
+                            {filteredOptions.length > 100 && (
+                                <li className="px-3 py-2 text-xs text-slate-400 text-center italic border-t border-slate-100">
+                                    Daha fazla sonuç var, lütfen arama yapın...
+                                </li>
                             )}
                         </ul>
                     </div>

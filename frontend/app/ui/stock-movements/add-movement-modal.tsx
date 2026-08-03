@@ -111,15 +111,21 @@ export default function AddMovementModal({ isOpen, onClose, onSuccess }: AddMove
                     <div className="space-y-5">
                         
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">İşlem Tipi</label>
-                            <select 
-                                {...register('type', { required: true })}
-                                className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
-                            >
-                                <option value="IN">Giriş</option>
-                                <option value="OUT">Çıkış</option>
-                                <option value="WASTE">Fire</option>
-                            </select>
+                            <SearchableSelect 
+                                label="İşlem Tipi"
+                                name="type"
+                                options={[
+                                    { value: 'IN', label: 'Giriş' },
+                                    { value: 'OUT', label: 'Çıkış' },
+                                    { value: 'WASTE', label: 'Fire' }
+                                ]}
+                                register={register}
+                                setValue={setValue}
+                                watch={watch}
+                                hideSearch={true}
+                                error={!!errors.type}
+                                errorMessage="İşlem tipi seçimi zorunludur."
+                            />
                         </div>
 
                         <div>

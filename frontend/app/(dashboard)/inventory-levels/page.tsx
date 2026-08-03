@@ -5,7 +5,6 @@ import { authFetch, API_BASE_URL } from '@/app/lib/api';
 
 export default function InventoryLevelsPage() {
     const [products, setProducts] = useState<any[]>([]);
-    const [locations, setLocations] = useState<any[]>([]);
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -14,14 +13,12 @@ export default function InventoryLevelsPage() {
         const fetchData = async () => {
             try {
                 setIsLoading(true);
-                const [prodRes, locRes, supRes] = await Promise.all([
+                const [prodRes, supRes] = await Promise.all([
                     authFetch(`${API_BASE_URL}/api/Product`),
-                    authFetch(`${API_BASE_URL}/api/WarehouseLocation`),
                     authFetch(`${API_BASE_URL}/api/Supplier`)
                 ]);
 
                 if (prodRes.ok) setProducts(await prodRes.json());
-                if (locRes.ok) setLocations(await locRes.json());
                 if (supRes.ok) setSuppliers(await supRes.json());
             } catch (error) {
                 console.error("Veriler yüklenemedi:", error);
@@ -39,11 +36,13 @@ export default function InventoryLevelsPage() {
         prod.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const getLocationDetails = (locationId: number) => {
-        if (!locationId) return { corridor: "-", shelf: "-", section: "-" };
-        const loc = locations.find(l => l.id === locationId);
-        if (!loc) return { corridor: "Bilinmiyor", shelf: "-", section: "-" };
-        return { corridor: loc.corridor, shelf: loc.shelf, section: loc.section };
+    const parseLocation = (locationString: string) => {
+        if (!locationString) return { corridor: "-", shelf: "-", section: "-" };
+        const parts = locationString.split('-');
+        if (parts.length === 3) {
+            return { corridor: parts[0], shelf: parts[1], section: parts[2] };
+        }
+        return { corridor: locationString, shelf: "-", section: "-" };
     };
 
     const getSupplierName = (supplierId: number) => {
@@ -102,7 +101,7 @@ export default function InventoryLevelsPage() {
                             filteredProducts.map((prod) => {
                                 const isCritical = prod.stockQuantity <= 10;
                                 const isOutOfStock = prod.stockQuantity === 0;
-                                const loc = getLocationDetails(prod.locationId);
+                                const loc = parseLocation(prod.location);
 
                                 return (
                                     <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
