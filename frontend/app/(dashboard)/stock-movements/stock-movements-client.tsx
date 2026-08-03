@@ -17,7 +17,13 @@ export default function StockMovementsClient() {
             const res = await authFetch(`${API_BASE_URL}/api/StockMovement`);
             if (res.ok) {
                 const data = await res.json();
-                setMovements(Array.isArray(data) ? data : data.items || []);
+                const rawData = Array.isArray(data) ? data : data.items || [];
+                const sortedData = rawData.sort((a: any, b: any) => {
+                    const dateA = new Date(a.createdAt || a.date).getTime();
+                    const dateB = new Date(b.createdAt || b.date).getTime();
+                    return dateB - dateA;
+                });
+                setMovements(sortedData);
             } else {
                 setError('Hareketler yüklenirken bir sorun oluştu.');
             }
