@@ -203,7 +203,7 @@ export default function ModelsClient() {
                   required
                   value={formData.brandId}
                   onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900"
                 >
                   <option value="">Seçiniz...</option>
                   {brands.map(b => (
