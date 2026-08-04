@@ -7,6 +7,8 @@ import Toast from '../../ui/toast';
 import ConfirmDeleteModal from '../../ui/confirm-delete-modal';
 import ErrorMessage from '@/app/ui/error-message';
 import StatusBadge from '@/app/ui/status-badge';
+import Pagination from '@/app/ui/pagination';
+import { useDebounce } from 'use-debounce';
 
 type ProductFormData = {
     id?: number | null;
@@ -34,6 +36,11 @@ export default function UrunEnvanterSayfasi() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalCount, setTotalCount] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: number | null; targetName: string }>({ isOpen: false, id: null, targetName: '' });
@@ -45,33 +52,50 @@ export default function UrunEnvanterSayfasi() {
 
     const selectedBrandId = watch("brandId");
 
-    const fetchData = useCallback(async () => {
+    const fetchMetadata = useCallback(async () => {
         try {
-            setIsLoading(true);
-            const [catRes, supRes, prodRes, locRes, brandRes] = await Promise.all([
+            const [catRes, supRes, locRes, brandRes] = await Promise.all([
                 authFetch(`${API_BASE_URL}/api/Category`),
                 authFetch(`${API_BASE_URL}/api/Supplier`),
-                authFetch(`${API_BASE_URL}/api/Product`),
                 authFetch(`${API_BASE_URL}/api/WarehouseLocation`),
                 authFetch(`${API_BASE_URL}/api/Brand`)
             ]);
 
             if (catRes.ok) setCategories(await catRes.json());
             if (supRes.ok) setSuppliers(await supRes.json());
-            if (prodRes.ok) setProducts(await prodRes.json());
             if (locRes.ok) setLocations(await locRes.json());
             if (brandRes.ok) setBrands(await brandRes.json());
-
         } catch (err) {
-            setInfoModal({ isOpen: true, message: "Veriler sunucudan çekilemedi.", type: 'error' });
-        } finally {
-            setIsLoading(false);
+            console.error("Metadata çekilemedi", err);
         }
     }, []);
 
+    const fetchProducts = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const res = await authFetch(`${API_BASE_URL}/api/Product?search=${debouncedSearchTerm}&page=${currentPage}&pageSize=${pageSize}`);
+            if (res.ok) {
+                const data = await res.json();
+                // Backend'den artık PaginatedResult<T> dönüyor (items ve totalCount)
+                setProducts(data.items || []);
+                setTotalCount(data.totalCount || 0);
+            } else {
+                setInfoModal({ isOpen: true, message: "Ürünler sunucudan çekilemedi.", type: 'error' });
+            }
+        } catch (err) {
+            setInfoModal({ isOpen: true, message: "Sunucu bağlantı hatası.", type: 'error' });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [debouncedSearchTerm, currentPage, pageSize]);
+
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        fetchMetadata();
+    }, [fetchMetadata]);
+
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
 
     useEffect(() => {
         const fetchModelsByBrand = async () => {
@@ -92,11 +116,9 @@ export default function UrunEnvanterSayfasi() {
         fetchModelsByBrand();
     }, [selectedBrandId]);
 
-    const filteredProducts = products.filter(prod =>
-        prod.productName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prod.skuCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prod.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Artık backend'den paginated geldiği için filtreleme orada yapılıyor.
+    // Yine de bileşen içinde products dönebiliriz. Sadece ismini eşitleyelim.
+    const filteredProducts = products;
 
     const onSubmit = async (data: ProductFormData) => {
         setIsSubmitting(true);
@@ -327,6 +349,16 @@ export default function UrunEnvanterSayfasi() {
                         )}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={currentPage}
+                    pageSize={pageSize}
+                    totalCount={totalCount}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={(size) => {
+                        setPageSize(size);
+                        setCurrentPage(1); // Sayfa boyutu değiştiğinde 1. sayfaya dön
+                    }}
+                />
             </div>
 
             {isModalOpen && (
