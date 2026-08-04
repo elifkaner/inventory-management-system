@@ -1,7 +1,9 @@
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Domain.Entities;
 using InventoryManagement.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using InventoryManagement.Application.DTOs.Common;
 
 namespace InventoryManagement.Infrastructure.Repositories;
 
@@ -14,7 +16,7 @@ public class StockMovementRepository : IStockMovementRepository
         _context = context;
     }
 
-    public async Task<List<StockMovement>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null)
+    public async Task<PagedResult<StockMovement>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null,int? page = null, int? pageSize = null)
     {
         var query = _context.StockMovements
             .Include(s => s.Product)
@@ -40,8 +42,20 @@ public class StockMovementRepository : IStockMovementRepository
         {
             query = query.Where(s => s.CreatedAt <= toDate.Value);
         }
+        var totalRecords = await query.CountAsync();
+        if(page.HasValue && pageSize.HasValue)
+        {
+            query = query.Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value);
+        }        
 
-        return await query.ToListAsync();
+        var items = await query.ToListAsync();
+
+        return new PagedResult<StockMovement> {
+            Items = items,
+            PageSize = pageSize ?? totalRecords,
+            PageNumber = page ?? 1,
+            TotalRecord = totalRecords,
+        };
     }
 
     public async Task<StockMovement?> GetByIdAsync(int id)

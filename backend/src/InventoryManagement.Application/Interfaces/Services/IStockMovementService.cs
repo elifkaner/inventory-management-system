@@ -1,10 +1,11 @@
+using InventoryManagement.Application.DTOs.Common;
 using InventoryManagement.Application.DTOs.StockMovement;
 
 namespace InventoryManagement.Application.Interfaces.Services;
 
 public interface IStockMovementService
 {
-    Task<List<StockMovementResponseDto>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null);
+    Task<PagedResult<StockMovementResponseDto>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null,int? page = null, int? pageSize = null);
 
     Task<StockMovementResponseDto?> GetByIdAsync(int id);
 

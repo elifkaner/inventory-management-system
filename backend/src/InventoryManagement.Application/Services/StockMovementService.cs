@@ -1,3 +1,4 @@
+using InventoryManagement.Application.DTOs.Common;
 using InventoryManagement.Application.DTOs.StockMovement;
 using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Application.Interfaces.Repositories;
@@ -25,11 +26,17 @@ public class StockMovementService : IStockMovementService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<List<StockMovementResponseDto>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null)
+    public async Task<PagedResult<StockMovementResponseDto>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null,int? page = null, int? pageSize = null)
     {
-        var movements = await _stockMovementRepository.GetAllAsync(productId, transactionType, fromDate, toDate);
+        var result = await _stockMovementRepository.GetAllAsync(productId, transactionType, fromDate, toDate, page, pageSize);
 
-        return movements.Select(ToDto).ToList();
+        return new PagedResult<StockMovementResponseDto>
+        {
+            Items = result.Items.Select(ToDto).ToList(),
+            PageNumber = result.PageNumber,
+            PageSize = result.PageSize,
+            TotalRecord = result.TotalRecord
+        };
     }
 
     public async Task<StockMovementResponseDto?> GetByIdAsync(int id)
