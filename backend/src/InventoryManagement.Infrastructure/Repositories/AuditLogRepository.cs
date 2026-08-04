@@ -1,3 +1,4 @@
+using InventoryManagement.Application.DTOs.Common;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Domain.Entities;
 using InventoryManagement.Infrastructure.Persistence;
@@ -14,7 +15,7 @@ public class AuditLogRepository : IAuditLogRepository
         _context = context;
     }
 
-    public async Task<List<AuditLog>> GetAllAsync(string? entityName = null, int? userId = null, DateTime? fromDate = null, DateTime? toDate = null)
+    public async Task<PagedResult<AuditLog>> GetAllAsync(string? entityName = null, int? userId = null, DateTime? fromDate = null, DateTime? toDate = null, int? page = null, int? pageSize = null)
     {
         var query = _context.AuditLogs.AsQueryable();
 
@@ -38,6 +39,23 @@ public class AuditLogRepository : IAuditLogRepository
             query = query.Where(a => a.Timestamp <= toDate.Value);
         }
 
-        return await query.OrderByDescending(a => a.Timestamp).ToListAsync();
+        query = query.OrderByDescending(a => a.Timestamp);
+
+        var totalRecord = await query.CountAsync();
+
+        if (page.HasValue && pageSize.HasValue)
+        {
+            query = query.Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value);
+        }
+
+        var items = await query.ToListAsync();
+
+        return new PagedResult<AuditLog>
+        {
+            Items = items,
+            TotalRecord = totalRecord,
+            PageNumber = page ?? 1,
+            PageSize = pageSize ?? totalRecord
+        };
     }
 }
