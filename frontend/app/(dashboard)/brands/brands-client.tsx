@@ -1,9 +1,18 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
+import { useForm } from 'react-hook-form';
 import { API_BASE_URL, authFetch } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
 import ConfirmDeleteModal from '@/app/ui/confirm-delete-modal';
+import Pagination from '@/app/ui/pagination';
+import SearchableSelect from '@/app/ui/searchable-select';
+
+type BrandFormData = {
+  id?: number | null;
+  name: string;
+  categoryId: string;
+};
 
 export default function BrandsClient() {
   const [brands, setBrands] = useState<any[]>([]);
@@ -13,7 +22,13 @@ export default function BrandsClient() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState({ id: null as number | null, name: '', categoryId: '' });
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<BrandFormData>();
 
   const [toast, setToast] = useState<{isOpen: boolean, message: string, type: 'success' | 'error' | 'info'}>({isOpen: false, message: '', type: 'info'});
   const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, id: number | null, name: string}>({isOpen: false, id: null, name: ''});
@@ -33,7 +48,9 @@ export default function BrandsClient() {
       if (brRes.ok && catRes.ok) {
         const brData = await brRes.json();
         const catData = await catRes.json();
-        setBrands(Array.isArray(brData) ? brData : brData.items || []);
+        const brandsList = Array.isArray(brData) ? brData : brData.items || [];
+        setBrands(brandsList);
+        setTotalCount(brandsList.length);
         setCategories(Array.isArray(catData) ? catData : catData.items || []);
       } else {
         setError('Veriler yüklenirken sorun oluştu.');
@@ -56,26 +73,23 @@ export default function BrandsClient() {
 
   const openModal = (brand: any = null) => {
     if (brand) {
-      setFormData({ id: brand.id, name: brand.brandName || brand.name, categoryId: brand.categoryId ? String(brand.categoryId) : '' });
+      reset({ id: brand.id, name: brand.brandName || brand.name, categoryId: brand.categoryId ? String(brand.categoryId) : '' });
     } else {
-      setFormData({ id: null, name: '', categoryId: '' });
+      reset({ id: null, name: '', categoryId: '' });
     }
     setIsModalOpen(true);
   };
 
-  const handleSave = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim() || !formData.categoryId) return;
-
+  const handleSave = async (data: BrandFormData) => {
     setIsAdding(true);
     try {
-      const url = formData.id ? `${API_BASE_URL}/api/Brand/${formData.id}` : `${API_BASE_URL}/api/Brand`;
-      const method = formData.id ? 'PUT' : 'POST';
+      const url = data.id ? `${API_BASE_URL}/api/Brand/${data.id}` : `${API_BASE_URL}/api/Brand`;
+      const method = data.id ? 'PUT' : 'POST';
       
       const payload = { 
-          name: formData.name, 
-          brandName: formData.name, 
-          categoryId: parseInt(formData.categoryId) 
+          name: data.name, 
+          brandName: data.name, 
+          categoryId: parseInt(data.categoryId) 
       };
 
       const res = await authFetch(url, {
@@ -87,7 +101,7 @@ export default function BrandsClient() {
       if (res.ok) {
         setIsModalOpen(false);
         fetchData();
-        showToast(formData.id ? 'Marka başarıyla güncellendi.' : 'Marka başarıyla eklendi.');
+        showToast(data.id ? 'Marka başarıyla güncellendi.' : 'Marka başarıyla eklendi.');
       } else {
         const errText = await res.text();
         showToast(errText || 'İşlem sırasında bir hata oluştu.', 'error');
@@ -134,10 +148,10 @@ export default function BrandsClient() {
       />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Markalar</h1>
-          <p className="text-sm text-slate-500 mt-1">Sistemde tanımlı markaları listeleyin ve yönetin.</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Markalar</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Sistemde tanımlı markaları listeleyin ve yönetin.</p>
         </div>
         <button
           onClick={() => openModal()}
@@ -149,81 +163,87 @@ export default function BrandsClient() {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden text-sm">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden text-sm transition-colors">
         <table className="w-full text-left whitespace-nowrap">
-          <thead className="bg-slate-50 text-slate-600 font-medium border-b border-slate-200">
+          <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700">
             <tr>
               <th className="pl-12 pr-6 py-4">Marka Adı</th>
               <th className="px-6 py-4">Bağlı Kategori</th>
               <th className="px-6 py-4 text-right">İşlemler</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-slate-700">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-300">
             {isLoading ? (
-              <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500">Yükleniyor...</td></tr>
+              <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Yükleniyor...</td></tr>
             ) : error ? (
               <tr><td colSpan={3} className="px-6 py-8 text-center text-rose-500">{error}</td></tr>
             ) : brands.length === 0 ? (
-              <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500">Henüz marka bulunmuyor.</td></tr>
+              <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Henüz marka bulunmuyor.</td></tr>
             ) : (
-              brands.map((b) => (
-                <tr key={b.id} className="hover:bg-slate-50/50">
-                  <td className="pl-12 pr-6 py-4 font-medium text-slate-900">{b.brandName || b.name}</td>
+              brands.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((b) => (
+                <tr key={b.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
+                  <td className="pl-12 pr-6 py-4 font-medium text-slate-900 dark:text-slate-100">{b.brandName || b.name}</td>
                   <td className="px-6 py-4">
-                    <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-semibold">
+                    <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded text-xs font-semibold">
                       {b.categoryName || getCategoryName(b.categoryId)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => openModal(b)} className="text-blue-600 hover:text-blue-800 font-semibold mr-4">Düzenle</button>
-                    <button onClick={() => setDeleteModal({isOpen: true, id: b.id, name: b.brandName || b.name})} className="text-rose-500 hover:text-rose-700 font-semibold">Sil</button>
+                    <button onClick={() => openModal(b)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold mr-4">Düzenle</button>
+                    <button onClick={() => setDeleteModal({isOpen: true, id: b.id, name: b.brandName || b.name})} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold">Sil</button>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+        {brands.length > 0 && (
+          <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setCurrentPage(1);
+              }}
+          />
+        )}
       </div>
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-bold text-slate-800">{formData.id ? 'Marka Düzenle' : 'Yeni Marka Ekle'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{watch("id") ? 'Marka Düzenle' : 'Yeni Marka Ekle'}</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <form onSubmit={handleSave} className="p-6">
+            <form onSubmit={handleSubmit(handleSave)} className="p-6">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Bağlı Olduğu Kategori</label>
-                <select
-                  required
-                  value={formData.categoryId}
-                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                  className="form-select"
-                >
-                  <option value="">Seçiniz...</option>
-                  {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+                <SearchableSelect
+                    label="Bağlı Olduğu Kategori"
+                    name="categoryId"
+                    options={categories.map(c => ({ value: c.id, label: c.name }))}
+                    register={register} setValue={setValue} watch={watch}
+                    error={!!errors.categoryId}
+                    placeholder="Kategori Seçiniz"
+                />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Marka Adı</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Marka Adı</label>
                 <input
                   type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  {...register("name", { required: true })}
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Örn: Apple, Samsung..."
                 />
               </div>
               <div className="flex justify-end gap-3 mt-6">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">İptal</button>
-                <button type="submit" disabled={isAdding} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">İptal</button>
+                <button type="submit" disabled={isAdding} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
                   {isAdding ? 'Kaydediliyor...' : 'Kaydet'}
                 </button>
               </div>
