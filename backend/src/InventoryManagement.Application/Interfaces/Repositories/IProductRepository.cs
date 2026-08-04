@@ -1,3 +1,4 @@
+using InventoryManagement.Application.DTOs.Common;
 using InventoryManagement.Domain.Entities;
 
 namespace InventoryManagement.Application.Interfaces.Repositories;
@@ -11,7 +12,7 @@ public record ProductSummaryStats(
 
 public interface IProductRepository
 {
-    Task<List<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null);
+    Task<PagedResult<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null);
 
     Task<Product?> GetByIdAsync(int id);
 

@@ -1,3 +1,4 @@
+using InventoryManagement.Application.DTOs.Common;
 using InventoryManagement.Application.Exceptions;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Domain.Entities;
@@ -15,7 +16,7 @@ public class ProductRepository : IProductRepository
         _context = context;
     }
 
-    public async Task<List<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null)
+    public async Task<PagedResult<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null)
     {
         var query = _context.Products
             .Include(p => p.Supplier)
@@ -37,13 +38,21 @@ public class ProductRepository : IProductRepository
         {
             query = query.Where(p => p.CategoryId == categoryId.Value);
         }
+        var totalRecord = await query.CountAsync();
 
         if (page.HasValue && pageSize.HasValue)
         {
             query = query.Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value);
         }
+        var items = await query.ToListAsync();
 
-        return await query.ToListAsync();
+        return new PagedResult<Product>
+        {
+            Items = items,
+            TotalRecord = totalRecord,
+            PageNumber = page ?? 1,
+            PageSize = pageSize ?? totalRecord
+        };
     }
 
     public async Task<Product?> GetByIdAsync(int id)

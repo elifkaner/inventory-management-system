@@ -98,8 +98,6 @@ public class AuditSaveChangesInterceptor : SaveChangesInterceptor
                     log.OldValues = System.Text.Json.JsonSerializer.Serialize(eskiDegerler);
                 }
 
-
-
                 auditEntries.Add(log);
                 
             }

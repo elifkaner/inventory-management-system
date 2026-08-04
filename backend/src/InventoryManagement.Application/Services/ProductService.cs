@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text;
+using InventoryManagement.Application.DTOs.Common;
 using InventoryManagement.Application.DTOs.Product;
 using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Application.Interfaces.Repositories;
@@ -28,11 +29,17 @@ public class ProductService : IProductService
     }
 
     // Arama ve kategori filtresine göre ürünleri listeler
-    public async Task<List<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null)
+    public async Task<PagedResult<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null)
     {
-        var products = await _productRepository.GetAllAsync(search, categoryId, page, pageSize);
+        var result = await _productRepository.GetAllAsync(search, categoryId, page, pageSize);
 
-        return products.Select(ToResponseDto).ToList();
+        return new PagedResult<ProductResponseDto>
+        {
+            Items = result.Items.Select(ToResponseDto).ToList(),
+            TotalRecord = result.TotalRecord,
+            PageNumber = result.PageNumber,
+            PageSize = result.PageSize
+        };
     }
 
     // Id'ye göre ürün getirir
@@ -136,7 +143,8 @@ public class ProductService : IProductService
     {
         // Sayfalama parametresi kasıtlı olarak yok — export, ekranda görünen sayfayı değil,
         // arama/filtreyle eşleşen TÜM ürünleri içermeli.
-        var products = await GetAllProductsAsync(search, categoryId);
+        var results = await GetAllProductsAsync(search, categoryId);
+        var products = results.Items;
 
         var csv = new StringBuilder();
         csv.AppendLine("Id,Ürün Adı,Barkod,Kategori,Tedarikçi,Alış Fiyatı,Satış Fiyatı,Stok,Durum");
