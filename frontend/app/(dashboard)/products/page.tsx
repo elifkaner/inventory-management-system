@@ -76,9 +76,10 @@ export default function UrunEnvanterSayfasi() {
             const res = await authFetch(`${API_BASE_URL}/api/Product?search=${debouncedSearchTerm}&page=${currentPage}&pageSize=${pageSize}`);
             if (res.ok) {
                 const data = await res.json();
-                // Backend'den artık PaginatedResult<T> dönüyor (items ve totalCount)
-                setProducts(data.items || []);
-                setTotalCount(data.totalCount || 0);
+                // Backend'den artık PagedResult<T> dönüyor (Items ve TotalRecord)
+                // C# property isimleri camelCase (items) veya PascalCase (Items) gelebilir. İkisini de kontrol edelim.
+                setProducts(data.items || data.Items || []);
+                setTotalCount(data.totalRecord || data.TotalRecord || data.totalCount || 0);
             } else {
                 setInfoModal({ isOpen: true, message: "Ürünler sunucudan çekilemedi.", type: 'error' });
             }
