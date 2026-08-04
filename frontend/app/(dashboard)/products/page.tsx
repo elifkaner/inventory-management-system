@@ -258,17 +258,17 @@ export default function UrunEnvanterSayfasi() {
     };
 
     return (
-        <div className="p-8 bg-slate-50 min-h-screen text-slate-800 font-sans relative">
+        <div className="p-8 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 font-sans relative transition-colors duration-200">
             <Toast isOpen={infoModal.isOpen} message={infoModal.message} type={infoModal.type} onClose={() => setInfoModal({ ...infoModal, isOpen: false })} />
             <ConfirmDeleteModal isOpen={deleteModal.isOpen} targetName={deleteModal.targetName} isSubmitting={isSubmitting} onClose={() => setDeleteModal({ isOpen: false, id: null, targetName: '' })} onConfirm={confirmDelete} />
 
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Ürün Envanter Yönetimi</h1>
-                    <p className="text-slate-500 mt-1 text-sm">Stok kartlarını, fiyat listelerini ve envanter durumlarını merkezi olarak takip edin.</p>
+                    <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Ürün Envanter Yönetimi</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Stok kartlarını, fiyat listelerini ve envanter durumlarını merkezi olarak takip edin.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button onClick={handleExportCsv} className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-5 py-3 rounded-xl font-semibold shadow-sm transition-all flex items-center gap-2">
+                    <button onClick={handleExportCsv} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 px-5 py-3 rounded-xl font-semibold shadow-sm transition-all flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                         Dışa Aktar (CSV)
                     </button>
@@ -279,17 +279,17 @@ export default function UrunEnvanterSayfasi() {
                 </div>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
                 <div className="relative w-full md:w-96">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
-                    <input type="text" placeholder="Ürün adı, SKU veya Barkod ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm" />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
+                    <input type="text" placeholder="Ürün adı, SKU veya Barkod ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm dark:text-slate-200" />
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
                 <table className="w-full text-left border-collapse table-auto">
                     <thead>
-                        <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider">
+                        <tr className="bg-slate-50/70 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
                             <th className="px-3 py-3 pl-6 w-1 whitespace-nowrap">Durum</th>
                             <th className="px-3 py-3">Ürün Adı</th>
                             <th className="px-3 py-3">Marka / Model</th>
@@ -301,40 +301,40 @@ export default function UrunEnvanterSayfasi() {
                             <th className="px-3 py-3 pr-6 text-right w-1 whitespace-nowrap">İşlemler</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm font-medium text-slate-700 dark:text-slate-300">
                         {isLoading ? (
-                            <tr><td colSpan={9} className="p-8 text-center text-slate-500 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
+                            <tr><td colSpan={9} className="p-8 text-center text-slate-500 dark:text-slate-400 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
                         ) : filteredProducts.length === 0 ? (
-                            <tr><td colSpan={9} className="p-8 text-center text-slate-500">Kayıt bulunamadı.</td></tr>
+                            <tr><td colSpan={9} className="p-8 text-center text-slate-500 dark:text-slate-400">Kayıt bulunamadı.</td></tr>
                         ) : (
                             filteredProducts.map((prod) => (
-                                <tr key={prod.id} className="hover:bg-slate-50/50 transition-colors">
+                                <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
                                     <td className="px-3 py-3 pl-6 w-1 whitespace-nowrap">
                                         <StatusBadge isActive={prod.isActive} />
                                     </td>
-                                    <td className="px-3 py-3 text-slate-900 font-semibold">{prod.productName}</td>
+                                    <td className="px-3 py-3 text-slate-900 dark:text-slate-100 font-semibold">{prod.productName}</td>
                                     <td className="px-3 py-3">
                                         <div className="flex flex-col">
-                                            <span className="text-slate-700 font-semibold text-sm">{prod.brand || prod.brandName || '-'}</span>
-                                            <span className="text-slate-400 text-xs">{prod.model || prod.modelName || '-'}</span>
+                                            <span className="text-slate-700 dark:text-slate-300 font-semibold text-sm">{prod.brand || prod.brandName || '-'}</span>
+                                            <span className="text-slate-400 dark:text-slate-500 text-xs">{prod.model || prod.modelName || '-'}</span>
                                         </div>
                                     </td>
-                                    <td className="px-3 py-3 text-slate-500 font-medium">{prod.category || 'Kategorisiz'}</td>
+                                    <td className="px-3 py-3 text-slate-500 dark:text-slate-400 font-medium">{prod.category || 'Kategorisiz'}</td>
 
                                     <td className="px-3 py-3 align-middle">
-                                        <span className="font-mono text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded px-2 py-1 break-all">
+                                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 break-all">
                                             {prod.skuCode || '-'}
                                         </span>
                                     </td>
                                     <td className="px-3 py-3 align-middle">
-                                        <span className="font-mono text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded px-2 py-1 break-all">
+                                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 break-all">
                                             {prod.barcode || '-'}
                                         </span>
                                     </td>
 
-                                    <td className="px-3 py-3 text-right text-slate-900 font-bold w-1 whitespace-nowrap">₺ {prod.salePrice?.toLocaleString()}</td>
+                                    <td className="px-3 py-3 text-right text-slate-900 dark:text-slate-100 font-bold w-1 whitespace-nowrap">₺ {prod.salePrice?.toLocaleString()}</td>
                                     <td className="px-3 py-3 text-center w-1 whitespace-nowrap">
-                                        <span className={`inline-flex items-center justify-center gap-1 min-w-[70px] px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}`}>
+                                        <span className={`inline-flex items-center justify-center gap-1 min-w-[70px] px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
                                             {prod.stockQuantity} Adet
                                         </span>
                                     </td>
