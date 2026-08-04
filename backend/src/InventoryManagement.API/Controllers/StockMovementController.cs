@@ -31,9 +31,12 @@ namespace InventoryManagement.API.Controllers;
         [FromQuery] int? productId,
         [FromQuery] string? transactionType,
         [FromQuery] DateTime? fromDate,
-        [FromQuery] DateTime? toDate)
+        [FromQuery] DateTime? toDate,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize
+        )
     {
-       var movement = await _stockService.GetAllAsync(productId, transactionType, fromDate, toDate);
+       var movement = await _stockService.GetAllAsync(productId, transactionType, fromDate, toDate, page, pageSize);
 
        return Ok(movement);
     }
