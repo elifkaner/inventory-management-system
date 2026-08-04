@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '@/app/lib/api';
+import ThemeToggle from '@/app/ui/theme-toggle';
 
 // Menü yapısını güncelliyoruz: Alt menüsü olanlar için "subLinks" dizisi ekledik.
 const menuItems = [
@@ -116,7 +117,7 @@ export default function SideNav() {
     };
 
     return (
-        <div className="flex h-full flex-col px-3 py-4 md:px-2 bg-white border-r border-gray-200 shadow-sm">
+        <div className="flex h-full flex-col px-3 py-4 md:px-2 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
             {/* Logo Alanı */}
             <div className="mb-6 flex h-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 p-4 md:h-32 shadow-lg shadow-blue-600/30 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 rounded-full bg-white/10 blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
@@ -152,8 +153,8 @@ export default function SideNav() {
                                 <button
                                     onClick={() => setOpenMenuName(isOpen ? 'closed' : item.name)}
                                     className={`group flex w-full items-center justify-between rounded-xl p-3 text-sm font-medium transition-all border ${isChildActive
-                                        ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
-                                        : (isOpen ? 'bg-slate-50 text-slate-900 border-transparent' : 'bg-transparent text-slate-600 border-transparent hover:bg-slate-50 hover:text-slate-900')
+                                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 shadow-sm'
+                                        : (isOpen ? 'bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-transparent' : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200')
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -180,7 +181,7 @@ export default function SideNav() {
                                                     href={sub.href}
                                                     className={`flex items-center justify-start gap-3 w-full rounded-xl py-2 px-3 text-[13px] font-medium transition-colors ${isActive
                                                         ? 'bg-blue-600 text-white shadow-md'
-                                                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                                                         }`}
                                                 >
                                                     <div className="w-5 flex justify-center items-center flex-shrink-0">
@@ -203,8 +204,8 @@ export default function SideNav() {
                             key={item.name}
                             href={item.href!}
                             className={`group flex h-[48px] grow items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium transition-all md:flex-none md:justify-start md:px-4 border ${isActive
-                                ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
-                                : 'bg-transparent text-slate-600 border-transparent hover:bg-slate-50 hover:text-slate-900'
+                                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 shadow-sm'
+                                : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
                                 }`}
                         >
                             <div className={`${isActive ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
@@ -216,8 +217,9 @@ export default function SideNav() {
                 })}
             </div>
 
-            {/* Çıkış Yap Butonu */}
-            <div className="mt-auto pt-4 border-t border-slate-100">
+            {/* Tema Değiştir & Çıkış Yap */}
+            <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
+                <ThemeToggle />
                 <button
                     onClick={handleLogout}
                     className="group flex h-[48px] w-full items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium text-rose-600 transition-all md:justify-start md:px-4 hover:bg-rose-50 border border-transparent hover:border-rose-100"
