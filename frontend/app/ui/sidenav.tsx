@@ -158,13 +158,13 @@ export default function SideNav() {
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`${isChildActive ? 'text-blue-700' : (isOpen ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600')}`}>
+                                        <div className={`${isChildActive ? 'text-blue-700 dark:text-blue-400' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}>
                                             {item.icon}
                                         </div>
                                         <span className="hidden md:block">{item.name}</span>
                                     </div>
                                     <svg
-                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive ? 'text-blue-700' : (isOpen ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600')}`}
+                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive ? 'text-blue-700 dark:text-blue-400' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                     >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -185,7 +185,7 @@ export default function SideNav() {
                                                         }`}
                                                 >
                                                     <div className="w-5 flex justify-center items-center flex-shrink-0">
-                                                        <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-slate-400'}`}></div>
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-slate-400 dark:bg-slate-600'}`}></div>
                                                     </div>
                                                     <span className="truncate">{sub.name}</span>
                                                 </Link>
@@ -208,7 +208,7 @@ export default function SideNav() {
                                 : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
                                 }`}
                         >
-                            <div className={`${isActive ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                            <div className={`${isActive ? 'text-blue-700 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
                                 {item.icon}
                             </div>
                             <span className="hidden md:block">{item.name}</span>
@@ -222,9 +222,9 @@ export default function SideNav() {
                 <ThemeToggle />
                 <button
                     onClick={handleLogout}
-                    className="group flex h-[48px] w-full items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium text-rose-600 transition-all md:justify-start md:px-4 hover:bg-rose-50 border border-transparent hover:border-rose-100"
+                    className="group flex h-[48px] w-full items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium text-rose-600 dark:text-rose-400 transition-all md:justify-start md:px-4 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-transparent hover:border-rose-100 dark:hover:border-rose-900/50"
                 >
-                    <svg className="w-5 h-5 text-rose-500 group-hover:text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-rose-500 dark:text-rose-400 group-hover:text-rose-600 dark:group-hover:text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                     <span className="hidden md:block">Çıkış Yap</span>

@@ -54,15 +54,15 @@ export default function SearchableSelect({
 
     return (
         <div ref={wrapperRef}>
-            <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>
             <input type="hidden" {...register(name, { required: true })} />
 
             <div className="relative">
                 <div
-                    className={`w-full p-2.5 border rounded-lg bg-white cursor-pointer flex justify-between items-center ${error ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200'}`}
+                    className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 cursor-pointer flex justify-between items-center ${error ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600'}`}
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    <span className={selectedValue ? 'text-slate-900 text-sm' : 'text-slate-500 text-sm'}>
+                    <span className={selectedValue ? 'text-slate-900 dark:text-slate-100 text-sm' : 'text-slate-500 dark:text-slate-400 text-sm'}>
                         {selectedLabel}
                     </span>
                     <svg className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,13 +71,13 @@ export default function SearchableSelect({
                 </div>
 
                 {isOpen && (
-                    <div className={`absolute z-[60] w-full bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto flex flex-col ${direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                    <div className={`absolute z-[60] w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-60 overflow-y-auto flex flex-col ${direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                         {!hideSearch && (
-                            <div className="p-2 sticky top-0 bg-white border-b border-slate-100 z-10">
+                            <div className="p-2 sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 z-10">
                                 <div className="relative">
                                     <input
                                         type="text" placeholder="Ara..."
-                                        className="w-full pl-3 pr-9 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                        className="w-full pl-3 pr-9 py-2 border border-slate-200 dark:border-slate-600 rounded-md text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                                         value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
                                     />
@@ -86,22 +86,22 @@ export default function SearchableSelect({
                             </div>
                         )}
                         <ul className="py-1">
-                            <li className="px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm text-slate-500 italic"
+                            <li className="px-3 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-sm text-slate-500 dark:text-slate-400 italic"
                                 onClick={() => { setValue(name, "", { shouldValidate: true }); setIsOpen(false); setSearchTerm(""); }}>
                                 Seçimi Temizle
                             </li>
 
                             {visibleOptions.map((opt) => (
-                                <li key={opt.value} className={`px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm ${String(selectedValue) === String(opt.value) ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'text-slate-700'}`}
+                                <li key={opt.value} className={`px-3 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-sm ${String(selectedValue) === String(opt.value) ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-slate-700 dark:text-slate-300'}`}
                                     onClick={() => { setValue(name, String(opt.value), { shouldValidate: true }); setIsOpen(false); setSearchTerm(""); }}>
                                     {opt.label}
                                 </li>
                             ))}
                             {visibleOptions.length === 0 && (
-                                <li className="px-3 py-2 text-sm text-slate-500 text-center">Sonuç bulunamadı.</li>
+                                <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400 text-center">Sonuç bulunamadı.</li>
                             )}
                             {filteredOptions.length > 100 && (
-                                <li className="px-3 py-2 text-xs text-slate-400 text-center italic border-t border-slate-100">
+                                <li className="px-3 py-2 text-xs text-slate-400 dark:text-slate-500 text-center italic border-t border-slate-100 dark:border-slate-700">
                                     Daha fazla sonuç var, lütfen arama yapın...
                                 </li>
                             )}

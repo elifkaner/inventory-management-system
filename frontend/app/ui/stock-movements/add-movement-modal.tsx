@@ -93,10 +93,10 @@ export default function AddMovementModal({ isOpen, onClose, onSuccess }: AddMove
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                    <h3 className="text-lg font-semibold text-slate-800">Yeni Stok Hareketi Ekle</h3>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 transition-colors">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
+                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Yeni Stok Hareketi Ekle</h3>
+                    <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
@@ -142,7 +142,7 @@ export default function AddMovementModal({ isOpen, onClose, onSuccess }: AddMove
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Miktar</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Miktar</label>
                             <input 
                                 type="number" 
                                 min="1"
@@ -152,7 +152,7 @@ export default function AddMovementModal({ isOpen, onClose, onSuccess }: AddMove
                                     min: { value: 1, message: "Miktar en az 1 olmalıdır" },
                                     valueAsNumber: true 
                                 })}
-                                className={`w-full p-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 ${errors.quantity ? 'border-rose-500 focus:ring-rose-500/20 bg-rose-50/30' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'}`}
+                                className={`w-full p-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 ${errors.quantity ? 'border-rose-500 focus:ring-rose-500/20 bg-rose-50/30 dark:bg-rose-900/30' : 'border-slate-200 dark:border-slate-600 focus:ring-emerald-500/20 focus:border-emerald-500'}`}
                                 placeholder="Örn: 10"
                                 onKeyDown={(e) => {
                                     if (e.key === '.' || e.key === ',') {
@@ -164,22 +164,22 @@ export default function AddMovementModal({ isOpen, onClose, onSuccess }: AddMove
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Açıklama (Opsiyonel)</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Açıklama (Opsiyonel)</label>
                             <textarea 
                                 {...register('description')}
                                 rows={3}
-                                className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                                 placeholder="İşlem ile ilgili notlar..."
                             ></textarea>
                         </div>
 
                     </div>
 
-                    <div className="mt-8 flex justify-end gap-3">
+                    <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
                         <button 
                             type="button" 
                             onClick={onClose}
-                            className="px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                            className="px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
                         >
                             İptal
                         </button>

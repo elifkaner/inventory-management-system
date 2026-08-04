@@ -163,7 +163,7 @@ export default function KategorilerSayfasi() {
     };
 
     return (
-        <div className="p-8 bg-slate-50 min-h-screen text-slate-800 font-sans relative">
+        <div className="p-8 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans relative transition-colors">
             
             {showToast && (
                 <Toast
@@ -184,18 +184,18 @@ export default function KategorilerSayfasi() {
 
             {/* Kategori Taşıma (Transfer) Modalı */}
             {isTransferModalOpen && categoryToTransfer && (
-                <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-[70] p-4">
-                    <form onSubmit={handleTransferConfirm} className="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-rose-50/50">
-                            <h2 className="text-lg font-bold text-rose-700">Ürünleri Taşı ve Sil</h2>
-                            <button type="button" onClick={() => setIsTransferModalOpen(false)} className="text-slate-400 hover:text-slate-600"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+                    <form onSubmit={handleTransferConfirm} className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden transition-colors">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-rose-50/50 dark:bg-rose-900/20">
+                            <h2 className="text-lg font-bold text-rose-700 dark:text-rose-400">Ürünleri Taşı ve Sil</h2>
+                            <button type="button" onClick={() => setIsTransferModalOpen(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
                         </div>
                         <div className="p-6">
-                            <p className="text-sm text-slate-600 mb-4">
-                                <strong className="text-slate-900">{categoryToTransfer.name}</strong> kategorisinde mevcut ürünler var. 
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                                <strong className="text-slate-900 dark:text-slate-200">{categoryToTransfer.name}</strong> kategorisinde mevcut ürünler var. 
                                 Bu kategoriyi silebilmek için ürünleri başka bir kategoriye taşımanız gerekiyor.
                             </p>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Hangi Kategoriye Taşınsın?</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Hangi Kategoriye Taşınsın?</label>
                             <select
                                 required
                                 value={transferTargetId}
@@ -208,8 +208,8 @@ export default function KategorilerSayfasi() {
                                 ))}
                             </select>
                         </div>
-                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                            <button type="button" onClick={() => setIsTransferModalOpen(false)} className="px-4 py-2 text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl font-medium text-sm transition-colors">Vazgeç</button>
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex justify-end gap-3">
+                            <button type="button" onClick={() => setIsTransferModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-xl font-medium text-sm transition-colors">Vazgeç</button>
                             <button type="submit" disabled={isTransferring} className="px-4 py-2 text-white bg-rose-600 hover:bg-rose-700 shadow-md rounded-xl font-medium text-sm transition-colors disabled:opacity-70 flex items-center justify-center min-w-[120px]">
                                 {isTransferring ? (
                                     <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -222,8 +222,8 @@ export default function KategorilerSayfasi() {
 
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Envanter Grupları</h1>
-                    <p className="text-slate-500 mt-1 text-sm">Ürün kategorilerinizi yönetin ve düzenleyin.</p>
+                    <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Envanter Grupları</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Ürün kategorilerinizi yönetin ve düzenleyin.</p>
                 </div>
                 <button onClick={() => openModal()} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-blue-600/20 flex items-center gap-2">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -231,37 +231,37 @@ export default function KategorilerSayfasi() {
                 </button>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider">
+                        <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
                             <th className="p-4 pl-12">Kategori Adı</th>
                             <th className="p-4 pr-6 text-right">İşlemler</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300">
                         {isLoading ? (
-                            <tr><td colSpan={2} className="p-8 text-center text-slate-500 animate-pulse">Yükleniyor...</td></tr>
+                            <tr><td colSpan={2} className="p-8 text-center text-slate-500 dark:text-slate-400 animate-pulse">Yükleniyor...</td></tr>
                         ) : categories.length === 0 ? (
-                            <tr><td colSpan={2} className="p-8 text-center text-slate-500">Henüz kategori bulunmuyor.</td></tr>
+                            <tr><td colSpan={2} className="p-8 text-center text-slate-500 dark:text-slate-400">Henüz kategori bulunmuyor.</td></tr>
                         ) : (
                             [...categories].sort((a, b) => {
                                 if (a.name.toLowerCase() === 'kategorisiz') return -1;
                                 if (b.name.toLowerCase() === 'kategorisiz') return 1;
                                 return a.name.localeCompare(b.name);
                             }).map((cat) => (
-                                <tr key={cat.id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="p-4 pl-12 text-slate-900 font-bold">{cat.name}</td>
+                                <tr key={cat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <td className="p-4 pl-12 text-slate-900 dark:text-slate-100 font-bold">{cat.name}</td>
                                     <td className="p-4 pr-6 text-right">
                                         {cat.name.toLowerCase() === 'kategorisiz' ? (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold mr-2 border border-slate-200">
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold mr-2 border border-slate-200 dark:border-slate-600">
                                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                                                 Sistem Kategorisi
                                             </span>
                                         ) : (
                                             <>
-                                                <button onClick={() => openModal(cat)} className="text-blue-600 hover:text-blue-800 font-semibold mr-4">Düzenle</button>
-                                                <button onClick={() => handleDeleteClick(cat.id, cat.name)} className="text-rose-500 hover:text-rose-700 font-semibold">Sil</button>
+                                                <button onClick={() => openModal(cat)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold mr-4">Düzenle</button>
+                                                <button onClick={() => handleDeleteClick(cat.id, cat.name)} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold">Sil</button>
                                             </>
                                         )}
                                     </td>
@@ -273,19 +273,19 @@ export default function KategorilerSayfasi() {
             </div>
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
-                    <form onSubmit={handleSave} className="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                            <h2 className="text-lg font-bold text-slate-800">{formData.id ? 'Kategori Düzenle' : 'Yeni Kategori'}</h2>
-                            <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <form onSubmit={handleSave} className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden transition-colors">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{formData.id ? 'Kategori Düzenle' : 'Yeni Kategori'}</h2>
+                            <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
                         </div>
                         <div className="p-6">
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Kategori Adı *</label>
-                            <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="Örn: Elektronik" autoFocus />
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Kategori Adı *</label>
+                            <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full p-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm" placeholder="Örn: Elektronik" autoFocus />
                         </div>
-                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl font-medium text-sm">İptal</button>
-                            <button type="submit" className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 shadow-md rounded-xl font-medium text-sm">Kaydet</button>
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
+                            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-xl font-medium text-sm transition-colors">İptal</button>
+                            <button type="submit" className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 shadow-md rounded-xl font-medium text-sm transition-colors">Kaydet</button>
                         </div>
                     </form>
                 </div>
