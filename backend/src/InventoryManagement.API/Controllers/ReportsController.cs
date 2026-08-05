@@ -1,3 +1,4 @@
+using InventoryManagement.Application.Common;
 using InventoryManagement.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,12 @@ public class ReportsController : ControllerBase
     [HttpGet("monthly-movement-trend")]
     public async Task<IActionResult> GetMonthlyMovementTrend([FromQuery] int monthsBack = 6)
     {
-        var trend = await _reportService.GetMonthlyMovementTrendAsync(monthsBack);
+        if (!PaginationHelper.TryValidateMonthsBack(monthsBack, out var validMonthsBack, out var monthsBackError))
+        {
+            return BadRequest(monthsBackError);
+        }
+
+        var trend = await _reportService.GetMonthlyMovementTrendAsync(validMonthsBack);
         return Ok(trend);
     }
 
@@ -37,7 +43,12 @@ public class ReportsController : ControllerBase
     [HttpGet("top-moved-products")]
     public async Task<IActionResult> GetTopMovedProducts([FromQuery] int topN = 10)
     {
-        var products = await _reportService.GetTopMovedProductsAsync(topN);
+        if (!PaginationHelper.TryValidateTopN(topN, out var validTopN, out var topNError))
+        {
+            return BadRequest(topNError);
+        }
+
+        var products = await _reportService.GetTopMovedProductsAsync(validTopN);
         return Ok(products);
     }
 
