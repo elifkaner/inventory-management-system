@@ -25,6 +25,21 @@ const groupData = (data: any[], nameKey: string, valueKey: string, maxItems = 6)
     return top;
 };
 
+
+const renderCustomLegend = (props: any) => {
+    const { payload } = props;
+    return (
+      <ul style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem', listStyle: 'none', padding: 0, margin: 0, marginTop: '20px' }}>
+        {payload.map((entry: any, index: number) => (
+          <li key={`item-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontWeight: 600, fontSize: '13px' }}>
+            <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: entry.color }}></span>
+            {entry.value}
+          </li>
+        ))}
+      </ul>
+    );
+};
+
 export default function AnalizVeRaporlamaSayfasi() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -190,7 +205,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} dx={-10} />
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                 <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                                <Legend iconType="circle" />
+                                <Legend content={renderCustomLegend} />
                                 <Area type="monotone" dataKey="gelen" name="Stok Girişi" stroke="#5B67A8" strokeWidth={3} fillOpacity={1} fill="url(#colorGelen)" />
                                 <Area type="monotone" dataKey="giden" name="Stok Çıkışı" stroke="#F28C28" strokeWidth={3} fillOpacity={1} fill="url(#colorGiden)" />
                             </AreaChart>

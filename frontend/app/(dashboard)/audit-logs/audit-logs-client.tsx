@@ -86,9 +86,9 @@ export default function AuditLogsClient() {
         <table className="w-full text-left border-collapse whitespace-nowrap">
           <thead>
             <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
-              <th className="p-4 pl-6 whitespace-nowrap min-w-[150px]">Tarih / Saat</th>
-              <th className="p-4 whitespace-nowrap min-w-[200px]">İşlem Yapan (User ID)</th>
-              <th className="p-4 whitespace-nowrap min-w-[180px]">Tablo / Kayıt</th>
+              <th className="p-4 pl-6 whitespace-nowrap min-w-[150px] text-center">Tarih / Saat</th>
+              <th className="p-4 whitespace-nowrap min-w-[200px] text-center">İşlem Yapan (User ID)</th>
+              <th className="p-4 whitespace-nowrap min-w-[180px] text-center">Tablo / Kayıt</th>
               <th className="p-4 text-center whitespace-nowrap min-w-[120px]">Aksiyon</th>
               <th className="p-4 pr-6 w-full">Detaylar</th>
             </tr>
@@ -103,14 +103,14 @@ export default function AuditLogsClient() {
             ) : (
               logs.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                  <td className="p-4 pl-6 whitespace-nowrap">
+                  <td className="p-4 pl-6 whitespace-nowrap text-center">
                     <div className="font-bold text-slate-900 dark:text-slate-100">{new Date(log.timestamp).toLocaleDateString('tr-TR')}</div>
                     <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{new Date(log.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                   </td>
-                  <td className="p-4 whitespace-nowrap">
+                  <td className="p-4 whitespace-nowrap text-center">
                     <span className="bg-brand-surfaceDark dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300 font-mono text-xs">Kullanıcı: {log.userName || log.userId || 'Sistem'}</span>
                   </td>
-                  <td className="p-4 whitespace-nowrap">
+                  <td className="p-4 whitespace-nowrap text-center">
                     <div className="font-semibold text-slate-800 dark:text-slate-200">{log.entityName}</div>
                     <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">ID: {log.entityId || '-'}</div>
                   </td>
