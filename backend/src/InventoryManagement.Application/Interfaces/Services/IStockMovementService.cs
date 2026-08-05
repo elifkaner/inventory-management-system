@@ -14,4 +14,8 @@ public interface IStockMovementService
 
     // Hareketi siler ve Product.StockQuantity'yi geri alır. Geri alma stoğu eksiye düşürecekse exception fırlatır.
     Task<bool> DeleteAsync(int id);
+
+    // Sayfalama parametresi kasıtlı olarak yok — export, ekranda görünen sayfayı değil,
+    // filtreyle eşleşen TÜM hareketleri içermeli.
+    Task<byte[]> ExportToCsvAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null);
 }

@@ -1,3 +1,5 @@
+using System.Text;
+using InventoryManagement.Application.Common;
 using InventoryManagement.Application.DTOs.Common;
 using InventoryManagement.Application.DTOs.StockMovement;
 using InventoryManagement.Application.Interfaces;
@@ -148,6 +150,30 @@ public class StockMovementService : IStockMovementService
             await _unitOfWork.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<byte[]> ExportToCsvAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        var result = await GetAllAsync(productId, transactionType, fromDate, toDate);
+        var movements = result.Items;
+
+        var csv = new StringBuilder();
+        csv.AppendLine("Id,Ürün Adı,İşlem Tipi,Miktar,Tutar,Tarih,Açıklama,Kullanıcı");
+
+        foreach (var m in movements)
+        {
+            csv.AppendLine(string.Join(",",
+                m.Id,
+                CsvHelper.Escape(m.ProductName),
+                m.TransactionType == "IN" ? "Giriş" : "Çıkış",
+                m.Quantity,
+                m.TransactionAmounth.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                m.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                CsvHelper.Escape(m.Description),
+                CsvHelper.Escape(m.CreatedByUserName)));
+        }
+
+        return CsvHelper.ToUtf8Bytes(csv.ToString());
     }
 
     private static StockMovementResponseDto ToDto(StockMovement movement)
