@@ -23,4 +23,15 @@ public class AuditLogController : ControllerBase
         var logs = await _auditLogService.GetAllAsync(entityName, userId, fromDate, toDate, page, pageSize);
         return Ok(logs);
     }
+
+    // GET /api/AuditLog/export?entityName=Product&userId=9&fromDate=2026-07-01&toDate=2026-07-31
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportLogs(string? entityName = null, int? userId = null, DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        var csvBytes = await _auditLogService.ExportToCsvAsync(entityName, userId, fromDate, toDate);
+
+        var fileName = $"sistem_gunlukleri_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
+
+        return File(csvBytes, "text/csv", fileName);
+    }
 }

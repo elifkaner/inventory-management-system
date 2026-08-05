@@ -41,6 +41,21 @@ namespace InventoryManagement.API.Controllers;
        return Ok(movement);
     }
 
+    // GET /api/StockMovement/export?productId=5&transactionType=IN&fromDate=2026-07-01&toDate=2026-07-17
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportMovements(
+        [FromQuery] int? productId,
+        [FromQuery] string? transactionType,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate)
+    {
+        var csvBytes = await _stockService.ExportToCsvAsync(productId, transactionType, fromDate, toDate);
+
+        var fileName = $"stok_hareketleri_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
+
+        return File(csvBytes, "text/csv", fileName);
+    }
+
     // GET /api/StockMovement/{id}
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetMovementById(int id)

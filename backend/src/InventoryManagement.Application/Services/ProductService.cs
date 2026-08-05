@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text;
+using InventoryManagement.Application.Common;
 using InventoryManagement.Application.DTOs.Common;
 using InventoryManagement.Application.DTOs.Product;
 using InventoryManagement.Application.Interfaces;
@@ -153,40 +154,17 @@ public class ProductService : IProductService
         {
             csv.AppendLine(string.Join(",",
                 p.Id,
-                CsvEscape(p.ProductName),
-                CsvEscape(p.Barcode),
-                CsvEscape(p.Category),
-                CsvEscape(p.Supplier),
+                CsvHelper.Escape(p.ProductName),
+                CsvHelper.Escape(p.Barcode),
+                CsvHelper.Escape(p.Category),
+                CsvHelper.Escape(p.Supplier),
                 p.PurchasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 p.SalePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 p.StockQuantity,
                 p.IsActive ? "Aktif" : "Pasif"));
         }
 
-        // Excel'in Türkçe karakterleri doğru göstermesi için UTF-8 BOM ekleniyor
-        var preamble = Encoding.UTF8.GetPreamble();
-        var body = Encoding.UTF8.GetBytes(csv.ToString());
-
-        return preamble.Concat(body).ToArray();
-    }
-
-    private static readonly char[] FormulaTriggerChars = { '=', '+', '-', '@' };
-
-    private static string CsvEscape(string value)
-    {
-        // Excel'de "=", "+", "-", "@" ile başlayan hücreler formül olarak çalıştırılabilir
-        // (CSV/Formula Injection). Başına apostrof koyarak düz metin olmaya zorluyoruz.
-        if (value.Length > 0 && FormulaTriggerChars.Contains(value[0]))
-        {
-            value = "'" + value;
-        }
-
-        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
-        {
-            return "\"" + value.Replace("\"", "\"\"") + "\"";
-        }
-
-        return value;
+        return CsvHelper.ToUtf8Bytes(csv.ToString());
     }
 
     private static ProductResponseDto ToResponseDto(Product p)

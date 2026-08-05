@@ -1,3 +1,5 @@
+using System.Text;
+using InventoryManagement.Application.Common;
 using InventoryManagement.Application.DTOs.AuditLog;
 using InventoryManagement.Application.DTOs.Common;
 using InventoryManagement.Application.Interfaces.Repositories;
@@ -26,6 +28,30 @@ public class AuditLogService : IAuditLogService
             PageNumber = result.PageNumber,
             PageSize = result.PageSize
         };
+    }
+
+    public async Task<byte[]> ExportToCsvAsync(string? entityName = null, int? userId = null, DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        var result = await GetAllAsync(entityName, userId, fromDate, toDate);
+        var logs = result.Items;
+
+        var csv = new StringBuilder();
+        csv.AppendLine("Id,Kullanıcı,Aksiyon,Varlık,Varlık Id,Değişen Kolonlar,Tarih,IP Adresi");
+
+        foreach (var log in logs)
+        {
+            csv.AppendLine(string.Join(",",
+                log.Id,
+                CsvHelper.Escape(log.UserName),
+                CsvHelper.Escape(log.Action),
+                CsvHelper.Escape(log.EntityName),
+                CsvHelper.Escape(log.EntityId),
+                CsvHelper.Escape(log.ChangedColumns),
+                log.Timestamp.ToString("yyyy-MM-dd HH:mm"),
+                CsvHelper.Escape(log.IpAddress ?? "")));
+        }
+
+        return CsvHelper.ToUtf8Bytes(csv.ToString());
     }
 
     private static AuditLogResponseDto ToDto(AuditLog log) => new()
