@@ -13,7 +13,7 @@ namespace InventoryManagement.Application.Services;
 
 public class ProductService : IProductService
 {
-    private const int CriticalStockThreshold = 500;
+    private const int CriticalStockThreshold = 25;
 
     private static readonly TimeSpan SummaryCacheDuration = TimeSpan.FromMinutes(2);
 
