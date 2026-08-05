@@ -292,15 +292,15 @@ export default function UrunEnvanterSayfasi() {
                 <table className="w-full text-left border-collapse table-auto">
                     <thead>
                         <tr className="bg-slate-50/70 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
-                            <th className="p-5 pl-6 w-1 whitespace-nowrap">Durum</th>
-                            <th className="p-5">Ürün Adı</th>
-                            <th className="p-5">Marka / Model</th>
-                            <th className="p-5">Kategori</th>
-                            <th className="p-5 whitespace-nowrap min-w-[120px]">SKU Kodu</th>
-                            <th className="p-5 whitespace-nowrap min-w-[140px]">Barkod</th>
-                            <th className="p-5 text-right w-1 whitespace-nowrap">Satış Fiyatı</th>
-                            <th className="p-5 text-center w-1 whitespace-nowrap">Stok</th>
-                            <th className="p-5 pr-6 text-right w-1 whitespace-nowrap">İşlemler</th>
+                            <th className="px-4 py-3 pl-6 w-1 whitespace-nowrap">Durum</th>
+                            <th className="px-4 py-3 min-w-[220px]">Ürün Adı</th>
+                            <th className="px-4 py-3 min-w-[140px]">Marka / Model</th>
+                            <th className="px-4 py-3">Kategori</th>
+                            <th className="px-4 py-3 whitespace-nowrap min-w-[120px]">SKU Kodu</th>
+                            <th className="px-4 py-3 whitespace-nowrap min-w-[140px]">Barkod</th>
+                            <th className="px-4 py-3 text-right w-1 whitespace-nowrap">Satış Fiyatı</th>
+                            <th className="px-4 py-3 text-center w-1 whitespace-nowrap">Stok</th>
+                            <th className="px-4 py-3 pr-6 text-right w-1 whitespace-nowrap">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -311,36 +311,36 @@ export default function UrunEnvanterSayfasi() {
                         ) : (
                             paginatedProducts.map((prod) => (
                                 <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
-                                    <td className="p-5 pl-6 w-1 whitespace-nowrap">
+                                    <td className="px-4 py-3 pl-6 w-1 whitespace-nowrap">
                                         <StatusBadge isActive={prod.isActive} />
                                     </td>
-                                    <td className="p-5 text-slate-900 dark:text-slate-100 font-semibold">{prod.productName}</td>
-                                    <td className="p-5">
+                                    <td className="px-4 py-3 text-slate-900 dark:text-slate-100 font-semibold">{prod.productName}</td>
+                                    <td className="px-4 py-3">
                                         <div className="flex flex-col">
                                             <span className="text-slate-700 dark:text-slate-300 font-semibold text-sm">{prod.brand || prod.brandName || '-'}</span>
                                             <span className="text-slate-400 dark:text-slate-500 text-xs">{prod.model || prod.modelName || '-'}</span>
                                         </div>
                                     </td>
-                                    <td className="p-5 text-slate-500 dark:text-slate-400 font-medium">{prod.category || 'Kategorisiz'}</td>
+                                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium">{prod.category || 'Kategorisiz'}</td>
 
-                                    <td className="p-5 align-middle">
+                                    <td className="px-4 py-3 align-middle">
                                         <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">
                                             {prod.skuCode || '-'}
                                         </span>
                                     </td>
-                                    <td className="p-5 align-middle">
+                                    <td className="px-4 py-3 align-middle">
                                         <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">
                                             {prod.barcode || '-'}
                                         </span>
                                     </td>
 
-                                    <td className="p-5 text-right text-slate-900 dark:text-slate-100 font-bold w-1 whitespace-nowrap">₺ {prod.salePrice?.toLocaleString()}</td>
-                                    <td className="p-5 text-center w-1 whitespace-nowrap">
+                                    <td className="px-4 py-3 text-right text-slate-900 dark:text-slate-100 font-bold w-1 whitespace-nowrap">₺ {prod.salePrice?.toLocaleString()}</td>
+                                    <td className="px-4 py-3 text-center w-1 whitespace-nowrap">
                                         <span className={`inline-flex items-center justify-center gap-1 min-w-[70px] px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity < 10 ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' : 'bg-brand-surfaceDark dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
                                             {prod.stockQuantity} Adet
                                         </span>
                                     </td>
-                                    <td className="p-5 pr-6 text-right w-1 whitespace-nowrap">
+                                    <td className="px-4 py-3 pr-6 text-right w-1 whitespace-nowrap">
                                         <div className="flex justify-end gap-3">
                                             <button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors font-semibold">Düzenle</button>
                                             <button onClick={() => handleDeleteClick(prod.id, prod.productName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
