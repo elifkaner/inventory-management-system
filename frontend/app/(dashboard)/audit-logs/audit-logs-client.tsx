@@ -18,7 +18,7 @@ export default function AuditLogsClient() {
     const fetchLogs = async () => {
       try {
         setIsLoading(true);
-        const res = await authFetch(`${API_BASE_URL}/api/AuditLog?pageSize=10000`);
+        const res = await authFetch(`${API_BASE_URL}/api/AuditLog?page=${currentPage}&pageSize=${pageSize}`);
         if (res.ok) {
           const data = await res.json();
           const rawLogs = Array.isArray(data) ? data : data.items || [];
@@ -31,7 +31,7 @@ export default function AuditLogsClient() {
           });
           
           setLogs(filteredLogs);
-          setTotalCount(filteredLogs.length);
+          setTotalCount(Array.isArray(data) ? filteredLogs.length : data.totalRecord || data.TotalRecord || data.totalCount || 0);
         } else {
           setError('Sistem günlükleri yüklenemedi.');
         }
@@ -42,7 +42,7 @@ export default function AuditLogsClient() {
       }
     };
     fetchLogs();
-  }, []);
+  }, [currentPage, pageSize]);
 
   const getActionBadge = (action: string) => {
     switch (action.toUpperCase()) {
@@ -101,7 +101,7 @@ export default function AuditLogsClient() {
             ) : logs.length === 0 ? (
               <tr><td colSpan={5} className="p-8 text-center text-slate-500 dark:text-slate-400">Henüz hiçbir sistem günlüğü bulunmuyor.</td></tr>
             ) : (
-              logs.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((log) => (
+              logs.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                   <td className="p-4 pl-6">
                     <div className="font-bold text-slate-900 dark:text-slate-100">{new Date(log.timestamp).toLocaleDateString('tr-TR')}</div>

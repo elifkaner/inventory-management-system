@@ -22,11 +22,12 @@ export default function BrandsClient() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<BrandFormData>();
 
@@ -50,7 +51,7 @@ export default function BrandsClient() {
         const catData = await catRes.json();
         const brandsList = Array.isArray(brData) ? brData : brData.items || [];
         setBrands(brandsList);
-        setTotalCount(brandsList.length);
+        setBrands(brandsList);
         setCategories(Array.isArray(catData) ? catData : catData.items || []);
       } else {
         setError('Veriler yüklenirken sorun oluştu.');
@@ -70,6 +71,11 @@ export default function BrandsClient() {
     const cat = categories.find(c => c.id === categoryId);
     return cat ? cat.name : '-';
   };
+
+  const filteredBrands = brands.filter((b: any) => 
+    (b.brandName || b.name).toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (b.categoryName || getCategoryName(b.categoryId)).toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const openModal = (brand: any = null) => {
     if (brand) {
@@ -153,13 +159,25 @@ export default function BrandsClient() {
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Markalar</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Sistemde tanımlı markaları listeleyin ve yönetin.</p>
         </div>
-        <button
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 transition-colors"
-        >
-          <svg className="w-5 h-5 mr-1.5 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-          Yeni Marka Ekle
-        </button>
+        <div className="flex items-center gap-3">
+            <div className="relative">
+                <input
+                    type="text"
+                    placeholder="Marka Ara..."
+                    value={searchTerm}
+                    onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
+                    className="pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm w-64 transition-colors"
+                />
+                <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+            <button
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 transition-colors"
+            >
+            <svg className="w-5 h-5 mr-1.5 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+            Yeni Marka Ekle
+            </button>
+        </div>
       </div>
 
       {/* Table */}
@@ -177,10 +195,10 @@ export default function BrandsClient() {
               <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Yükleniyor...</td></tr>
             ) : error ? (
               <tr><td colSpan={3} className="px-6 py-8 text-center text-rose-500">{error}</td></tr>
-            ) : brands.length === 0 ? (
+            ) : filteredBrands.length === 0 ? (
               <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Henüz marka bulunmuyor.</td></tr>
             ) : (
-              brands.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((b) => (
+              filteredBrands.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((b: any) => (
                 <tr key={b.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                   <td className="pl-12 pr-6 py-4 font-medium text-slate-900 dark:text-slate-100">{b.brandName || b.name}</td>
                   <td className="px-6 py-4">
@@ -197,11 +215,11 @@ export default function BrandsClient() {
             )}
           </tbody>
         </table>
-        {brands.length > 0 && (
+        {filteredBrands.length > 0 && (
           <Pagination
               currentPage={currentPage}
               pageSize={pageSize}
-              totalCount={totalCount}
+              totalCount={filteredBrands.length}
               onPageChange={setCurrentPage}
               onPageSizeChange={(size) => {
                   setPageSize(size);

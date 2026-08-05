@@ -22,11 +22,12 @@ export default function ModelsClient() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<ModelFormData>();
 
@@ -50,7 +51,7 @@ export default function ModelsClient() {
         const brData = await brRes.json();
         const modelsList = Array.isArray(modData) ? modData : modData.items || [];
         setModels(modelsList);
-        setTotalCount(modelsList.length);
+        setModels(modelsList);
         setBrands(Array.isArray(brData) ? brData : brData.items || []);
       } else {
         setError('Veriler yüklenirken sorun oluştu.');
@@ -70,6 +71,11 @@ export default function ModelsClient() {
     const brand = brands.find(b => b.id === brandId);
     return brand ? (brand.brandName || brand.name) : '-';
   };
+
+  const filteredModels = models.filter((m: any) => 
+    (m.modelName || m.name).toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (m.brandName || getBrandName(m.brandId)).toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const openModal = (model: any = null) => {
     if (model) {
@@ -154,13 +160,25 @@ export default function ModelsClient() {
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Modeller</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Sistemde tanımlı modelleri listeleyin ve yönetin.</p>
         </div>
-        <button
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 transition-colors"
-        >
-          <svg className="w-5 h-5 mr-1.5 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-          Yeni Model Ekle
-        </button>
+        <div className="flex items-center gap-3">
+            <div className="relative">
+                <input
+                    type="text"
+                    placeholder="Model Ara..."
+                    value={searchTerm}
+                    onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
+                    className="pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm w-64 transition-colors"
+                />
+                <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+            <button
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 transition-colors"
+            >
+            <svg className="w-5 h-5 mr-1.5 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+            Yeni Model Ekle
+            </button>
+        </div>
       </div>
 
       {/* Table */}
@@ -178,10 +196,10 @@ export default function ModelsClient() {
               <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Yükleniyor...</td></tr>
             ) : error ? (
               <tr><td colSpan={3} className="px-6 py-8 text-center text-rose-500">{error}</td></tr>
-            ) : models.length === 0 ? (
+            ) : filteredModels.length === 0 ? (
               <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Henüz model bulunmuyor.</td></tr>
             ) : (
-              models.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((m) => (
+              filteredModels.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((m: any) => (
                 <tr key={m.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                   <td className="pl-12 pr-6 py-4 font-medium text-slate-900 dark:text-slate-100">{m.modelName || m.name}</td>
                   <td className="px-6 py-4">
@@ -198,11 +216,11 @@ export default function ModelsClient() {
             )}
           </tbody>
         </table>
-        {models.length > 0 && (
+        {filteredModels.length > 0 && (
           <Pagination
               currentPage={currentPage}
               pageSize={pageSize}
-              totalCount={totalCount}
+              totalCount={filteredModels.length}
               onPageChange={setCurrentPage}
               onPageSizeChange={(size) => {
                   setPageSize(size);

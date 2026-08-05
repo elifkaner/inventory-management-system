@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { authFetch, API_BASE_URL } from '@/app/lib/api';
+import Pagination from '@/app/ui/pagination';
 
 export default function InventoryLevelsPage() {
     const [products, setProducts] = useState<any[]>([]);
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -40,6 +43,8 @@ export default function InventoryLevelsPage() {
         prod.skuCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         prod.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     const parseLocation = (locationString: string) => {
         if (!locationString) return { corridor: "-", shelf: "-", section: "-" };
@@ -77,7 +82,7 @@ export default function InventoryLevelsPage() {
                         type="text"
                         placeholder="Ürün adı, SKU veya barkoda göre ara..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
                         className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm dark:text-slate-200"
                     />
                 </div>
@@ -104,7 +109,7 @@ export default function InventoryLevelsPage() {
                         ) : filteredProducts.length === 0 ? (
                             <tr><td colSpan={9} className="p-8 text-center text-slate-500 dark:text-slate-400">Kayıt bulunamadı.</td></tr>
                         ) : (
-                            filteredProducts.map((prod) => {
+                            paginatedProducts.map((prod) => {
                                 const isCritical = prod.stockQuantity <= 10;
                                 const isOutOfStock = prod.stockQuantity === 0;
                                 const loc = parseLocation(prod.location);
@@ -144,6 +149,20 @@ export default function InventoryLevelsPage() {
                     </tbody>
                 </table>
             </div>
+            {filteredProducts.length > 0 && (
+                <div className="mt-4">
+                    <Pagination
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        totalCount={filteredProducts.length}
+                        onPageChange={setCurrentPage}
+                        onPageSizeChange={(size) => {
+                            setPageSize(size);
+                            setCurrentPage(1);
+                        }}
+                    />
+                </div>
+            )}
         </div>
     );
 }

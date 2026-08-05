@@ -20,7 +20,7 @@ export default function StockMovementsClient() {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await authFetch(`${API_BASE_URL}/api/StockMovement?pageSize=10000`);
+            const res = await authFetch(`${API_BASE_URL}/api/StockMovement?page=${currentPage}&pageSize=${pageSize}`);
             if (res.ok) {
                 const data = await res.json();
                 const rawData = Array.isArray(data) ? data : data.items || [];
@@ -30,7 +30,7 @@ export default function StockMovementsClient() {
                     return dateB - dateA;
                 });
                 setMovements(sortedData);
-                setTotalCount(sortedData.length);
+                setTotalCount(Array.isArray(data) ? sortedData.length : data.totalRecord || data.TotalRecord || data.totalCount || 0);
             } else {
                 setError('Hareketler yüklenirken bir sorun oluştu.');
             }
@@ -43,7 +43,7 @@ export default function StockMovementsClient() {
 
     useEffect(() => {
         fetchMovements();
-    }, []);
+    }, [currentPage, pageSize]);
 
     const handleSuccess = () => {
         setIsModalOpen(false);
@@ -102,7 +102,7 @@ export default function StockMovementsClient() {
                                         Henüz bir depo hareketi bulunmuyor.
                                     </td>
                                 </tr>
-                            ) : movements.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((movement) => (
+                            ) : movements.map((movement) => (
                                 <tr key={movement.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="font-medium">{new Date(movement.createdAt || movement.date).toLocaleDateString('tr-TR')}</div>
