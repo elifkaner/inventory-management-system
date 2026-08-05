@@ -9,6 +9,22 @@ import {
     AreaChart, Area
 } from 'recharts';
 
+
+const groupData = (data: any[], nameKey: string, valueKey: string, maxItems = 6) => {
+    if (!data || data.length <= maxItems) return data;
+    const sorted = [...data].sort((a, b) => b[valueKey] - a[valueKey]);
+    const top = sorted.slice(0, maxItems);
+    const others = sorted.slice(maxItems);
+    if (others.length > 0) {
+        const othersValue = others.reduce((sum, item) => sum + item[valueKey], 0);
+        top.push({
+            [nameKey]: 'Diğer',
+            [valueKey]: othersValue
+        });
+    }
+    return top;
+};
+
 export default function AnalizVeRaporlamaSayfasi() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -69,6 +85,9 @@ export default function AnalizVeRaporlamaSayfasi() {
         );
     }
 
+    const groupedCategoryData = groupData(categoryData, 'categoryName', 'totalStock', 6);
+    const groupedSupplierData = groupData(supplierData, 'supplierName', 'totalProducts', 6);
+
     // Harita: trendData => month name
     const formattedTrendData = trendData.map((t: any) => ({
         name: `${t.month}/${t.year}`,
@@ -95,7 +114,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={categoryData}
+                                    data={groupedCategoryData}
                                     dataKey="totalStock"
                                     nameKey="categoryName"
                                     cx="50%"
@@ -104,7 +123,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     innerRadius={60}
                                     paddingAngle={5}
                                 >
-                                    {categoryData.map((entry, index) => (
+                                    {groupedCategoryData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -128,14 +147,14 @@ export default function AnalizVeRaporlamaSayfasi() {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={supplierData}
+                                    data={groupedSupplierData}
                                     dataKey="totalProducts"
                                     nameKey="supplierName"
                                     cx="50%"
                                     cy="50%"
                                     outerRadius={100}
                                 >
-                                    {supplierData.map((entry, index) => (
+                                    {groupedSupplierData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
                                     ))}
                                 </Pie>
