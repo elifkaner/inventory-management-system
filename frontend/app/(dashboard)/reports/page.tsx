@@ -161,7 +161,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                                     itemStyle={{ fontWeight: 'bold' }}
                                 />
-                                <Legend verticalAlign="bottom" height={36}/>
+                                <Legend verticalAlign="bottom" content={renderPieLegend} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -191,7 +191,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                                 <Tooltip 
                                     contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                                 />
-                                <Legend verticalAlign="bottom" height={36}/>
+                                <Legend verticalAlign="bottom" content={renderPieLegend} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
