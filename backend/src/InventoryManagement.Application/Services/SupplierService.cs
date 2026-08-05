@@ -2,24 +2,38 @@ using InventoryManagement.Application.DTOs.Supplier;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Domain.Entities;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace InventoryManagement.Application.Services;
 
 public class SupplierService : ISupplierService
 {
-    private readonly ISupplierRepository _supplierRepository;
+    private const string AllSuppliersCacheKey = "suppliers-all";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
 
-    public SupplierService(ISupplierRepository supplierRepository)
+    private readonly ISupplierRepository _supplierRepository;
+    private readonly IMemoryCache _cache;
+
+    public SupplierService(ISupplierRepository supplierRepository, IMemoryCache cache)
     {
         _supplierRepository = supplierRepository;
+        _cache = cache;
     }
 
     // Get all suppliers
     public async Task<List<SupplierDto>> GetAllAsync()
     {
-        var suppliers = await _supplierRepository.GetAllAsync();
+        if (_cache.TryGetValue(AllSuppliersCacheKey, out List<SupplierDto>? cached) && cached != null)
+        {
+            return cached;
+        }
 
-        return suppliers.Select(ToDto).ToList();
+        var suppliers = await _supplierRepository.GetAllAsync();
+        var result = suppliers.Select(ToDto).ToList();
+
+        _cache.Set(AllSuppliersCacheKey, result, CacheDuration);
+
+        return result;
     }
 
     // Get supplier by id
@@ -46,6 +60,7 @@ public class SupplierService : ISupplierService
         };
 
         var created = await _supplierRepository.AddAsync(supplier);
+        _cache.Remove(AllSuppliersCacheKey);
 
         return ToDto(created);
     }
@@ -70,6 +85,7 @@ public class SupplierService : ISupplierService
         supplier.IsActive = dto.IsActive;
 
         var updated = await _supplierRepository.UpdateAsync(supplier);
+        _cache.Remove(AllSuppliersCacheKey);
 
         return updated == null ? null : ToDto(updated);
     }
@@ -84,7 +100,10 @@ public class SupplierService : ISupplierService
             throw new InvalidOperationException("Bu tedarikçiye bağlı ürünler var, önce onları silin ya da başka bir tedarikçiye taşıyın.");
         }
 
-        return await _supplierRepository.DeleteAsync(id);
+        var deleted = await _supplierRepository.DeleteAsync(id);
+        _cache.Remove(AllSuppliersCacheKey);
+
+        return deleted;
     }
 
     private static SupplierDto ToDto(Supplier s)

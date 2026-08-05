@@ -2,23 +2,37 @@ using InventoryManagement.Application.DTOs.Brand;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Domain.Entities;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace InventoryManagement.Application.Services;
 
 public class BrandService : IBrandService
 {
-    private readonly IBrandRepository _brandRepository;
+    private const string AllBrandsCacheKey = "brands-all";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
 
-    public BrandService(IBrandRepository brandRepository)
+    private readonly IBrandRepository _brandRepository;
+    private readonly IMemoryCache _cache;
+
+    public BrandService(IBrandRepository brandRepository, IMemoryCache cache)
     {
         _brandRepository = brandRepository;
+        _cache = cache;
     }
 
     public async Task<List<BrandDto>> GetAllBrandsAsync()
     {
-        var brands = await _brandRepository.GetAllAsync();
+        if (_cache.TryGetValue(AllBrandsCacheKey, out List<BrandDto>? cached) && cached != null)
+        {
+            return cached;
+        }
 
-        return brands.Select(ToDto).ToList();
+        var brands = await _brandRepository.GetAllAsync();
+        var result = brands.Select(ToDto).ToList();
+
+        _cache.Set(AllBrandsCacheKey, result, CacheDuration);
+
+        return result;
     }
 
     public async Task<BrandDto?> GetBrandByIdAsync(int id)
@@ -33,6 +47,7 @@ public class BrandService : IBrandService
         var brand = new Brand { Name = dto.Name, CategoryId = dto.CategoryId };
 
         var created = await _brandRepository.AddAsync(brand);
+        _cache.Remove(AllBrandsCacheKey);
 
         return ToDto(created);
     }
@@ -40,6 +55,7 @@ public class BrandService : IBrandService
     public async Task<BrandDto?> UpdateBrandAsync(int id, UpdateBrandDto dto)
     {
         var brand = await _brandRepository.UpdateAsync(id, dto.Name, dto.CategoryId);
+        _cache.Remove(AllBrandsCacheKey);
 
         return brand == null ? null : ToDto(brand);
     }
@@ -60,7 +76,10 @@ public class BrandService : IBrandService
             throw new InvalidOperationException("Bu markaya bağlı ürünler var, önce onları silin ya da başka bir markaya taşıyın.");
         }
 
-        return await _brandRepository.DeleteAsync(id);
+        var deleted = await _brandRepository.DeleteAsync(id);
+        _cache.Remove(AllBrandsCacheKey);
+
+        return deleted;
     }
 
     private static BrandDto ToDto(Brand b)

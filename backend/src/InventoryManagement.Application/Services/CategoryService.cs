@@ -4,26 +4,40 @@ using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Domain.Entities;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace InventoryManagement.Application.Services;
 
 public class CategoryService : ICategoryService
 {
+    private const string AllCategoriesCacheKey = "categories-all";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
+
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMemoryCache _cache;
 
-    public CategoryService(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
+    public CategoryService(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork, IMemoryCache cache)
     {
         _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
+        _cache = cache;
     }
 
     // Tüm kategorileri getirir
     public async Task<List<CategoryDto>> GetAllCategoriesAsync()
     {
-        var categories = await _categoryRepository.GetAllAsync();
+        if (_cache.TryGetValue(AllCategoriesCacheKey, out List<CategoryDto>? cached) && cached != null)
+        {
+            return cached;
+        }
 
-        return categories.Select(ToDto).ToList();
+        var categories = await _categoryRepository.GetAllAsync();
+        var result = categories.Select(ToDto).ToList();
+
+        _cache.Set(AllCategoriesCacheKey, result, CacheDuration);
+
+        return result;
     }
 
     // Id'ye göre kategori getirir
@@ -40,6 +54,7 @@ public class CategoryService : ICategoryService
         var category = new Category { Name = dto.Name };
 
         var created = await _categoryRepository.AddAsync(category);
+        _cache.Remove(AllCategoriesCacheKey);
 
         return ToDto(created);
     }
@@ -48,6 +63,7 @@ public class CategoryService : ICategoryService
     public async Task<CategoryDto?> UpdateCategoryAsync(int id, UpdateCategoryDto dto)
     {
         var category = await _categoryRepository.UpdateAsync(id, dto.Name);
+        _cache.Remove(AllCategoriesCacheKey);
 
         return category == null ? null : ToDto(category);
     }
@@ -59,7 +75,9 @@ public class CategoryService : ICategoryService
 
         if (!hasProducts)
         {
-            return await _categoryRepository.DeleteAsync(id);
+            var deletedWithoutReassign = await _categoryRepository.DeleteAsync(id);
+            _cache.Remove(AllCategoriesCacheKey);
+            return deletedWithoutReassign;
         }
 
         if (reassignToCategoryId == null)
@@ -87,6 +105,7 @@ public class CategoryService : ICategoryService
             var deleted = await _categoryRepository.DeleteAsync(id);
 
             await _unitOfWork.CommitAsync();
+            _cache.Remove(AllCategoriesCacheKey);
             return deleted;
         }
         catch
