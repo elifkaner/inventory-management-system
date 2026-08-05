@@ -140,7 +140,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                         <span className="w-2 h-2 rounded-full bg-brand-primary"></span>
                         Kategori Dağılımı
                     </h2>
-                    <div className="h-72 w-full">
+                    <div className="h-[340px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -173,7 +173,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                         <span className="w-2 h-2 rounded-full bg-brand-accent"></span>
                         Tedarikçi Dağılımı
                     </h2>
-                    <div className="h-72 w-full">
+                    <div className="h-[340px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -244,7 +244,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} 
                                 />
                                 <Legend iconType="circle" />
-                                <Bar dataKey="movementCount" name="Hareket Sayısı" fill="#B695C8" radius={[0, 10, 10, 0]} barSize={24} />
+                                <Bar dataKey="totalMovementCount" name="Hareket Sayısı" fill="#B695C8" radius={[0, 10, 10, 0]} barSize={24} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
