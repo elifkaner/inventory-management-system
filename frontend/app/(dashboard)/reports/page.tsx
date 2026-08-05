@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 
 
-const groupData = (data: any[], nameKey: string, valueKey: string, maxItems = 6) => {
+const groupData = (data: any[], nameKey: string, valueKey: string, maxItems = 4) => {
     if (!data || data.length <= maxItems) return data;
     const sorted = [...data].sort((a, b) => b[valueKey] - a[valueKey]);
     const top = sorted.slice(0, maxItems);
@@ -33,6 +33,21 @@ const renderCustomLegend = (props: any) => {
         {payload.map((entry: any, index: number) => (
           <li key={`item-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontWeight: 600, fontSize: '13px' }}>
             <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: entry.color }}></span>
+            {entry.value}
+          </li>
+        ))}
+      </ul>
+    );
+};
+
+
+const renderPieLegend = (props: any) => {
+    const { payload } = props;
+    return (
+      <ul style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem', listStyle: 'none', padding: 0, margin: 0, marginTop: '10px' }}>
+        {payload.map((entry: any, index: number) => (
+          <li key={`item-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b', fontWeight: 500, fontSize: '11px' }}>
+            <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: entry.color }}></span>
             {entry.value}
           </li>
         ))}
@@ -100,8 +115,8 @@ export default function AnalizVeRaporlamaSayfasi() {
         );
     }
 
-    const groupedCategoryData = groupData(categoryData, 'categoryName', 'totalStock', 6);
-    const groupedSupplierData = groupData(supplierData, 'supplierName', 'totalProducts', 6);
+    const groupedCategoryData = groupData(categoryData, 'categoryName', 'totalStock', 4);
+    const groupedSupplierData = groupData(supplierData, 'supplierName', 'totalProducts', 4);
 
     // Harita: trendData => month name
     const formattedTrendData = trendData.map((t: any) => ({
