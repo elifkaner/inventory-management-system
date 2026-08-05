@@ -18,7 +18,7 @@ export default function AuditLogsClient() {
     const fetchLogs = async () => {
       try {
         setIsLoading(true);
-        const res = await authFetch(`${API_BASE_URL}/api/AuditLog`);
+        const res = await authFetch(`${API_BASE_URL}/api/AuditLog?pageSize=10000`);
         if (res.ok) {
           const data = await res.json();
           const rawLogs = Array.isArray(data) ? data : data.items || [];

@@ -14,12 +14,17 @@ export default function InventoryLevelsPage() {
             try {
                 setIsLoading(true);
                 const [prodRes, supRes] = await Promise.all([
-                    authFetch(`${API_BASE_URL}/api/Product`),
+                    authFetch(`${API_BASE_URL}/api/Product?pageSize=10000`),
                     authFetch(`${API_BASE_URL}/api/Supplier`)
                 ]);
 
-                if (prodRes.ok) setProducts(await prodRes.json());
-                if (supRes.ok) setSuppliers(await supRes.json());
+                if (prodRes.ok) {
+                    const data = await prodRes.json();
+                    setProducts(Array.isArray(data) ? data : (data.items || data.Items || []));
+                }
+                if (supRes.ok) {
+                    setSuppliers(await supRes.json());
+                }
             } catch (error) {
                 console.error("Veriler yüklenemedi:", error);
             } finally {

@@ -20,7 +20,7 @@ export default function StockMovementsClient() {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await authFetch(`${API_BASE_URL}/api/StockMovement`);
+            const res = await authFetch(`${API_BASE_URL}/api/StockMovement?pageSize=10000`);
             if (res.ok) {
                 const data = await res.json();
                 const rawData = Array.isArray(data) ? data : data.items || [];

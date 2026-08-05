@@ -17,8 +17,8 @@ export default function Dashboard() {
         setIsLoading(true);
         const [summaryRes, productsRes, movementsRes, suppliersRes] = await Promise.all([
           authFetch(`${API_BASE_URL}/api/Product/summary`),
-          authFetch(`${API_BASE_URL}/api/Product`),
-          authFetch(`${API_BASE_URL}/api/StockMovement?pageSize=5`), // Assuming backend respects pageSize or we slice frontend
+          authFetch(`${API_BASE_URL}/api/Product?pageSize=10000`),
+          authFetch(`${API_BASE_URL}/api/StockMovement?pageSize=10000`), // Assuming backend respects pageSize or we slice frontend
           authFetch(`${API_BASE_URL}/api/Supplier`)
         ]);
 
