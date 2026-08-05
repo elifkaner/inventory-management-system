@@ -57,6 +57,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
 // Application + Infrastructure (Clean Architecture katmanları)
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(connectionString);
