@@ -33,7 +33,7 @@ const renderCustomLegend = (props: any) => {
         {payload.map((entry: any, index: number) => (
           <li key={`item-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontWeight: 600, fontSize: '13px' }}>
             <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: entry.color }}></span>
-            {entry.value}
+            {entry.value && entry.value.length > 28 ? entry.value.substring(0, 28) + "..." : entry.value}
           </li>
         ))}
       </ul>
@@ -48,7 +48,7 @@ const renderPieLegend = (props: any) => {
         {payload.map((entry: any, index: number) => (
           <li key={`item-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b', fontWeight: 500, fontSize: '11px' }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: entry.color }}></span>
-            {entry.value}
+            {entry.value && entry.value.length > 28 ? entry.value.substring(0, 28) + "..." : entry.value}
           </li>
         ))}
       </ul>
@@ -148,7 +148,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     dataKey="totalProduct"
                                     nameKey="categoryName"
                                     cx="50%"
-                                    cy="50%"
+                                    cy="42%"
                                     outerRadius={100}
                                     innerRadius={60}
                                     paddingAngle={5}
@@ -181,7 +181,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     dataKey="totalProduct"
                                     nameKey="supplierName"
                                     cx="50%"
-                                    cy="50%"
+                                    cy="42%"
                                     outerRadius={100}
                                 >
                                     {groupedSupplierData.map((entry, index) => (
