@@ -182,13 +182,13 @@ export default function TedarikcilerSayfasi() {
     );
 
     return (
-        <div className="p-8 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors">
+        <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors">
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">İş Ortakları</h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Satın alma yaptığınız firmaların iletişim ve ticari bilgilerini yönetin.</p>
                 </div>
-                <button onClick={handleAddNewClick} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                <button onClick={handleAddNewClick} className="bg-brand-primary hover:bg-brand-primaryHover text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-brand-primary/20 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
                     Yeni İş Ortağı Ekle
                 </button>
@@ -199,7 +199,7 @@ export default function TedarikcilerSayfasi() {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
-                    <input type="text" placeholder="Firma adı veya yetkili ismine göre ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm dark:text-slate-200" />
+                    <input type="text" placeholder="Firma adı veya yetkili ismine göre ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200" />
                 </div>
             </div>
 
@@ -230,7 +230,7 @@ export default function TedarikcilerSayfasi() {
                                     </td>
                                     <td className="p-4 text-slate-900 dark:text-slate-100 font-bold">{sup.companyName}</td>
                                     <td className="p-4 text-slate-600 dark:text-slate-300 flex items-center gap-2">
-                                        <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xs font-bold">{sup.contactName?.charAt(0) || '-'}</div>
+                                        <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400 flex items-center justify-center text-xs font-bold">{sup.contactName?.charAt(0) || '-'}</div>
                                         {sup.contactName}
                                     </td>
                                     <td className="p-4 text-slate-500 dark:text-slate-400">
@@ -239,9 +239,9 @@ export default function TedarikcilerSayfasi() {
                                             {sup.email && <span className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> {sup.email}</span>}
                                         </div>
                                     </td>
-                                    <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 rounded px-2 py-1 inline-block mt-2">{sup.taxNumber}</td>
+                                    <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surface dark:bg-slate-900 rounded px-2 py-1 inline-block mt-2">{sup.taxNumber}</td>
                                     <td className="p-4 pr-6 text-right">
-                                        <button onClick={() => handleEditClick(sup)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors font-semibold mr-4">Düzenle</button>
+                                        <button onClick={() => handleEditClick(sup)} className="text-brand-primary dark:text-blue-400 hover:text-brand-primaryHover dark:hover:text-blue-300 transition-colors font-semibold mr-4">Düzenle</button>
                                         <button onClick={() => handleDeleteClick(sup.id, sup.companyName)} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors font-semibold">Sil</button>
                                     </td>
                                 </tr>
@@ -274,45 +274,45 @@ export default function TedarikcilerSayfasi() {
                         <div className="p-8 overflow-y-auto flex-1">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-5">
-                                    <h3 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-4 border-b border-blue-100 dark:border-blue-900/50 pb-2">Kurumsal Bilgiler</h3>
+                                    <h3 className="text-sm font-bold text-brand-primary dark:text-blue-400 uppercase tracking-wider mb-4 border-b border-blue-100 dark:border-blue-900/50 pb-2">Kurumsal Bilgiler</h3>
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Firma / Şirket Ünvanı *</label>
-                                        <input type="text" name="companyName" value={formData.companyName} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm ${errors.companyName ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-blue-500'}`} placeholder="Örn: X Bilişim San. Tic. A.Ş." />
+                                        <input type="text" name="companyName" value={formData.companyName} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm ${errors.companyName ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-brand-primary'}`} placeholder="Örn: X Bilişim San. Tic. A.Ş." />
                                         {errors.companyName && <ErrorMessage />}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Vergi Dairesi *</label>
-                                            <input type="text" name="taxOffice" value={formData.taxOffice} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm ${errors.taxOffice ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-blue-500'}`} placeholder="İlçe / Daire" />
+                                            <input type="text" name="taxOffice" value={formData.taxOffice} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm ${errors.taxOffice ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-brand-primary'}`} placeholder="İlçe / Daire" />
                                             {errors.taxOffice && <ErrorMessage />}
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Vergi No / TCKN *</label>
-                                            <input type="number" name="taxNumber" value={formData.taxNumber} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm font-mono ${errors.taxNumber ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-blue-500'}`} placeholder="10 Haneli VKN" />
+                                            <input type="number" name="taxNumber" value={formData.taxNumber} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm font-mono ${errors.taxNumber ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-brand-primary'}`} placeholder="10 Haneli VKN" />
                                             {errors.taxNumber && <ErrorMessage />}
                                         </div>
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium resize-none text-slate-700 dark:text-slate-300 mb-1">Tam Adres</label>
-                                        <textarea name="address" value={formData.address} onChange={handleInputChange} rows={3} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-blue-500`} placeholder="Fatura adresi..."></textarea>
+                                        <textarea name="address" value={formData.address} onChange={handleInputChange} rows={3} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-brand-primary`} placeholder="Fatura adresi..."></textarea>
                                     </div>
                                 </div>
                                 <div className="space-y-5">
-                                    <h3 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-4 border-b border-blue-100 dark:border-blue-900/50 pb-2">İrtibat Bilgileri</h3>
+                                    <h3 className="text-sm font-bold text-brand-primary dark:text-blue-400 uppercase tracking-wider mb-4 border-b border-blue-100 dark:border-blue-900/50 pb-2">İrtibat Bilgileri</h3>
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Yetkili Kişi Ad/Soyad *</label>
-                                        <input type="text" name="contactName" value={formData.contactName} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm ${errors.contactName ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-blue-500'}`} placeholder="Örn: Ayşe Demir" />
+                                        <input type="text" name="contactName" value={formData.contactName} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm ${errors.contactName ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-brand-primary'}`} placeholder="Örn: Ayşe Demir" />
                                         {errors.contactName && <ErrorMessage />}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">İrtibat Telefonu *</label>
-                                            <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm ${errors.phone ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-blue-500'}`} placeholder="+90 5XX..." />
+                                            <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm ${errors.phone ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-brand-primary'}`} placeholder="+90 5XX..." />
                                             {errors.phone && <ErrorMessage />}
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-Posta Adresi</label>
-                                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-blue-500`} placeholder="satis@firma.com" />
+                                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 text-sm border-slate-200 dark:border-slate-600 focus:ring-blue-500/20 focus:border-brand-primary`} placeholder="satis@firma.com" />
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700 mt-6">
@@ -328,9 +328,9 @@ export default function TedarikcilerSayfasi() {
                                 </div>
                             </div>
                         </div>
-                        <div className="px-8 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3 rounded-b-2xl">
-                            <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-xl font-medium text-sm transition-colors">İptal Et</button>
-                            <button onClick={handleSave} className="px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 rounded-xl font-medium text-sm transition-colors">
+                        <div className="px-8 py-4 border-t border-slate-100 dark:border-slate-700 bg-brand-surface dark:bg-slate-900/50 flex justify-end gap-3 rounded-b-2xl">
+                            <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-brand-surfaceDark dark:hover:bg-slate-600 rounded-xl font-medium text-sm transition-colors">İptal Et</button>
+                            <button onClick={handleSave} className="px-5 py-2.5 text-white bg-brand-primary hover:bg-brand-primaryHover shadow-md shadow-brand-primary/20 rounded-xl font-medium text-sm transition-colors">
                                 {formData.id ? 'Güncelle' : 'Firma Kaydı Tamamla'}
                             </button>
                         </div>

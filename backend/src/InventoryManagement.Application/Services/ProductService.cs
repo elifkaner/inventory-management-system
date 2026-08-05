@@ -13,7 +13,7 @@ namespace InventoryManagement.Application.Services;
 
 public class ProductService : IProductService
 {
-    private const int CriticalStockThreshold = 500;
+    private const int CriticalStockThreshold = 10;
 
     private static readonly TimeSpan SummaryCacheDuration = TimeSpan.FromMinutes(2);
 
@@ -37,9 +37,9 @@ public class ProductService : IProductService
     }
 
     // Arama ve kategori filtresine göre ürünleri listeler
-    public async Task<PagedResult<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null)
+    public async Task<PagedResult<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null, bool? isActive = null, int? page = null, int? pageSize = null)
     {
-        var result = await _productRepository.GetAllAsync(search, categoryId, page, pageSize);
+        var result = await _productRepository.GetAllAsync(search, categoryId, isActive, page, pageSize);
 
         return new PagedResult<ProductResponseDto>
         {
@@ -156,11 +156,11 @@ public class ProductService : IProductService
     }
 
     // Listeyi (arama/kategori filtresi uygulanmış haliyle) CSV olarak dışa aktarır
-    public async Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null)
+    public async Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null, bool? isActive = null)
     {
         // Sayfalama parametresi kasıtlı olarak yok — export, ekranda görünen sayfayı değil,
         // arama/filtreyle eşleşen TÜM ürünleri içermeli.
-        var results = await GetAllProductsAsync(search, categoryId);
+        var results = await GetAllProductsAsync(search, categoryId, isActive);
         var products = results.Items;
 
         var csv = new StringBuilder();

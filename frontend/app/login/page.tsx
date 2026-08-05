@@ -57,9 +57,9 @@ export default function LoginSayfasi() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans text-slate-800">
+        <div className="min-h-screen bg-brand-surface flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans text-slate-800">
             <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/30 mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-primary shadow-lg shadow-blue-600/30 mb-4">
                     <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
@@ -83,7 +83,7 @@ export default function LoginSayfasi() {
                             <input
                                 type="email"
                                 {...register("email", { required: "E-posta alanı zorunludur." })}
-                                className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-blue-500 text-sm transition-all ${errors.email ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'}`}
+                                className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-brand-primary text-sm transition-all ${errors.email ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'}`}
                                 placeholder="ornek@sirket.com"
                             />
                             {errors.email && (
@@ -100,7 +100,7 @@ export default function LoginSayfasi() {
                                 <a
                                     href="#"
                                     onClick={(e) => { e.preventDefault(); alert("Şifre sıfırlama linki e-posta adresinize gönderilecektir. (Yakında aktif edilecek)"); }}
-                                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                                    className="text-xs font-semibold text-brand-primary hover:text-brand-primaryHover transition-colors"
                                 >
                                     Şifremi Unuttum
                                 </a>
@@ -110,7 +110,7 @@ export default function LoginSayfasi() {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     {...register("password", { required: "Şifre alanı zorunludur." })}
-                                    className={`w-full p-3 pr-10 border rounded-xl focus:outline-none focus:ring-2 focus:border-blue-500 text-sm transition-all ${errors.password ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'}`}
+                                    className={`w-full p-3 pr-10 border rounded-xl focus:outline-none focus:ring-2 focus:border-brand-primary text-sm transition-all ${errors.password ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'}`}
                                     placeholder="••••••••"
                                 />
                                 <button
@@ -149,7 +149,7 @@ export default function LoginSayfasi() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md shadow-blue-600/20 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md shadow-brand-primary/20 text-sm font-bold text-white bg-brand-primary hover:bg-brand-primaryHover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 {isLoading ? (
                                     <span className="flex items-center gap-2">

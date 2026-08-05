@@ -2,12 +2,12 @@ import React from 'react';
 
 export default function ComingSoon({ moduleName }: { moduleName: string }) {
     return (
-        <div className="p-8 bg-slate-50 min-h-screen flex flex-col items-center justify-center font-sans">
+        <div className="p-8 bg-brand-surface min-h-screen flex flex-col items-center justify-center font-sans">
             <div className="bg-white p-10 rounded-3xl shadow-xl shadow-slate-200/50 max-w-lg w-full text-center border border-slate-100 relative overflow-hidden">
 
                 {/* Arka plan süslemesi */}
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-50 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-slate-100 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-brand-surfaceDark rounded-full blur-3xl"></div>
 
                 <div className="relative z-10">
                     <div className="w-20 h-20 bg-gradient-to-tr from-slate-100 to-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-slate-200">
@@ -19,7 +19,7 @@ export default function ComingSoon({ moduleName }: { moduleName: string }) {
                     <h2 className="text-2xl font-extrabold text-slate-900 mb-2">{moduleName}</h2>
 
                     {/* Rozet Kısmı */}
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-4 border border-blue-100">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-primaryHover text-xs font-bold uppercase tracking-wider mb-4 border border-blue-100">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
                         Geliştirme Aşamasında
                     </div>

@@ -77,7 +77,7 @@ export default function SearchableSelect({
                                 <div className="relative">
                                     <input
                                         type="text" placeholder="Ara..."
-                                        className="w-full pl-3 pr-9 py-2 border border-slate-200 dark:border-slate-600 rounded-md text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                        className="w-full pl-3 pr-9 py-2 border border-slate-200 dark:border-slate-600 rounded-md text-sm bg-brand-surface dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                                         value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
                                     />

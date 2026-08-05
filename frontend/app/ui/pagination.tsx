@@ -17,14 +17,14 @@ export default function Pagination({ currentPage, pageSize, totalCount, onPageCh
                 <button
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50"
+                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-brand-surfaceDark dark:hover:bg-slate-600 disabled:opacity-50"
                 >
                     Önceki
                 </button>
                 <button
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50"
+                    className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-brand-surfaceDark dark:hover:bg-slate-600 disabled:opacity-50"
                 >
                     Sonraki
                 </button>
@@ -41,7 +41,7 @@ export default function Pagination({ currentPage, pageSize, totalCount, onPageCh
                         <select
                             value={pageSize}
                             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                            className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 bg-slate-50 dark:bg-slate-700 py-1 pl-2 pr-8 cursor-pointer"
+                            className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-md text-sm focus:ring-brand-primary focus:border-brand-primary bg-brand-surface dark:bg-slate-700 py-1 pl-2 pr-8 cursor-pointer"
                         >
                             <option value={10}>10</option>
                             <option value={20}>20</option>
@@ -55,7 +55,7 @@ export default function Pagination({ currentPage, pageSize, totalCount, onPageCh
                         <button
                             onClick={() => onPageChange(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50"
+                            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-brand-surfaceDark dark:hover:bg-slate-600 disabled:opacity-50"
                         >
                             <span className="sr-only">Önceki</span>
                             <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -70,7 +70,7 @@ export default function Pagination({ currentPage, pageSize, totalCount, onPageCh
                         <button
                             onClick={() => onPageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
-                            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50"
+                            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-brand-surfaceDark dark:hover:bg-slate-600 disabled:opacity-50"
                         >
                             <span className="sr-only">Sonraki</span>
                             <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

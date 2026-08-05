@@ -50,11 +50,11 @@ export default function AuditLogsClient() {
       case 'INSERT':
         return <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 rounded-md text-xs font-bold">EKLEME</span>;
       case 'UPDATE':
-        return <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 rounded-md text-xs font-bold">GÜNCELLEME</span>;
+        return <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400 border border-blue-100 dark:border-blue-800 rounded-md text-xs font-bold">GÜNCELLEME</span>;
       case 'DELETE':
         return <span className="px-2.5 py-1 bg-rose-50 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800 rounded-md text-xs font-bold">SİLME</span>;
       default:
-        return <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600 rounded-md text-xs font-bold">{action}</span>;
+        return <span className="px-2.5 py-1 bg-brand-surfaceDark dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600 rounded-md text-xs font-bold">{action}</span>;
     }
   };
 
@@ -74,7 +74,7 @@ export default function AuditLogsClient() {
   };
 
   return (
-    <div className="p-8 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors">
+    <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors">
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Sistem Günlükleri (Audit Logs)</h1>
@@ -108,7 +108,7 @@ export default function AuditLogsClient() {
                     <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{new Date(log.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                   </td>
                   <td className="p-4">
-                    <span className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300 font-mono text-xs">Kullanıcı: {log.userName || log.userId || 'Sistem'}</span>
+                    <span className="bg-brand-surfaceDark dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300 font-mono text-xs">Kullanıcı: {log.userName || log.userId || 'Sistem'}</span>
                   </td>
                   <td className="p-4">
                     <div className="font-semibold text-slate-800 dark:text-slate-200">{log.entityName}</div>
@@ -118,9 +118,9 @@ export default function AuditLogsClient() {
                     {getActionBadge(log.action)}
                   </td>
                   <td className="p-4 pr-6">
-                    <div className="max-w-2xl overflow-x-auto whitespace-pre-wrap break-words text-slate-600 dark:text-slate-300 text-xs font-mono bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" title={log.changedColumns}>
+                    <div className="max-w-2xl overflow-x-auto whitespace-pre-wrap break-words text-slate-600 dark:text-slate-300 text-xs font-mono bg-brand-surface dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" title={log.changedColumns}>
                       {log.action === 'UPDATE' && log.changedColumns && (
-                         <div className="mb-2 text-blue-600 dark:text-blue-400 font-semibold border-b border-blue-100 dark:border-blue-900 pb-1">Değişen Alanlar: {log.changedColumns}</div>
+                         <div className="mb-2 text-brand-primary dark:text-blue-400 font-semibold border-b border-blue-100 dark:border-blue-900 pb-1">Değişen Alanlar: {log.changedColumns}</div>
                       )}
                       {log.oldValues && log.oldValues !== "{}" && (
                         <div className="text-rose-600 dark:text-rose-400 mb-1.5 leading-relaxed"><span className="font-bold">Eski:</span> {formatLogValues(log.oldValues)}</div>

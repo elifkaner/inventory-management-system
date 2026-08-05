@@ -13,6 +13,16 @@ const config: Config = {
         '13': 'repeat(13, minmax(0, 1fr))',
       },
       colors: {
+        brand: {
+          primary: '#5B67A8',
+          primaryHover: '#4A548A',
+          secondary: '#B695C8',
+          secondaryHover: '#9D7FB0',
+          accent: '#F28C28',
+          accentHover: '#E07B1E',
+          surface: '#F4F5F9',
+          surfaceDark: '#E8EAF1',
+        },
         blue: {
           400: '#2589FE',
           500: '#0070F3',

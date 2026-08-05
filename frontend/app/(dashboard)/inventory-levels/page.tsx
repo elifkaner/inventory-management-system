@@ -63,7 +63,7 @@ export default function InventoryLevelsPage() {
     };
 
     return (
-        <div className="p-8 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors">
+        <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors">
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Envanter Miktarı</h1>
@@ -83,7 +83,7 @@ export default function InventoryLevelsPage() {
                         placeholder="Ürün adı, SKU veya barkoda göre ara..."
                         value={searchTerm}
                         onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm dark:text-slate-200"
+                        className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
                     />
                 </div>
             </div>
@@ -120,16 +120,16 @@ export default function InventoryLevelsPage() {
 
                                         {/* SKU Kodu Sütunu */}
                                         <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                                            <span className="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1">{prod.skuCode || '-'}</span>
+                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1">{prod.skuCode || '-'}</span>
                                         </td>
 
                                         {/* Barkod Sütunu */}
                                         <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                                            <span className="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1">{prod.barcode || '-'}</span>
+                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1">{prod.barcode || '-'}</span>
                                         </td>
 
                                         <td className="p-4 text-center">
-                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${isOutOfStock ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300' : isCritical ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400' : 'bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400'}`}>
+                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${isOutOfStock ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300' : isCritical ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400' : 'bg-blue-50 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400'}`}>
                                                 {prod.stockQuantity}
                                             </span>
                                         </td>
@@ -138,7 +138,7 @@ export default function InventoryLevelsPage() {
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.section}</td>
                                         <td className="p-4 text-slate-600 dark:text-slate-400">{getSupplierName(prod.supplierId)}</td>
                                         <td className="p-4 pr-6 text-right">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${isOutOfStock ? 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600' : !isCritical ? 'bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800'}`}>
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${isOutOfStock ? 'bg-brand-surfaceDark dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600' : !isCritical ? 'bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800'}`}>
                                                 {isOutOfStock ? 'Tükendi' : !isCritical ? 'Yeterli' : 'Kritik'}
                                             </span>
                                         </td>

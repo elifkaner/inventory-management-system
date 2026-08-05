@@ -29,9 +29,9 @@ public class ProductController : ControllerBase
 
     // GET /api/Product?search=kahve&categoryId=3
     [HttpGet]
-    public async Task<IActionResult> GetAllProducts([FromQuery] string? search, [FromQuery] int? categoryId, [FromQuery] int? page, [FromQuery] int? pageSize)
+    public async Task<IActionResult> GetAllProducts([FromQuery] string? search, [FromQuery] int? categoryId, [FromQuery] bool? isActive, [FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        var products = await _productService.GetAllProductsAsync(search, categoryId, page, pageSize);
+        var products = await _productService.GetAllProductsAsync(search, categoryId, isActive, page, pageSize);
 
         return Ok(products);
     }
@@ -48,9 +48,9 @@ public class ProductController : ControllerBase
 
     // GET /api/Product/export?search=kahve&categoryId=3
     [HttpGet("export")]
-    public async Task<IActionResult> ExportProducts([FromQuery] string? search, [FromQuery] int? categoryId)
+    public async Task<IActionResult> ExportProducts([FromQuery] string? search, [FromQuery] int? categoryId, [FromQuery] bool? isActive)
     {
-        var csvBytes = await _productService.ExportToCsvAsync(search, categoryId);
+        var csvBytes = await _productService.ExportToCsvAsync(search, categoryId, isActive);
 
         var fileName = $"urunler_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
 

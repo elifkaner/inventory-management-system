@@ -60,7 +60,7 @@ export default function StockMovementsClient() {
                 </div>
                 <button 
                     onClick={() => setIsModalOpen(true)}
-                    className="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    className="inline-flex items-center justify-center px-4 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg shadow-sm hover:bg-brand-primaryHover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary transition-colors"
                 >
                     <svg className="w-5 h-5 mr-1.5 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                     Yeni Stok Hareketi
@@ -71,7 +71,7 @@ export default function StockMovementsClient() {
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden text-sm transition-colors">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left whitespace-nowrap">
-                        <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700">
+                        <thead className="bg-brand-surface dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700">
                             <tr>
                                 <th className="px-6 py-4">Tarih / Saat</th>
                                 <th className="px-6 py-4">İşlem Tipi</th>

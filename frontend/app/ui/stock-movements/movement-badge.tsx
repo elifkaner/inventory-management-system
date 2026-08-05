@@ -20,7 +20,7 @@ export default function MovementBadge({ type }: { type: MovementType }) {
             );
         case 'WASTE':
             return (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-brand-surfaceDark text-slate-700 border border-slate-200">
                     <span className="text-sm font-extrabold mr-1 leading-none">-</span>
                     Fire
                 </span>

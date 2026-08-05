@@ -27,7 +27,6 @@ export default function BrandsClient() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [pageSize, setPageSize] = useState(10);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<BrandFormData>();
 
@@ -166,13 +165,13 @@ export default function BrandsClient() {
                     placeholder="Marka Ara..."
                     value={searchTerm}
                     onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
-                    className="pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm w-64 transition-colors"
+                    className="pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-brand-surface dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm w-64 transition-colors"
                 />
                 <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
             <button
             onClick={() => openModal()}
-            className="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg shadow-sm hover:bg-brand-primaryHover transition-colors"
             >
             <svg className="w-5 h-5 mr-1.5 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
             Yeni Marka Ekle
@@ -183,7 +182,7 @@ export default function BrandsClient() {
       {/* Table */}
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden text-sm transition-colors">
         <table className="w-full text-left whitespace-nowrap">
-          <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700">
+          <thead className="bg-brand-surface dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700">
             <tr>
               <th className="pl-12 pr-6 py-4">Marka Adı</th>
               <th className="px-6 py-4">Bağlı Kategori</th>
@@ -202,12 +201,12 @@ export default function BrandsClient() {
                 <tr key={b.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                   <td className="pl-12 pr-6 py-4 font-medium text-slate-900 dark:text-slate-100">{b.brandName || b.name}</td>
                   <td className="px-6 py-4">
-                    <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded text-xs font-semibold">
+                    <span className="bg-brand-surfaceDark dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded text-xs font-semibold">
                       {b.categoryName || getCategoryName(b.categoryId)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => openModal(b)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold mr-4">Düzenle</button>
+                    <button onClick={() => openModal(b)} className="text-brand-primary dark:text-blue-400 hover:text-brand-primaryHover dark:hover:text-blue-300 font-semibold mr-4">Düzenle</button>
                     <button onClick={() => setDeleteModal({isOpen: true, id: b.id, name: b.brandName || b.name})} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold">Sil</button>
                   </td>
                 </tr>
@@ -255,13 +254,13 @@ export default function BrandsClient() {
                 <input
                   type="text"
                   {...register("name", { required: true })}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                   placeholder="Örn: Apple, Samsung..."
                 />
               </div>
               <div className="flex justify-end gap-3 mt-6">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">İptal</button>
-                <button type="submit" disabled={isAdding} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-brand-surfaceDark dark:hover:bg-slate-600 transition-colors">İptal</button>
+                <button type="submit" disabled={isAdding} className="px-4 py-2 text-sm font-medium text-white bg-brand-primary rounded-lg hover:bg-brand-primaryHover disabled:opacity-50 transition-colors">
                   {isAdding ? 'Kaydediliyor...' : 'Kaydet'}
                 </button>
               </div>

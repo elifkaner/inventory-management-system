@@ -117,9 +117,9 @@ export default function SideNav() {
     };
 
     return (
-        <div className="flex h-full flex-col px-3 py-4 md:px-2 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
+        <div className="flex h-full flex-col px-4 py-6 md:px-4 bg-white dark:bg-slate-800 border-r md:border-r-0 border-slate-100 dark:border-slate-700 md:rounded-3xl md:shadow-xl shadow-slate-200/50 dark:shadow-none transition-colors duration-200">
             {/* Logo Alanı */}
-            <div className="mb-6 flex h-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 p-4 md:h-32 shadow-lg shadow-blue-600/30 relative overflow-hidden group">
+            <div className="mb-6 flex h-20 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-primary to-brand-primaryHover p-4 md:h-32 shadow-lg shadow-brand-primary/30 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 rounded-full bg-white/10 blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
                 <div className="flex items-center gap-3 relative z-10 w-full md:justify-center px-2">
                     <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner flex-shrink-0">
@@ -129,10 +129,10 @@ export default function SideNav() {
                     </div>
                     <div className="flex flex-col items-start md:items-center xl:items-start text-left">
                         <span className="text-white font-extrabold text-2xl tracking-tight leading-none flex items-center">
-                            Stok<span className="text-blue-200 font-medium">Pro</span>
-                            <span className="ml-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            Stok<span className="text-brand-secondary font-medium">Pro</span>
+                            <span className="ml-1 w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
                         </span>
-                        <span className="text-blue-100/70 text-[9px] font-bold tracking-widest uppercase mt-1 hidden xl:block">
+                        <span className="text-white/70 text-[9px] font-bold tracking-widest uppercase mt-1 hidden xl:block">
                             Envanter Yönetimi
                         </span>
                     </div>
@@ -153,18 +153,18 @@ export default function SideNav() {
                                 <button
                                     onClick={() => setOpenMenuName(isOpen ? 'closed' : item.name)}
                                     className={`group flex w-full items-center justify-between rounded-xl p-3 text-sm font-medium transition-all border ${isChildActive
-                                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 shadow-sm'
-                                        : (isOpen ? 'bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-transparent' : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200')
+                                        ? 'bg-brand-accent/20 dark:bg-brand-accent/30 text-brand-primary dark:text-brand-accent border-brand-accent/30 dark:border-brand-accent/50 shadow-sm'
+                                        : (isOpen ? 'bg-brand-surface dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-transparent' : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-brand-surfaceDark dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200')
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`${isChildActive ? 'text-blue-700 dark:text-blue-400' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}>
+                                        <div className={`${isChildActive ? 'text-brand-primary dark:text-brand-accent' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}>
                                             {item.icon}
                                         </div>
                                         <span className="hidden md:block">{item.name}</span>
                                     </div>
                                     <svg
-                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive ? 'text-blue-700 dark:text-blue-400' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}
+                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive ? 'text-brand-primary dark:text-brand-accent' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                     >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -180,7 +180,7 @@ export default function SideNav() {
                                                     key={sub.name}
                                                     href={sub.href}
                                                     className={`flex items-center justify-start gap-3 w-full rounded-xl py-2 px-3 text-[13px] font-medium transition-colors ${isActive
-                                                        ? 'bg-blue-600 text-white shadow-md'
+                                                        ? 'bg-brand-primary text-white shadow-md'
                                                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                                                         }`}
                                                 >
@@ -204,11 +204,11 @@ export default function SideNav() {
                             key={item.name}
                             href={item.href!}
                             className={`group flex h-[48px] grow items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium transition-all md:flex-none md:justify-start md:px-4 border ${isActive
-                                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 shadow-sm'
-                                : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+                                ? 'bg-brand-accent/20 dark:bg-brand-accent/30 text-brand-primary dark:text-brand-accent border-brand-accent/30 dark:border-brand-accent/50 shadow-sm'
+                                : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-brand-surfaceDark dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
                                 }`}
                         >
-                            <div className={`${isActive ? 'text-blue-700 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
+                            <div className={`${isActive ? 'text-brand-primary dark:text-brand-accent' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
                                 {item.icon}
                             </div>
                             <span className="hidden md:block">{item.name}</span>

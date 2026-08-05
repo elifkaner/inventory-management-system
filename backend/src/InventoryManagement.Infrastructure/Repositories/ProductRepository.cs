@@ -16,7 +16,7 @@ public class ProductRepository : IProductRepository
         _context = context;
     }
 
-    public async Task<PagedResult<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? page = null, int? pageSize = null)
+    public async Task<PagedResult<Product>> GetAllAsync(string? search = null, int? categoryId = null, bool? isActive = null, int? page = null, int? pageSize = null)
     {
         var query = _context.Products
             .Include(p => p.Supplier)
@@ -31,7 +31,16 @@ public class ProductRepository : IProductRepository
             var pattern = $"%{search}%";
             query = query.Where(p =>
                 EF.Functions.ILike(p.ProductName, pattern) ||
-                EF.Functions.ILike(p.Barcode, pattern));
+                EF.Functions.ILike(p.Barcode, pattern) ||
+                EF.Functions.ILike(p.SkuCode, pattern) ||
+                (p.Category != null && EF.Functions.ILike(p.Category.Name, pattern)) ||
+                (p.Brand != null && EF.Functions.ILike(p.Brand.Name, pattern)) ||
+                (p.Model != null && EF.Functions.ILike(p.Model.Name, pattern)));
+        }
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(p => p.IsActive == isActive.Value);
         }
 
         if (categoryId.HasValue && categoryId.Value > 0)

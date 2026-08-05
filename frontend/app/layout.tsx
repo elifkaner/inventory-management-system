@@ -9,7 +9,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="tr" suppressHydrationWarning>
-            <body className="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200">
+            <body className="bg-brand-surface dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200">
                 <ThemeProvider>
                     {children}
                 </ThemeProvider>
