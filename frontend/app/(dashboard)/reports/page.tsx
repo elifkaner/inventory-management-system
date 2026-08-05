@@ -115,8 +115,8 @@ export default function AnalizVeRaporlamaSayfasi() {
         );
     }
 
-    const groupedCategoryData = groupData(categoryData, 'categoryName', 'totalStock', 4);
-    const groupedSupplierData = groupData(supplierData, 'supplierName', 'totalProducts', 4);
+    const groupedCategoryData = groupData(categoryData, 'categoryName', 'totalProduct', 4);
+    const groupedSupplierData = groupData(supplierData, 'supplierName', 'totalProduct', 4);
 
     // Harita: trendData => month name
     const formattedTrendData = trendData.map((t: any) => ({
@@ -145,7 +145,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                             <PieChart>
                                 <Pie
                                     data={groupedCategoryData}
-                                    dataKey="totalStock"
+                                    dataKey="totalProduct"
                                     nameKey="categoryName"
                                     cx="50%"
                                     cy="50%"
@@ -178,7 +178,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                             <PieChart>
                                 <Pie
                                     data={groupedSupplierData}
-                                    dataKey="totalProducts"
+                                    dataKey="totalProduct"
                                     nameKey="supplierName"
                                     cx="50%"
                                     cy="50%"
