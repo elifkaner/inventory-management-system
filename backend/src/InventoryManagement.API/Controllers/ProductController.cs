@@ -1,4 +1,5 @@
 using FluentValidation;
+using InventoryManagement.Application.Common;
 using InventoryManagement.Application.DTOs.Product;
 using InventoryManagement.Application.Exceptions;
 using InventoryManagement.Application.Interfaces.Services;
@@ -31,7 +32,12 @@ public class ProductController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllProducts([FromQuery] string? search, [FromQuery] int? categoryId, [FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        var products = await _productService.GetAllProductsAsync(search, categoryId, page, pageSize);
+        if (!PaginationHelper.TryValidate(page, pageSize, out var validPage, out var validPageSize, out var paginationError))
+        {
+            return BadRequest(paginationError);
+        }
+
+        var products = await _productService.GetAllProductsAsync(search, categoryId, validPage, validPageSize);
 
         return Ok(products);
     }

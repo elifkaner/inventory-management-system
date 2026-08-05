@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FluentValidation;
+using InventoryManagement.Application.Common;
 using InventoryManagement.Application.DTOs.StockMovement;
 using InventoryManagement.Application.Exceptions;
 using InventoryManagement.Application.Interfaces.Repositories;
@@ -36,7 +37,12 @@ namespace InventoryManagement.API.Controllers;
         [FromQuery] int? pageSize
         )
     {
-       var movement = await _stockService.GetAllAsync(productId, transactionType, fromDate, toDate, page, pageSize);
+       if (!PaginationHelper.TryValidate(page, pageSize, out var validPage, out var validPageSize, out var paginationError))
+       {
+           return BadRequest(paginationError);
+       }
+
+       var movement = await _stockService.GetAllAsync(productId, transactionType, fromDate, toDate, validPage, validPageSize);
 
        return Ok(movement);
     }

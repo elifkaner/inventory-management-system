@@ -1,3 +1,4 @@
+using InventoryManagement.Application.Common;
 using InventoryManagement.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,12 @@ public class AuditLogController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(string? entityName = null, int? userId = null, DateTime? fromDate = null, DateTime? toDate = null, [FromQuery] int? page = null, [FromQuery] int? pageSize = null)
     {
-        var logs = await _auditLogService.GetAllAsync(entityName, userId, fromDate, toDate, page, pageSize);
+        if (!PaginationHelper.TryValidate(page, pageSize, out var validPage, out var validPageSize, out var paginationError))
+        {
+            return BadRequest(paginationError);
+        }
+
+        var logs = await _auditLogService.GetAllAsync(entityName, userId, fromDate, toDate, validPage, validPageSize);
         return Ok(logs);
     }
 
