@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Infrastructure.Services;
+using InventoryManagement.Infrastructure.Realtime;
 
 namespace InventoryManagement.Infrastructure;
 
@@ -35,6 +36,9 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IReportRepository, ReportRepository>();
+
+        services.AddSignalR();
+        services.AddScoped<IStockMovementNotifier, SignalRStockMovementNotifier>();
 
         return services;
     }

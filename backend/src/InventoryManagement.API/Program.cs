@@ -5,6 +5,7 @@ using DotNetEnv;
 using InventoryManagement.Application;
 using InventoryManagement.Infrastructure;
 using InventoryManagement.Infrastructure.Persistence;
+using InventoryManagement.Infrastructure.Realtime;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
@@ -78,6 +79,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
             ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+        };
+
+        // Tarayıcılar WebSocket bağlantısında Authorization header'ı gönderemez,
+        // SignalR bu yüzden token'ı query string ile taşır (?access_token=...).
+        // Sadece Hub yoluna gelen isteklerde bunu kabul ediyoruz.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -155,6 +175,7 @@ app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapControllers();
+app.MapHub<StockMovementHub>("/hubs/stock-movements").RequireAuthorization();
 
 
 app.Run();
