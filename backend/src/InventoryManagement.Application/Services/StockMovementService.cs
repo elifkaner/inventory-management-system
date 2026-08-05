@@ -15,17 +15,20 @@ public class StockMovementService : IStockMovementService
     private readonly IProductRepository _productRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStockMovementNotifier _notifier;
 
     public StockMovementService(
         IStockMovementRepository stockMovementRepository,
         IProductRepository productRepository,
         IUserRepository userRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStockMovementNotifier notifier)
     {
         _stockMovementRepository = stockMovementRepository;
         _productRepository = productRepository;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _notifier = notifier;
     }
 
     public async Task<PagedResult<StockMovementResponseDto>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null,int? page = null, int? pageSize = null)
@@ -94,7 +97,11 @@ public class StockMovementService : IStockMovementService
             created.Product = product;
             created.CreatedByUser = userId.HasValue ? await _userRepository.GetByIdAsync(userId.Value) : null;
             await _unitOfWork.CommitAsync();
-            return ToDto(created);
+
+            var createdDto = ToDto(created);
+            await _notifier.NotifyMovementCreatedAsync(createdDto);
+
+            return createdDto;
         }
         catch
         {
@@ -143,6 +150,9 @@ public class StockMovementService : IStockMovementService
 
             var result = await _stockMovementRepository.DeleteAsync(id);
             await _unitOfWork.CommitAsync();
+
+            await _notifier.NotifyMovementDeletedAsync(id, movement.ProductId);
+
             return result;
         }
         catch

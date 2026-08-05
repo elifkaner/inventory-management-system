@@ -1,24 +1,45 @@
 using InventoryManagement.Application.DTOs.Model;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Interfaces.Services;
+using Microsoft.Extensions.Caching.Memory;
 using ModelEntity = InventoryManagement.Domain.Entities.Model;
 
 namespace InventoryManagement.Application.Services;
 
 public class ModelService : IModelService
 {
-    private readonly IModelRepository _modelRepository;
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
 
-    public ModelService(IModelRepository modelRepository)
+    private readonly IModelRepository _modelRepository;
+    private readonly IMemoryCache _cache;
+
+    public ModelService(IModelRepository modelRepository, IMemoryCache cache)
     {
         _modelRepository = modelRepository;
+        _cache = cache;
     }
 
+    private const string AllModelsCacheKey = "models-all";
+
+    // Sadece filtresiz ("tüm modeller") çağrı cache'lenir — brandId ile filtrelenen
+    // istekler zaten dar kapsamlı ve az sıklıkta olduğu için cache'e gerek yok,
+    // bu da her marka için ayrı cache anahtarı/geçersiz kılma karmaşasını önlüyor.
     public async Task<List<ModelDto>> GetAllModelsAsync(int? brandId = null)
     {
-        var models = await _modelRepository.GetAllAsync(brandId);
+        if (brandId == null && _cache.TryGetValue(AllModelsCacheKey, out List<ModelDto>? cached) && cached != null)
+        {
+            return cached;
+        }
 
-        return models.Select(ToDto).ToList();
+        var models = await _modelRepository.GetAllAsync(brandId);
+        var result = models.Select(ToDto).ToList();
+
+        if (brandId == null)
+        {
+            _cache.Set(AllModelsCacheKey, result, CacheDuration);
+        }
+
+        return result;
     }
 
     public async Task<ModelDto?> GetModelByIdAsync(int id)
@@ -33,6 +54,7 @@ public class ModelService : IModelService
         var model = new ModelEntity { Name = dto.Name, BrandId = dto.BrandId };
 
         var created = await _modelRepository.AddAsync(model);
+        _cache.Remove(AllModelsCacheKey);
 
         return ToDto(created);
     }
@@ -40,6 +62,7 @@ public class ModelService : IModelService
     public async Task<ModelDto?> UpdateModelAsync(int id, UpdateModelDto dto)
     {
         var model = await _modelRepository.UpdateAsync(id, dto.Name, dto.BrandId);
+        _cache.Remove(AllModelsCacheKey);
 
         return model == null ? null : ToDto(model);
     }
@@ -53,7 +76,10 @@ public class ModelService : IModelService
             throw new InvalidOperationException("Bu modele bağlı ürünler var, önce onları silin ya da başka bir modele taşıyın.");
         }
 
-        return await _modelRepository.DeleteAsync(id);
+        var deleted = await _modelRepository.DeleteAsync(id);
+        _cache.Remove(AllModelsCacheKey);
+
+        return deleted;
     }
 
     private static ModelDto ToDto(ModelEntity m)

@@ -7,6 +7,7 @@ using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Application.Interfaces.Repositories;
 using InventoryManagement.Application.Interfaces.Services;
 using InventoryManagement.Domain.Entities;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace InventoryManagement.Application.Services;
 
@@ -14,19 +15,25 @@ public class ProductService : IProductService
 {
     private const int CriticalStockThreshold = 500;
 
+    private static readonly TimeSpan SummaryCacheDuration = TimeSpan.FromMinutes(2);
+
     private readonly IProductRepository _productRepository;
 
     private readonly IStockMovementRepository _stockMovementRepository;
 
     private readonly IUnitOfWork _unitOfWork;
 
+    private readonly IMemoryCache _cache;
+
     public ProductService(IProductRepository productRepository,
      IStockMovementRepository stockMovementRepository,
-     IUnitOfWork unitOfWork)
+     IUnitOfWork unitOfWork,
+     IMemoryCache cache)
     {
         _productRepository = productRepository;
         _stockMovementRepository = stockMovementRepository;
         _unitOfWork = unitOfWork;
+        _cache = cache;
     }
 
     // Arama ve kategori filtresine göre ürünleri listeler
@@ -117,6 +124,13 @@ public class ProductService : IProductService
     // includeFinancials: sadece Admin rolü için true gelir; false ise parasal alanlar null kalır.
     public async Task<DashboardSummaryDto> GetSummaryAsync(bool includeFinancials)
     {
+        var cacheKey = $"product-summary-{includeFinancials}";
+
+        if (_cache.TryGetValue(cacheKey, out DashboardSummaryDto? cachedSummary) && cachedSummary != null)
+        {
+            return cachedSummary;
+        }
+
         var stats = await _productRepository.GetSummaryStatsAsync(CriticalStockThreshold);
 
         var activeSalesRate = stats.TotalProducts > 0
@@ -135,6 +149,8 @@ public class ProductService : IProductService
             summary.TotalInventoryValue = stats.TotalInventoryValue;
             summary.TotalProfitMargin = stats.TotalProfitMargin;
         }
+
+        _cache.Set(cacheKey, summary, SummaryCacheDuration);
 
         return summary;
     }
