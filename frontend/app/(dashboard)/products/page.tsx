@@ -324,12 +324,12 @@ export default function UrunEnvanterSayfasi() {
                                     <td className="p-5 text-slate-500 dark:text-slate-400 font-medium">{prod.category || 'Kategorisiz'}</td>
 
                                     <td className="p-5 align-middle">
-                                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 break-all">
+                                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">
                                             {prod.skuCode || '-'}
                                         </span>
                                     </td>
                                     <td className="p-5 align-middle">
-                                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 break-all">
+                                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">
                                             {prod.barcode || '-'}
                                         </span>
                                     </td>
