@@ -23,6 +23,7 @@ export default function ModelsClient() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterBrandId, setFilterBrandId] = useState('');
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,10 +72,12 @@ export default function ModelsClient() {
     return brand ? (brand.brandName || brand.name) : '-';
   };
 
-  const filteredModels = models.filter((m: any) => 
-    (m.modelName || m.name).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (m.brandName || getBrandName(m.brandId)).toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredModels = models.filter((m: any) => {
+    const matchesSearch = (m.modelName || m.name).toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (m.brandName || getBrandName(m.brandId)).toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesBrand = filterBrandId ? m.brandId === parseInt(filterBrandId) : true;
+    return matchesSearch && matchesBrand;
+  });
 
   const openModal = (model: any = null) => {
     if (model) {
@@ -169,6 +172,21 @@ export default function ModelsClient() {
                     className="pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-brand-surface dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm w-64 transition-colors"
                 />
                 <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+            <div className="relative hidden md:block">
+                <select
+                    value={filterBrandId}
+                    onChange={(e) => {setFilterBrandId(e.target.value); setCurrentPage(1);}}
+                    className="pl-4 pr-10 py-2.5 border border-slate-200 dark:border-slate-600 bg-brand-surface dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm transition-colors appearance-none"
+                >
+                    <option value="">Tüm Markalar</option>
+                    {brands.map(b => (
+                        <option key={b.id} value={b.id}>{b.brandName || b.name}</option>
+                    ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
             </div>
             <button
             onClick={() => openModal()}
