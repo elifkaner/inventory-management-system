@@ -325,8 +325,9 @@ export default function UrunEnvanterSayfasi() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden">
-                <table className="w-full text-left border-collapse table-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden flex flex-col">
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left border-collapse table-auto min-w-[1100px]">
                     <thead>
                         <tr className="bg-slate-50/70 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
                             <th className="px-4 py-3 pl-6 w-1 whitespace-nowrap">Durum</th>
@@ -388,6 +389,7 @@ export default function UrunEnvanterSayfasi() {
                         )}
                     </tbody>
                 </table>
+                </div>
                 <Pagination
                     currentPage={currentPage}
                     pageSize={pageSize}
