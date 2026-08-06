@@ -31,12 +31,16 @@ public class AuditLogRepository : IAuditLogRepository
 
         if (fromDate.HasValue)
         {
-            query = query.Where(a => a.Timestamp >= fromDate.Value);
+            // Query string'den bağlanan DateTime, Kind=Unspecified geliyor; "timestamp with time zone"
+            // kolonuyla karşılaştırabilmek için Npgsql'in UTC olarak işaretlenmesini şart koşuyor.
+            var fromDateUtc = DateTime.SpecifyKind(fromDate.Value, DateTimeKind.Utc);
+            query = query.Where(a => a.Timestamp >= fromDateUtc);
         }
 
         if (toDate.HasValue)
         {
-            query = query.Where(a => a.Timestamp <= toDate.Value);
+            var toDateUtc = DateTime.SpecifyKind(toDate.Value, DateTimeKind.Utc);
+            query = query.Where(a => a.Timestamp <= toDateUtc);
         }
 
         query = query.OrderByDescending(a => a.Timestamp);
