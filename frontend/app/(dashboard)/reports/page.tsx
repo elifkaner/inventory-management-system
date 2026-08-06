@@ -40,6 +40,11 @@ const renderCustomLegend = (props: any) => {
     );
 };
 
+const renderPieLabel = ({ name, percent }: any) => {
+    if (percent < 0.03) return null;
+    return `${name} (${(percent * 100).toFixed(0)}%)`;
+};
+
 
 const renderPieLegend = (props: any) => {
     const { payload } = props;
@@ -148,10 +153,12 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     dataKey="totalProduct"
                                     nameKey="categoryName"
                                     cx="50%"
-                                    cy="42%"
-                                    outerRadius={100}
-                                    innerRadius={60}
+                                    cy="50%"
+                                    outerRadius={85}
+                                    innerRadius={50}
                                     paddingAngle={5}
+                                    label={renderPieLabel}
+                                    labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
                                 >
                                     {groupedCategoryData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -181,8 +188,10 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     dataKey="totalProduct"
                                     nameKey="supplierName"
                                     cx="50%"
-                                    cy="42%"
-                                    outerRadius={100}
+                                    cy="50%"
+                                    outerRadius={85}
+                                    label={renderPieLabel}
+                                    labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
                                 >
                                     {groupedSupplierData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
