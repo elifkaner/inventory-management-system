@@ -37,6 +37,8 @@ export default function UrunEnvanterSayfasi() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [filterCategoryId, setFilterCategoryId] = useState<string>("");
+    const [filterBrandId, setFilterBrandId] = useState<string>("");
     const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -75,7 +77,9 @@ export default function UrunEnvanterSayfasi() {
         try {
             setIsLoading(true);
             const statusQuery = statusFilter === "active" ? "&isActive=true" : statusFilter === "passive" ? "&isActive=false" : "";
-            const res = await authFetch(`${API_BASE_URL}/api/Product?search=${debouncedSearchTerm}${statusQuery}&page=${currentPage}&pageSize=${pageSize}`);
+            const categoryQuery = filterCategoryId ? `&categoryId=${filterCategoryId}` : "";
+            const brandQuery = filterBrandId ? `&brandId=${filterBrandId}` : "";
+            const res = await authFetch(`${API_BASE_URL}/api/Product?search=${debouncedSearchTerm}${statusQuery}${categoryQuery}${brandQuery}&page=${currentPage}&pageSize=${pageSize}`);
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) {
@@ -93,7 +97,7 @@ export default function UrunEnvanterSayfasi() {
         } finally {
             setIsLoading(false);
         }
-    }, [debouncedSearchTerm, currentPage, pageSize, statusFilter]);
+    }, [debouncedSearchTerm, currentPage, pageSize, statusFilter, filterCategoryId, filterBrandId]);
 
     useEffect(() => {
         fetchMetadata();
@@ -281,10 +285,43 @@ export default function UrunEnvanterSayfasi() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
-                <div className="relative w-full md:w-96">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
-                    <input type="text" placeholder="Ürün adı, SKU veya Barkod ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm dark:text-slate-200" />
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6 flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+                    <div className="relative w-full md:w-96">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
+                        <input type="text" placeholder="Ürün adı, SKU veya Barkod ara..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-brand-primary text-sm dark:text-slate-200 transition-colors" />
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div className="relative w-full md:w-auto">
+                            <select value={filterCategoryId} onChange={e => {setFilterCategoryId(e.target.value); setCurrentPage(1);}} className="w-full pl-4 pr-10 py-2.5 border border-slate-200 dark:border-slate-600 bg-brand-surface dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary appearance-none cursor-pointer transition-colors">
+                                <option value="">Tüm Kategoriler</option>
+                                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                        <div className="relative w-full md:w-auto">
+                            <select value={filterBrandId} onChange={e => {setFilterBrandId(e.target.value); setCurrentPage(1);}} className="w-full pl-4 pr-10 py-2.5 border border-slate-200 dark:border-slate-600 bg-brand-surface dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary appearance-none cursor-pointer transition-colors">
+                                <option value="">Tüm Markalar</option>
+                                {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                        <div className="relative w-full md:w-auto">
+                            <select value={statusFilter} onChange={e => {setStatusFilter(e.target.value); setCurrentPage(1);}} className="w-full pl-4 pr-10 py-2.5 border border-slate-200 dark:border-slate-600 bg-brand-surface dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary appearance-none cursor-pointer transition-colors">
+                                <option value="all">Tüm Durumlar</option>
+                                <option value="active">Aktif Ürünler</option>
+                                <option value="passive">Pasif Ürünler</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

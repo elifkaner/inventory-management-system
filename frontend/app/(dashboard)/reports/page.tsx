@@ -64,8 +64,8 @@ export default function AnalizVeRaporlamaSayfasi() {
     const [topProducts, setTopProducts] = useState([]);
     const [supplierData, setSupplierData] = useState([]);
 
-    // Renk paletimiz (Logodaki ve benzer tonlar)
-    const COLORS = ['#5B67A8', '#F28C28', '#B695C8', '#4A548A', '#E07B1E', '#9D7FB0', '#A5B4FC', '#FDBA74'];
+    // Daha belirgin ve ayrışık renk paleti
+    const COLORS = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
 
     const fetchReports = useCallback(async () => {
         try {
@@ -152,6 +152,8 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     outerRadius={100}
                                     innerRadius={60}
                                     paddingAngle={5}
+                                    label={({ name, percent }) => `${name} %${(percent * 100).toFixed(0)}`}
+                                    labelLine={true}
                                 >
                                     {groupedCategoryData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -183,6 +185,8 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     cx="50%"
                                     cy="42%"
                                     outerRadius={100}
+                                    label={({ name, percent }) => `${name} %${(percent * 100).toFixed(0)}`}
+                                    labelLine={true}
                                 >
                                     {groupedSupplierData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
@@ -205,25 +209,15 @@ export default function AnalizVeRaporlamaSayfasi() {
                     </h2>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={formattedTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="colorGelen" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#5B67A8" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#5B67A8" stopOpacity={0}/>
-                                    </linearGradient>
-                                    <linearGradient id="colorGiden" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#F28C28" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#F28C28" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
+                            <BarChart data={formattedTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} dx={-10} />
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: 'transparent' }} />
                                 <Legend content={renderCustomLegend} />
-                                <Area type="monotone" dataKey="gelen" name="Stok Girişi" stroke="#5B67A8" strokeWidth={3} fillOpacity={1} fill="url(#colorGelen)" />
-                                <Area type="monotone" dataKey="giden" name="Stok Çıkışı" stroke="#F28C28" strokeWidth={3} fillOpacity={1} fill="url(#colorGiden)" />
-                            </AreaChart>
+                                <Bar dataKey="gelen" name="Stok Girişi" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={30} />
+                                <Bar dataKey="giden" name="Stok Çıkışı" fill="#F59E0B" radius={[4, 4, 0, 0]} barSize={30} />
+                            </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
