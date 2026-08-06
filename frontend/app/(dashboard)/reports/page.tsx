@@ -64,8 +64,8 @@ export default function AnalizVeRaporlamaSayfasi() {
     const [topProducts, setTopProducts] = useState([]);
     const [supplierData, setSupplierData] = useState([]);
 
-    // Daha belirgin ve ayrışık renk paleti
-    const COLORS = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
+    // Renk paletimiz (Logodaki ve benzer tonlar)
+    const COLORS = ['#5B67A8', '#F28C28', '#B695C8', '#4A548A', '#E07B1E', '#9D7FB0', '#A5B4FC', '#FDBA74'];
 
     const fetchReports = useCallback(async () => {
         try {
@@ -152,8 +152,6 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     outerRadius={100}
                                     innerRadius={60}
                                     paddingAngle={5}
-                                    label={({ name, percent }) => `${name} %${(percent * 100).toFixed(0)}`}
-                                    labelLine={true}
                                 >
                                     {groupedCategoryData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -185,8 +183,6 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     cx="50%"
                                     cy="42%"
                                     outerRadius={100}
-                                    label={({ name, percent }) => `${name} %${(percent * 100).toFixed(0)}`}
-                                    labelLine={true}
                                 >
                                     {groupedSupplierData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
@@ -213,10 +209,10 @@ export default function AnalizVeRaporlamaSayfasi() {
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} dx={-10} />
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: 'transparent' }} />
+                                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
                                 <Legend content={renderCustomLegend} />
-                                <Bar dataKey="gelen" name="Stok Girişi" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={30} />
-                                <Bar dataKey="giden" name="Stok Çıkışı" fill="#F59E0B" radius={[4, 4, 0, 0]} barSize={30} />
+                                <Bar dataKey="gelen" name="Stok Girişi" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={24} />
+                                <Bar dataKey="giden" name="Stok Çıkışı" fill="#F43F5E" radius={[4, 4, 0, 0]} barSize={24} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

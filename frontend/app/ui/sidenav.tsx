@@ -149,7 +149,7 @@ export default function SideNav() {
             </div>
 
             {/* Menü Linkleri */}
-            <div className="flex flex-row space-x-2 md:flex-col md:gap-2 py-1 md:space-x-0 flex-grow overflow-y-auto">
+            <div className="flex flex-row space-x-2 md:flex-col md:gap-1 py-1 md:space-x-0 flex-grow overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {menuItems.map((item) => {
                     // Eğer menünün alt linkleri varsa (Dropdown ise)
                     if (item.subLinks) {
@@ -158,10 +158,10 @@ export default function SideNav() {
                         const isOpen = openMenuName === item.name || (openMenuName === null && isChildActive);
 
                         return (
-                            <div key={item.name} className="flex flex-col gap-1">
+                            <div key={item.name} className="flex flex-col gap-0.5">
                                 <button
                                     onClick={() => setOpenMenuName(isOpen ? 'closed' : item.name)}
-                                    className={`group flex w-full items-center justify-between rounded-xl p-3 text-sm font-medium transition-all border ${isChildActive
+                                    className={`group flex w-full items-center justify-between rounded-xl p-2.5 text-sm font-medium transition-all border ${isChildActive
                                         ? 'bg-brand-accent/20 dark:bg-brand-accent/30 text-brand-primary dark:text-brand-accent border-brand-accent/30 dark:border-brand-accent/50 shadow-sm'
                                         : (isOpen ? 'bg-brand-surface dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-transparent' : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-brand-surfaceDark dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200')
                                         }`}
@@ -181,14 +181,14 @@ export default function SideNav() {
                                 </button>
                                 {/* Alt Menü Öğeleri */}
                                 {isOpen && (
-                                    <div className="hidden md:flex flex-col gap-1 mt-1 animate-in slide-in-from-top-2 fade-in duration-200">
+                                    <div className="hidden md:flex flex-col gap-0.5 mt-0.5 animate-in slide-in-from-top-2 fade-in duration-200">
                                         {item.subLinks.map((sub) => {
                                             const isActive = pathname === sub.href;
                                             return (
                                                 <Link
                                                     key={sub.name}
                                                     href={sub.href}
-                                                    className={`flex items-center justify-start gap-3 w-full rounded-xl py-2 px-3 text-[13px] font-medium transition-colors ${isActive
+                                                    className={`flex items-center justify-start gap-3 w-full rounded-xl py-1.5 px-3 text-[13px] font-medium transition-colors ${isActive
                                                         ? 'bg-brand-primary text-white shadow-md'
                                                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                                                         }`}
@@ -212,7 +212,7 @@ export default function SideNav() {
                         <Link
                             key={item.name}
                             href={item.href!}
-                            className={`group flex h-[48px] grow items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium transition-all md:flex-none md:justify-start md:px-4 border ${isActive
+                            className={`group flex h-[44px] grow items-center justify-center gap-3 rounded-xl p-2.5 text-sm font-medium transition-all md:flex-none md:justify-start md:px-4 border ${isActive
                                 ? 'bg-brand-accent/20 dark:bg-brand-accent/30 text-brand-primary dark:text-brand-accent border-brand-accent/30 dark:border-brand-accent/50 shadow-sm'
                                 : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-brand-surfaceDark dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
                                 }`}

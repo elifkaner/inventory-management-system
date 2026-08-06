@@ -26,9 +26,9 @@ export default function Dashboard() {
         
         if (productsRes.ok) {
           const allProducts = await productsRes.json();
-          // HACK: Backend isCritical filtresi gelene kadar frontend'de stockQuantity <= 10 olanları filtrele
+          // HACK: Backend isCritical filtresi gelene kadar frontend'de stockQuantity <= 25 olanları filtrele
           const criticals = Array.isArray(allProducts) ? allProducts : allProducts.items || [];
-          setCriticalProducts(criticals.filter((p: any) => p.stockQuantity <= 500).slice(0, 5));
+          setCriticalProducts(criticals.filter((p: any) => p.stockQuantity <= 25).slice(0, 5));
         }
 
         if (movementsRes.ok) {
