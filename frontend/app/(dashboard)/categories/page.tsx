@@ -30,6 +30,7 @@ export default function KategorilerSayfasi() {
     const [transferTargetId, setTransferTargetId] = useState<number | ''>('');
     const [categoryToTransfer, setCategoryToTransfer] = useState<{id: number, name: string} | null>(null);
     const [isTransferring, setIsTransferring] = useState(false);
+    const [isTransferSelectOpen, setIsTransferSelectOpen] = useState(false);
 
     const showToastMsg = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
         setToastMessage(message);
@@ -209,17 +210,42 @@ export default function KategorilerSayfasi() {
                                 Bu kategoriyi silebilmek için ürünleri başka bir kategoriye taşımanız gerekiyor.
                             </p>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Hangi Kategoriye Taşınsın?</label>
-                            <select
-                                required
-                                value={transferTargetId}
-                                onChange={(e) => setTransferTargetId(Number(e.target.value))}
-                                className="form-select"
-                            >
-                                <option value="">Kategori Seçiniz...</option>
-                                {categories.filter(c => c.id !== categoryToTransfer.id).map(c => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
-                                ))}
-                            </select>
+                            <div className="relative mt-1">
+                                <div 
+                                    className="w-full p-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-lg cursor-pointer flex justify-between items-center text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-rose-500/20"
+                                    onClick={() => setIsTransferSelectOpen(!isTransferSelectOpen)}
+                                >
+                                    <span>
+                                        {transferTargetId !== '' 
+                                            ? categories.find(c => c.id === transferTargetId)?.name 
+                                            : 'Kategori Seçiniz...'}
+                                    </span>
+                                    <svg className={`w-4 h-4 text-slate-400 transition-transform ${isTransferSelectOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                                {isTransferSelectOpen && (
+                                    <div className="absolute z-[80] w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                                        <ul className="py-1">
+                                            {categories.filter(c => c.id !== categoryToTransfer.id).map((c) => (
+                                                <li 
+                                                    key={c.id}
+                                                    className={`px-3 py-2 cursor-pointer text-sm hover:bg-rose-50 dark:hover:bg-rose-900/30 ${transferTargetId === c.id ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-semibold' : 'text-slate-700 dark:text-slate-300'}`}
+                                                    onClick={() => {
+                                                        setTransferTargetId(c.id);
+                                                        setIsTransferSelectOpen(false);
+                                                    }}
+                                                >
+                                                    {c.name}
+                                                </li>
+                                            ))}
+                                            {categories.filter(c => c.id !== categoryToTransfer.id).length === 0 && (
+                                                <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400 text-center">Seçilebilir kategori yok.</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-brand-surface dark:bg-slate-800 flex justify-end gap-3">
                             <button type="button" onClick={() => setIsTransferModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-brand-surfaceDark dark:hover:bg-slate-600 rounded-xl font-medium text-sm transition-colors">Vazgeç</button>

@@ -77,7 +77,7 @@ export default function SearchableSelect({
                                 <div className="relative">
                                     <input
                                         type="text" placeholder="Ara..."
-                                        className="w-full pl-3 pr-9 py-2 border border-slate-200 dark:border-slate-600 rounded-md text-sm bg-brand-surface dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                        className="w-full pl-3 pr-9 py-2 border border-slate-200 dark:border-slate-600 rounded-md text-sm bg-brand-surface dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                                         value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
                                     />
@@ -86,13 +86,13 @@ export default function SearchableSelect({
                             </div>
                         )}
                         <ul className="py-1">
-                            <li className="px-3 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-sm text-slate-500 dark:text-slate-400 italic"
+                            <li className="px-3 py-2 hover:bg-brand-surface dark:hover:bg-slate-700 cursor-pointer text-sm text-slate-500 dark:text-slate-400 italic"
                                 onClick={() => { setValue(name, "", { shouldValidate: true }); setIsOpen(false); setSearchTerm(""); }}>
                                 Seçimi Temizle
                             </li>
 
                             {visibleOptions.map((opt) => (
-                                <li key={opt.value} className={`px-3 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-sm ${String(selectedValue) === String(opt.value) ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-slate-700 dark:text-slate-300'}`}
+                                <li key={opt.value} className={`px-3 py-2 hover:bg-brand-surface dark:hover:bg-slate-700 cursor-pointer text-sm ${String(selectedValue) === String(opt.value) ? 'bg-brand-surfaceDark dark:bg-slate-700 text-brand-primary dark:text-brand-primary font-semibold' : 'text-slate-700 dark:text-slate-300'}`}
                                     onClick={() => { setValue(name, String(opt.value), { shouldValidate: true }); setIsOpen(false); setSearchTerm(""); }}>
                                     {opt.label}
                                 </li>
