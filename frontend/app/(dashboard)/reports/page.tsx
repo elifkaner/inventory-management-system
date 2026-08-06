@@ -64,8 +64,8 @@ export default function AnalizVeRaporlamaSayfasi() {
     const [topProducts, setTopProducts] = useState([]);
     const [supplierData, setSupplierData] = useState([]);
 
-    // Renk paletimiz (Logodaki ve benzer tonlar)
-    const COLORS = ['#5B67A8', '#F28C28', '#B695C8', '#4A548A', '#E07B1E', '#9D7FB0', '#A5B4FC', '#FDBA74'];
+    // Renk paletimiz (Tamamen ayırt edilebilir canlı tonlar)
+    const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6', '#F97316', '#6366F1'];
 
     const fetchReports = useCallback(async () => {
         try {
