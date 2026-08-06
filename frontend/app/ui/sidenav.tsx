@@ -126,9 +126,9 @@ export default function SideNav() {
     };
 
     return (
-        <div className="flex h-full flex-col px-4 py-6 md:px-4 bg-white dark:bg-slate-800 border-r md:border-r-0 border-slate-100 dark:border-slate-700 md:rounded-3xl md:shadow-xl shadow-slate-200/50 dark:shadow-none transition-colors duration-200">
+        <div className="flex h-full flex-col px-4 py-4 md:px-4 bg-white dark:bg-slate-800 border-r md:border-r-0 border-slate-100 dark:border-slate-700 md:rounded-3xl md:shadow-xl shadow-slate-200/50 dark:shadow-none transition-colors duration-200">
             {/* Logo Alanı */}
-            <div className="mb-6 flex h-20 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-primary to-brand-primaryHover p-4 md:h-32 shadow-lg shadow-brand-primary/30 relative overflow-hidden group">
+            <div className="mb-4 flex h-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-primary to-brand-primaryHover p-3 md:h-20 shadow-lg shadow-brand-primary/30 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 rounded-full bg-white/10 blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
                 <div className="flex items-center gap-3 relative z-10 w-full md:justify-center px-2">
                     <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner flex-shrink-0">
@@ -227,11 +227,11 @@ export default function SideNav() {
             </div>
 
             {/* Tema Değiştir & Çıkış Yap */}
-            <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
+            <div className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-1">
                 <ThemeToggle />
                 <button
                     onClick={handleLogout}
-                    className="group flex h-[48px] w-full items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium text-rose-600 dark:text-rose-400 transition-all md:justify-start md:px-4 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-transparent hover:border-rose-100 dark:hover:border-rose-900/50"
+                    className="group flex h-[44px] w-full items-center justify-center gap-3 rounded-xl p-2.5 text-sm font-medium text-rose-600 dark:text-rose-400 transition-all md:justify-start md:px-4 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-transparent hover:border-rose-100 dark:hover:border-rose-900/50"
                 >
                     <svg className="w-5 h-5 text-rose-500 dark:text-rose-400 group-hover:text-rose-600 dark:group-hover:text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
