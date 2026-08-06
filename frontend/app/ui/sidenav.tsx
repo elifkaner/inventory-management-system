@@ -138,8 +138,8 @@ export default function SideNav() {
                     </div>
                     <div className="flex flex-col items-start md:items-center xl:items-start text-left">
                         <span className="text-white font-extrabold text-2xl tracking-tight leading-none flex items-center">
-                            Stok<span className="text-brand-secondary font-medium">Pro</span>
-                            <span className="ml-1 w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
+                            Stok<span className="text-brand-accent font-medium">Pro</span>
+                            <span className="ml-1 w-2 h-2 rounded-full bg-brand-secondary animate-pulse"></span>
                         </span>
                         <span className="text-white/70 text-[9px] font-bold tracking-widest uppercase mt-1 hidden xl:block">
                             Envanter Yönetimi
@@ -162,18 +162,18 @@ export default function SideNav() {
                                 <button
                                     onClick={() => setOpenMenuName(isOpen ? 'closed' : item.name)}
                                     className={`group flex w-full items-center justify-between rounded-xl p-2.5 text-sm font-medium transition-all border ${isChildActive
-                                        ? 'bg-brand-accent/20 dark:bg-brand-accent/30 text-brand-primary dark:text-brand-accent border-brand-accent/30 dark:border-brand-accent/50 shadow-sm'
+                                        ? 'bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary dark:text-brand-primary border-brand-primary/20 dark:border-brand-primary/30 shadow-sm'
                                         : (isOpen ? 'bg-brand-surface dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-transparent' : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-brand-surfaceDark dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200')
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`${isChildActive ? 'text-brand-primary dark:text-brand-accent' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}>
+                                        <div className={`${isChildActive ? 'text-brand-primary dark:text-brand-primary' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}>
                                             {item.icon}
                                         </div>
                                         <span className="hidden md:block">{item.name}</span>
                                     </div>
                                     <svg
-                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive ? 'text-brand-primary dark:text-brand-accent' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}
+                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive ? 'text-brand-primary dark:text-brand-primary' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                     >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -213,11 +213,11 @@ export default function SideNav() {
                             key={item.name}
                             href={item.href!}
                             className={`group flex h-[44px] grow items-center justify-center gap-3 rounded-xl p-2.5 text-sm font-medium transition-all md:flex-none md:justify-start md:px-4 border ${isActive
-                                ? 'bg-brand-accent/20 dark:bg-brand-accent/30 text-brand-primary dark:text-brand-accent border-brand-accent/30 dark:border-brand-accent/50 shadow-sm'
+                                ? 'bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary dark:text-brand-primary border-brand-primary/20 dark:border-brand-primary/30 shadow-sm'
                                 : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-brand-surfaceDark dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
                                 }`}
                         >
-                            <div className={`${isActive ? 'text-brand-primary dark:text-brand-accent' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
+                            <div className={`${isActive ? 'text-brand-primary dark:text-brand-primary' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
                                 {item.icon}
                             </div>
                             <span className="hidden md:block">{item.name}</span>
