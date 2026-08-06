@@ -54,7 +54,10 @@ public class ModelService : IModelService
         var model = new ModelEntity { Name = dto.Name, BrandId = dto.BrandId };
 
         var created = await _modelRepository.AddAsync(model);
+        if( created != null) 
+        {
         _cache.Remove(AllModelsCacheKey);
+        }
 
         return ToDto(created);
     }
@@ -62,7 +65,10 @@ public class ModelService : IModelService
     public async Task<ModelDto?> UpdateModelAsync(int id, UpdateModelDto dto)
     {
         var model = await _modelRepository.UpdateAsync(id, dto.Name, dto.BrandId);
+        if( model != null) 
+        {
         _cache.Remove(AllModelsCacheKey);
+        }
 
         return model == null ? null : ToDto(model);
     }
@@ -77,7 +83,10 @@ public class ModelService : IModelService
         }
 
         var deleted = await _modelRepository.DeleteAsync(id);
+        if(deleted) 
+        {
         _cache.Remove(AllModelsCacheKey);
+        }
 
         return deleted;
     }

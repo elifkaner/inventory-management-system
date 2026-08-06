@@ -52,7 +52,11 @@ public class WarehouseLocationService : IWarehouseLocationService
         };
 
         var created = await _locationRepository.AddAsync(location);
-        _cache.Remove(AllLocationsCacheKey);
+
+        if( created != null) 
+        {
+         _cache.Remove(AllLocationsCacheKey);
+        }
 
         return ToDto(created);
     }
@@ -67,7 +71,10 @@ public class WarehouseLocationService : IWarehouseLocationService
         };
 
         var updated = await _locationRepository.UpdateAsync(id, location);
+        if (updated != null )
+        {
         _cache.Remove(AllLocationsCacheKey);
+        }
 
         return updated == null ? null : ToDto(updated);
     }
@@ -82,7 +89,10 @@ public class WarehouseLocationService : IWarehouseLocationService
         }
 
         var deleted = await _locationRepository.DeleteAsync(id);
+        if (deleted) 
+        {
         _cache.Remove(AllLocationsCacheKey);
+        }
 
         return deleted;
     }

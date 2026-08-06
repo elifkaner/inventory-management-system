@@ -63,8 +63,10 @@ public class CategoryService : ICategoryService
     public async Task<CategoryDto?> UpdateCategoryAsync(int id, UpdateCategoryDto dto)
     {
         var category = await _categoryRepository.UpdateAsync(id, dto.Name);
-        _cache.Remove(AllCategoriesCacheKey);
-
+        if (category != null ) 
+        {
+            _cache.Remove(AllCategoriesCacheKey);
+        }
         return category == null ? null : ToDto(category);
     }
 
@@ -76,8 +78,11 @@ public class CategoryService : ICategoryService
         if (!hasProducts)
         {
             var deletedWithoutReassign = await _categoryRepository.DeleteAsync(id);
+            if (deletedWithoutReassign) 
+            {
             _cache.Remove(AllCategoriesCacheKey);
             return deletedWithoutReassign;
+            }
         }
 
         if (reassignToCategoryId == null)
