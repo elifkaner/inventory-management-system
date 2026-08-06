@@ -26,15 +26,15 @@ public class AuditSaveChangesInterceptor : SaveChangesInterceptor
         var context = eventData.Context;
         _pendingAudits = new List<PendingAudit>();
 
-        if (context != null)
+        // Kimliği doğrulanmamış (ör. token yenileme gibi anonim) istekler "System" olarak
+        // işaretleniyor — bunların yaptığı hiçbir değişiklik audit log'a yazılmıyor.
+        var isSystemContext = _currentUser.UserName == "System";
+
+        if (context != null && !isSystemContext)
         {
             foreach (var entry in context.ChangeTracker.Entries())
             {
                 if (entry.Entity is AuditLog) continue;
-
-                // RefreshToken, her giriş/token yenilemede otomatik oluşan bir kimlik doğrulama
-                // detayı — işletme açısından anlamlı bir "iş kaydı" değil, audit'e gerek yok.
-                if (entry.Entity is RefreshToken) continue;
 
                 if (entry.State is not (EntityState.Added or EntityState.Modified or EntityState.Deleted))
                 {
