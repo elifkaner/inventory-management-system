@@ -166,9 +166,9 @@ export default function EquipmentAuditLogPage() {
                   onChange={(e) => setFilterEquipmentId(e.target.value)}
                   className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm"
               >
-                  <option value="">Tüm Ekipmanlar</option>
+                  <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Tüm Ekipmanlar</option>
                   {equipmentList.map(eq => (
-                      <option key={eq.id} value={eq.id}>{eq.equipmentCode} - {eq.equipmentName}</option>
+                      <option key={eq.id} value={eq.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{eq.equipmentCode} - {eq.equipmentName}</option>
                   ))}
               </select>
           </div>
@@ -284,9 +284,9 @@ export default function EquipmentAuditLogPage() {
                   {...register("equipmentId", { required: true, min: 1 })}
                   className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                 >
-                    <option value="0">Seçim Yapın...</option>
+                    <option value="0" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Seçim Yapın...</option>
                     {equipmentList.map(eq => (
-                        <option key={eq.id} value={eq.id}>{eq.equipmentCode} - {eq.equipmentName}</option>
+                        <option key={eq.id} value={eq.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{eq.equipmentCode} - {eq.equipmentName}</option>
                     ))}
                 </select>
                 {errors.equipmentId && <p className="text-xs text-rose-500 mt-1">Ekipman seçimi zorunludur.</p>}
@@ -309,8 +309,8 @@ export default function EquipmentAuditLogPage() {
                       {...register("type", { required: true })}
                       className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                     >
-                        <option value="CheckOut">Zimmet Verildi</option>
-                        <option value="CheckIn">Geri Alındı</option>
+                        <option value="CheckOut" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Zimmet Verildi</option>
+                        <option value="CheckIn" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Geri Alındı</option>
                     </select>
                   </div>
                   <div>
@@ -319,9 +319,9 @@ export default function EquipmentAuditLogPage() {
                       {...register("condition", { required: true })}
                       className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                     >
-                        <option value="Working">Sorunsuz / Çalışıyor</option>
-                        <option value="Damaged">Hasarlı</option>
-                        <option value="NeedsRepair">Bakım Gerekiyor</option>
+                        <option value="Working" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Sorunsuz / Çalışıyor</option>
+                        <option value="Damaged" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Hasarlı</option>
+                        <option value="NeedsRepair" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Bakım Gerekiyor</option>
                     </select>
                   </div>
               </div>

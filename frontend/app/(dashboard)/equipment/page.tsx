@@ -307,10 +307,10 @@ export default function EquipmentPage() {
                       {...register("status", { required: true })}
                       className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                     >
-                        <option value="Available">Kullanılabilir</option>
-                        <option value="InUse">Kullanımda</option>
-                        <option value="UnderMaintenance">Servis Bekliyor</option>
-                        <option value="Retired">Hurda</option>
+                        <option value="Available" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Kullanılabilir</option>
+                        <option value="InUse" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Kullanımda</option>
+                        <option value="UnderMaintenance" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Servis Bekliyor</option>
+                        <option value="Retired" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Hurda</option>
                     </select>
                   </div>
               </div>
