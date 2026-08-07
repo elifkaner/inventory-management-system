@@ -9,11 +9,10 @@ import Pagination from '@/app/ui/pagination';
 
 type EquipmentFormData = {
   id?: number | null;
-  name: string;
-  skuCode: string;
+  equipmentName: string;
+  equipmentCode: string;
   status: string;
-  assignedTo: string;
-  lastMaintenanceDate: string;
+  currentHolderName: string;
 };
 
 export default function EquipmentPage() {
@@ -45,7 +44,35 @@ export default function EquipmentPage() {
       if (res.ok) {
         const data = await res.json();
         const list = Array.isArray(data) ? data : data.items || [];
-        setEquipmentList(list);
+        
+        const validStatuses = ['Available', 'InUse', 'UnderMaintenance', 'Retired', 'Kullanılabilir', 'Kullanımda', 'Servis Bekliyor', 'Hurda'];
+        
+        const formatName = (name: string) => {
+            if (!name) return name;
+            if (name.includes('.')) {
+                return name.split('.').map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join(' ');
+            }
+            return name;
+        };
+        
+        const mappedList = list.map((e: any) => {
+            let finalStatus = e.status;
+            let finalHolder = e.currentHolderName;
+            
+            // Eğer status alanı geçerli bir durum değilse (örneğin "mehmet.kaya" yazıyorsa)
+            if (e.status && !validStatuses.includes(e.status)) {
+                finalHolder = e.status;
+                finalStatus = 'InUse';
+            }
+            
+            return {
+                ...e,
+                status: finalStatus,
+                currentHolderName: formatName(finalHolder)
+            };
+        });
+
+        setEquipmentList(mappedList);
       } else if (res.status === 404) {
         // API might not exist yet
         setError('Ekipman API henüz hazır değil. Lütfen backend ekibi ile iletişime geçin.');
@@ -64,23 +91,22 @@ export default function EquipmentPage() {
   }, []);
 
   const filteredList = equipmentList.filter((e: any) => 
-    (e.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (e.skuCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (e.assignedTo || '').toLowerCase().includes(searchTerm.toLowerCase())
+    (e.equipmentName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (e.equipmentCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (e.currentHolderName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const openModal = (equipment: any = null) => {
     if (equipment) {
       reset({ 
           id: equipment.id, 
-          name: equipment.name, 
-          skuCode: equipment.skuCode || '',
-          status: equipment.status || 'Kullanılabilir',
-          assignedTo: equipment.assignedTo || '',
-          lastMaintenanceDate: equipment.lastMaintenanceDate ? equipment.lastMaintenanceDate.substring(0, 10) : ''
+          equipmentName: equipment.equipmentName, 
+          equipmentCode: equipment.equipmentCode || '',
+          status: equipment.status || 'Available',
+          currentHolderName: equipment.currentHolderName || ''
       });
     } else {
-      reset({ id: null, name: '', skuCode: '', status: 'Kullanılabilir', assignedTo: '', lastMaintenanceDate: '' });
+      reset({ id: null, equipmentName: '', equipmentCode: '', status: 'Available', currentHolderName: '' });
     }
     setIsModalOpen(true);
   };
@@ -92,11 +118,9 @@ export default function EquipmentPage() {
       const method = data.id ? 'PUT' : 'POST';
       
       const payload = { 
-          name: data.name, 
-          skuCode: data.skuCode,
-          status: data.status,
-          assignedTo: data.assignedTo,
-          lastMaintenanceDate: data.lastMaintenanceDate ? new Date(data.lastMaintenanceDate).toISOString() : null
+          equipmentName: data.equipmentName, 
+          equipmentCode: data.equipmentCode,
+          status: data.status
       };
 
       const res = await authFetch(url, {
@@ -130,10 +154,6 @@ export default function EquipmentPage() {
         setEquipmentList(prev => prev.filter(e => e.id !== deleteModal.id));
         showToast('Ekipman başarıyla silindi.');
         setDeleteModal({isOpen: false, id: null, name: ''});
-      } else {
-        const errText = await res.text();
-        showToast(errText || "Silme işlemi başarısız oldu.", 'error');
-        setDeleteModal({isOpen: false, id: null, name: ''});
       }
     } catch (error) {
       showToast("Sunucuyla iletişim kurulamadı.", 'error');
@@ -145,10 +165,10 @@ export default function EquipmentPage() {
 
   const getStatusBadge = (status: string) => {
       switch(status) {
-          case 'Kullanılabilir': return <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded text-xs font-bold">Kullanılabilir</span>;
-          case 'Kullanımda': return <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded text-xs font-bold">Kullanımda</span>;
-          case 'Servis Bekliyor': return <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-1 rounded text-xs font-bold">Servis Bekliyor</span>;
-          case 'Hurda': return <span className="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2 py-1 rounded text-xs font-bold">Hurda</span>;
+          case 'Available': return <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded text-xs font-bold">Kullanılabilir</span>;
+          case 'InUse': return <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded text-xs font-bold">Kullanımda</span>;
+          case 'UnderMaintenance': return <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-1 rounded text-xs font-bold">Servis Bekliyor</span>;
+          case 'Retired': return <span className="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2 py-1 rounded text-xs font-bold">Hurda</span>;
           default: return <span className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-2 py-1 rounded text-xs font-bold">{status || 'Belirsiz'}</span>;
       }
   };
@@ -221,16 +241,16 @@ export default function EquipmentPage() {
             ) : (
               filteredList.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((e: any) => (
                 <tr key={e.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
-                  <td className="pl-6 pr-4 py-4 text-slate-900 dark:text-slate-100 font-bold">{e.name}</td>
+                  <td className="pl-6 pr-4 py-4 text-slate-900 dark:text-slate-100 font-bold">{e.equipmentName}</td>
                   <td className="px-4 py-4">
-                    <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{e.skuCode || '-'}</span>
+                    <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{e.equipmentCode || '-'}</span>
                   </td>
                   <td className="px-4 py-4">{getStatusBadge(e.status)}</td>
-                  <td className="px-4 py-4 font-semibold">{e.assignedTo || '-'}</td>
-                  <td className="px-4 py-4">{e.lastMaintenanceDate ? new Date(e.lastMaintenanceDate).toLocaleDateString('tr-TR') : '-'}</td>
+                  <td className="px-4 py-4 font-semibold">{e.currentHolderName || '-'}</td>
+                  <td className="px-4 py-4">-</td>
                   <td className="px-6 py-4 text-right">
                     <button onClick={() => openModal(e)} className="text-brand-primary dark:text-blue-400 hover:text-brand-primaryHover dark:hover:text-blue-300 font-semibold mr-4">Düzenle</button>
-                    <button onClick={() => setDeleteModal({isOpen: true, id: e.id, name: e.name})} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold">Sil</button>
+                    <button onClick={() => setDeleteModal({isOpen: true, id: e.id, name: e.equipmentName})} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold">Sil</button>
                   </td>
                 </tr>
               ))
@@ -266,7 +286,7 @@ export default function EquipmentPage() {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ekipman Adı *</label>
                 <input
                   type="text"
-                  {...register("name", { required: true })}
+                  {...register("equipmentName", { required: true })}
                   className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                   placeholder="Örn: El Terminali - Zebra TC21"
                 />
@@ -276,7 +296,7 @@ export default function EquipmentPage() {
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SKU / Seri No</label>
                     <input
                       type="text"
-                      {...register("skuCode")}
+                      {...register("equipmentCode")}
                       className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary font-mono text-sm"
                       placeholder="SN-12345"
                     />
@@ -287,10 +307,10 @@ export default function EquipmentPage() {
                       {...register("status", { required: true })}
                       className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                     >
-                        <option value="Kullanılabilir">Kullanılabilir</option>
-                        <option value="Kullanımda">Kullanımda</option>
-                        <option value="Servis Bekliyor">Servis Bekliyor</option>
-                        <option value="Hurda">Hurda</option>
+                        <option value="Available">Kullanılabilir</option>
+                        <option value="InUse">Kullanımda</option>
+                        <option value="UnderMaintenance">Servis Bekliyor</option>
+                        <option value="Retired">Hurda</option>
                     </select>
                   </div>
               </div>
@@ -298,17 +318,10 @@ export default function EquipmentPage() {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Zimmetli Kişi</label>
                 <input
                   type="text"
-                  {...register("assignedTo")}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                  placeholder="Örn: Ahmet Yılmaz"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Son Bakım Tarihi</label>
-                <input
-                  type="date"
-                  {...register("lastMaintenanceDate")}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  {...register("currentHolderName")}
+                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary bg-slate-100 dark:bg-slate-800"
+                  placeholder="Zimmet İşlemleri Log Paneli Üzerinden Yapılmaktadır"
+                  disabled
                 />
               </div>
 
