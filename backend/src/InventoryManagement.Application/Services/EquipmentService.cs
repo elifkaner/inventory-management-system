@@ -22,35 +22,46 @@ public class EquipmentService : IEquipmentService
         return results;
     }
 
-    public async Task<EquipmentDto> CreateEquipmentAsync(EquipmentDto dto)
+    public async Task<EquipmentDto?> GetEquipmentByIdAsync(int id)
     {
-        var equipments = new Equipment
-        {
-            EquipmentName = dto.EquipmentName,
-            EquipmentId = dto.EquipmentId,
-            UserName = dto.UserName,
-            TakenTime = dto.TakenTime
-        };
-        await _equipmentRepository.AddAsync(equipments);
-        return ToDto(equipments);
+        var equipment = await _equipmentRepository.GetByIdAsync(id);
+        return equipment == null ? null : ToDto(equipment);
     }
 
-    public async Task<EquipmentDto?> UpdateEquipmentAsync(int id)
+    public async Task<EquipmentDto> CreateEquipmentAsync(CreateEquipmentDto dto)
     {
-       var equipment = await _equipmentRepository.UpdateAsync(id);
+        var equipment = new Equipment
+        {
+            EquipmentCode = dto.EquipmentCode,
+            EquipmentName = dto.EquipmentName,
+            Status = "Available"
+        };
 
-       if(equipment == null)
+        var created = await _equipmentRepository.AddAsync(equipment);
+        return ToDto(created);
+    }
+
+    public async Task<EquipmentDto?> UpdateEquipmentAsync(int id, UpdateEquipmentDto dto)
+    {
+        var equipment = new Equipment
+        {
+            EquipmentCode = dto.EquipmentCode,
+            EquipmentName = dto.EquipmentName,
+            Status = dto.Status
+        };
+
+        var updated = await _equipmentRepository.UpdateAsync(id, equipment);
+        if (updated == null)
         {
             return null;
         }
-        return ToDto(equipment);
+        return ToDto(updated);
     }
 
     public async Task<bool> DeleteEquipmentAsync(int id)
     {
-       var deleted =  await _equipmentRepository.DeleteAsync(id);
-
-       return deleted == true ? true : false;
+        var deleted = await _equipmentRepository.DeleteAsync(id);
+        return deleted;
     }
 
     private static EquipmentDto ToDto(Equipment e)
@@ -58,11 +69,10 @@ public class EquipmentService : IEquipmentService
         return new EquipmentDto
         {
             Id = e.Id,
-            EquipmentId = e.EquipmentId,
+            EquipmentCode = e.EquipmentCode,
             EquipmentName = e.EquipmentName,
-            UserName = e.UserName,
-            TakenTime = e.TakenTime
-        };    
+            Status = e.Status,
+            CurrentHolderName = e.CurrentHolderName
+        };
     }
-    
 }

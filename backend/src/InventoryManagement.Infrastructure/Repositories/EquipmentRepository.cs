@@ -3,6 +3,8 @@ using InventoryManagement.Domain.Entities;
 using InventoryManagement.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
+namespace InventoryManagement.Infrastructure.Repositories;
+
 public class EquipmentRepository : IEquipmentRepository
 {
     private readonly AppDbContext _context;
@@ -12,10 +14,16 @@ public class EquipmentRepository : IEquipmentRepository
         _context = context;
     }
 
-    public  async Task<List<Equipment>> GetAllAsync()
+    public async Task<List<Equipment>> GetAllAsync()
     {
         return await _context.Equipments.ToListAsync();
     }
+
+    public async Task<Equipment?> GetByIdAsync(int id)
+    {
+        return await _context.Equipments.FirstOrDefaultAsync(x => x.Id == id);
+    }
+
     public async Task<Equipment> AddAsync(Equipment equipment)
     {
         await _context.Equipments.AddAsync(equipment);
@@ -23,36 +31,33 @@ public class EquipmentRepository : IEquipmentRepository
         return equipment;
     }
 
-    public async Task<Equipment?> UpdateAsync(int id)
+    public async Task<Equipment?> UpdateAsync(int id, Equipment updatedEquipment)
     {
-        var updatedEquipment = await _context.Equipments.FirstOrDefaultAsync(x=>x.Id==id);
-        if (updatedEquipment == null)
+        var equipment = await _context.Equipments.FirstOrDefaultAsync(x => x.Id == id);
+        if (equipment == null)
         {
             return null;
         }
 
-        var equipments = new Equipment
-        {
-            EquipmentId = updatedEquipment.EquipmentId,
-            EquipmentName = updatedEquipment.EquipmentName,
-            UserName = updatedEquipment.UserName,
-            TakenTime = DateTime.Now,
-        };
-        await _context.AddAsync(equipments);
+        equipment.EquipmentCode = updatedEquipment.EquipmentCode;
+        equipment.EquipmentName = updatedEquipment.EquipmentName;
+        equipment.Status = updatedEquipment.Status;
+        equipment.CurrentHolderName = updatedEquipment.CurrentHolderName;
+
         await _context.SaveChangesAsync();
-        return equipments;
+        return equipment;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var equipments = await _context.Equipments.FirstOrDefaultAsync(x=>x.Id==id);
-        if( equipments == null)
+        var equipment = await _context.Equipments.FirstOrDefaultAsync(x => x.Id == id);
+        if (equipment == null)
         {
             return false;
         }
-        _context.Remove(equipments);
+
+        _context.Remove(equipment);
         await _context.SaveChangesAsync();
         return true;
     }
-    
 }
