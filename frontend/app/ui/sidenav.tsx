@@ -52,6 +52,18 @@ const menuItems = [
         ]
     },
     {
+        name: 'Ekipman Takibi',
+        icon: (
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+        ),
+        subLinks: [
+            { name: 'Ekipman Paneli', href: '/equipment' },
+            { name: 'Teslim Logları', href: '/equipment/audit-log' }
+        ]
+    },
+    {
         name: 'İş Ortakları',
         href: '/suppliers',
         icon: (
@@ -117,9 +129,9 @@ export default function SideNav() {
     };
 
     return (
-        <div className="flex h-full flex-col px-4 py-6 md:px-4 bg-white dark:bg-slate-800 border-r md:border-r-0 border-slate-100 dark:border-slate-700 md:rounded-3xl md:shadow-xl shadow-slate-200/50 dark:shadow-none transition-colors duration-200">
+        <div className="flex h-full flex-col px-4 py-4 md:px-4 bg-white dark:bg-slate-800 border-r md:border-r-0 border-slate-100 dark:border-slate-700 md:rounded-3xl md:shadow-xl shadow-slate-200/50 dark:shadow-none transition-colors duration-200">
             {/* Logo Alanı */}
-            <div className="mb-6 flex h-20 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-primary to-brand-primaryHover p-4 md:h-32 shadow-lg shadow-brand-primary/30 relative overflow-hidden group">
+            <div className="mb-4 flex h-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-primary to-brand-primaryHover p-3 md:h-20 shadow-lg shadow-brand-primary/30 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 rounded-full bg-white/10 blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
                 <div className="flex items-center gap-3 relative z-10 w-full md:justify-center px-2">
                     <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner flex-shrink-0">
@@ -129,8 +141,8 @@ export default function SideNav() {
                     </div>
                     <div className="flex flex-col items-start md:items-center xl:items-start text-left">
                         <span className="text-white font-extrabold text-2xl tracking-tight leading-none flex items-center">
-                            Stok<span className="text-brand-secondary font-medium">Pro</span>
-                            <span className="ml-1 w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
+                            Stok<span className="text-brand-accent font-medium">Pro</span>
+                            <span className="ml-1 w-2 h-2 rounded-full bg-brand-secondary animate-pulse"></span>
                         </span>
                         <span className="text-white/70 text-[9px] font-bold tracking-widest uppercase mt-1 hidden xl:block">
                             Envanter Yönetimi
@@ -140,7 +152,7 @@ export default function SideNav() {
             </div>
 
             {/* Menü Linkleri */}
-            <div className="flex flex-row space-x-2 md:flex-col md:gap-2 py-1 md:space-x-0 flex-grow overflow-y-auto">
+            <div className="flex flex-row space-x-2 md:flex-col md:gap-1 py-1 md:space-x-0 flex-grow overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {menuItems.map((item) => {
                     // Eğer menünün alt linkleri varsa (Dropdown ise)
                     if (item.subLinks) {
@@ -149,22 +161,22 @@ export default function SideNav() {
                         const isOpen = openMenuName === item.name || (openMenuName === null && isChildActive);
 
                         return (
-                            <div key={item.name} className="flex flex-col gap-1">
+                            <div key={item.name} className="flex flex-col gap-0.5">
                                 <button
                                     onClick={() => setOpenMenuName(isOpen ? 'closed' : item.name)}
-                                    className={`group flex w-full items-center justify-between rounded-xl p-3 text-sm font-medium transition-all border ${isChildActive
-                                        ? 'bg-brand-accent/20 dark:bg-brand-accent/30 text-brand-primary dark:text-brand-accent border-brand-accent/30 dark:border-brand-accent/50 shadow-sm'
+                                    className={`group flex w-full items-center justify-between rounded-xl p-2.5 text-sm font-medium transition-all border ${isChildActive
+                                        ? 'bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary dark:text-brand-primary border-brand-primary/20 dark:border-brand-primary/30 shadow-sm'
                                         : (isOpen ? 'bg-brand-surface dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-transparent' : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-brand-surfaceDark dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200')
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`${isChildActive ? 'text-brand-primary dark:text-brand-accent' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}>
+                                        <div className={`${isChildActive ? 'text-brand-primary dark:text-brand-primary' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}>
                                             {item.icon}
                                         </div>
                                         <span className="hidden md:block">{item.name}</span>
                                     </div>
                                     <svg
-                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive ? 'text-brand-primary dark:text-brand-accent' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}
+                                        className={`w-4 h-4 hidden md:block transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive ? 'text-brand-primary dark:text-brand-primary' : (isOpen ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300')}`}
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                     >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -172,14 +184,14 @@ export default function SideNav() {
                                 </button>
                                 {/* Alt Menü Öğeleri */}
                                 {isOpen && (
-                                    <div className="hidden md:flex flex-col gap-1 mt-1 animate-in slide-in-from-top-2 fade-in duration-200">
+                                    <div className="hidden md:flex flex-col gap-0.5 mt-0.5 animate-in slide-in-from-top-2 fade-in duration-200">
                                         {item.subLinks.map((sub) => {
                                             const isActive = pathname === sub.href;
                                             return (
                                                 <Link
                                                     key={sub.name}
                                                     href={sub.href}
-                                                    className={`flex items-center justify-start gap-3 w-full rounded-xl py-2 px-3 text-[13px] font-medium transition-colors ${isActive
+                                                    className={`flex items-center justify-start gap-3 w-full rounded-xl py-1.5 px-3 text-[13px] font-medium transition-colors ${isActive
                                                         ? 'bg-brand-primary text-white shadow-md'
                                                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                                                         }`}
@@ -203,12 +215,12 @@ export default function SideNav() {
                         <Link
                             key={item.name}
                             href={item.href!}
-                            className={`group flex h-[48px] grow items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium transition-all md:flex-none md:justify-start md:px-4 border ${isActive
-                                ? 'bg-brand-accent/20 dark:bg-brand-accent/30 text-brand-primary dark:text-brand-accent border-brand-accent/30 dark:border-brand-accent/50 shadow-sm'
+                            className={`group flex h-[44px] grow items-center justify-center gap-3 rounded-xl p-2.5 text-sm font-medium transition-all md:flex-none md:justify-start md:px-4 border ${isActive
+                                ? 'bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary dark:text-brand-primary border-brand-primary/20 dark:border-brand-primary/30 shadow-sm'
                                 : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-brand-surfaceDark dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
                                 }`}
                         >
-                            <div className={`${isActive ? 'text-brand-primary dark:text-brand-accent' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
+                            <div className={`${isActive ? 'text-brand-primary dark:text-brand-primary' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
                                 {item.icon}
                             </div>
                             <span className="hidden md:block">{item.name}</span>
@@ -218,11 +230,11 @@ export default function SideNav() {
             </div>
 
             {/* Tema Değiştir & Çıkış Yap */}
-            <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
+            <div className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-1">
                 <ThemeToggle />
                 <button
                     onClick={handleLogout}
-                    className="group flex h-[48px] w-full items-center justify-center gap-3 rounded-xl p-3 text-sm font-medium text-rose-600 dark:text-rose-400 transition-all md:justify-start md:px-4 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-transparent hover:border-rose-100 dark:hover:border-rose-900/50"
+                    className="group flex h-[44px] w-full items-center justify-center gap-3 rounded-xl p-2.5 text-sm font-medium text-rose-600 dark:text-rose-400 transition-all md:justify-start md:px-4 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-transparent hover:border-rose-100 dark:hover:border-rose-900/50"
                 >
                     <svg className="w-5 h-5 text-rose-500 dark:text-rose-400 group-hover:text-rose-600 dark:group-hover:text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
