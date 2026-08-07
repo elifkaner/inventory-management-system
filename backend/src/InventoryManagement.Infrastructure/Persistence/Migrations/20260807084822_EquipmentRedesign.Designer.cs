@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InventoryManagement.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260807084125_SeedEquipmentData")]
-    partial class SeedEquipmentData
+    [Migration("20260807084822_EquipmentRedesign")]
+    partial class EquipmentRedesign
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -153,7 +153,7 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = 1001,
                             CurrentHolderName = "Ahmet Yılmaz",
                             EquipmentCode = "EQP-001",
                             EquipmentName = "Dell Latitude 5440 Dizüstü Bilgisayar",
@@ -161,7 +161,7 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = 2,
+                            Id = 1002,
                             CurrentHolderName = "Ayşe Demir",
                             EquipmentCode = "EQP-002",
                             EquipmentName = "Logitech MX Master 3 Kablosuz Mouse",
@@ -169,21 +169,21 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 1003,
                             EquipmentCode = "EQP-003",
                             EquipmentName = "iPhone 14 Pro (Şirket Telefonu)",
                             Status = "Available"
                         },
                         new
                         {
-                            Id = 4,
+                            Id = 1004,
                             EquipmentCode = "EQP-004",
                             EquipmentName = "HP LaserJet Pro MFP Yazıcı",
                             Status = "UnderMaintenance"
                         },
                         new
                         {
-                            Id = 5,
+                            Id = 1005,
                             EquipmentCode = "EQP-005",
                             EquipmentName = "Dell UltraSharp 27 Monitör",
                             Status = "Retired"
@@ -233,79 +233,79 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = 1001,
                             Condition = "Working",
                             Date = new DateTime(2026, 1, 5, 9, 30, 0, 0, DateTimeKind.Utc),
                             EmployeeName = "Ahmet Yılmaz",
-                            EquipmentId = 1,
+                            EquipmentId = 1001,
                             Notes = "Yeni işe başlayan personel için teslim edildi.",
                             Type = "CheckOut"
                         },
                         new
                         {
-                            Id = 2,
+                            Id = 1002,
                             Condition = "Working",
                             Date = new DateTime(2026, 2, 10, 14, 0, 0, 0, DateTimeKind.Utc),
                             EmployeeName = "Ayşe Demir",
-                            EquipmentId = 2,
+                            EquipmentId = 1002,
                             Type = "CheckOut"
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 1003,
                             Condition = "Working",
                             Date = new DateTime(2026, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
                             EmployeeName = "Mehmet Kaya",
-                            EquipmentId = 3,
+                            EquipmentId = 1003,
                             Notes = "Saha ziyaretleri için teslim edildi.",
                             Type = "CheckOut"
                         },
                         new
                         {
-                            Id = 4,
+                            Id = 1004,
                             Condition = "Working",
                             Date = new DateTime(2026, 3, 1, 11, 15, 0, 0, DateTimeKind.Utc),
                             EmployeeName = "Mehmet Kaya",
-                            EquipmentId = 3,
+                            EquipmentId = 1003,
                             Notes = "Proje tamamlandı, cihaz iade edildi.",
                             Type = "CheckIn"
                         },
                         new
                         {
-                            Id = 5,
+                            Id = 1005,
                             Condition = "Working",
                             Date = new DateTime(2026, 1, 20, 9, 0, 0, 0, DateTimeKind.Utc),
                             EmployeeName = "Zeynep Şahin",
-                            EquipmentId = 4,
+                            EquipmentId = 1004,
                             Notes = "Muhasebe departmanına kuruldu.",
                             Type = "CheckOut"
                         },
                         new
                         {
-                            Id = 6,
+                            Id = 1006,
                             Condition = "NeedsRepair",
                             Date = new DateTime(2026, 4, 12, 16, 45, 0, 0, DateTimeKind.Utc),
                             EmployeeName = "Zeynep Şahin",
-                            EquipmentId = 4,
+                            EquipmentId = 1004,
                             Notes = "Kağıt sıkışması arızası var, teknik servise gönderildi.",
                             Type = "CheckIn"
                         },
                         new
                         {
-                            Id = 7,
+                            Id = 1007,
                             Condition = "Working",
                             Date = new DateTime(2025, 11, 1, 9, 0, 0, 0, DateTimeKind.Utc),
                             EmployeeName = "Emir Kırım",
-                            EquipmentId = 5,
+                            EquipmentId = 1005,
                             Type = "CheckOut"
                         },
                         new
                         {
-                            Id = 8,
+                            Id = 1008,
                             Condition = "Damaged",
                             Date = new DateTime(2026, 2, 20, 13, 30, 0, 0, DateTimeKind.Utc),
                             EmployeeName = "Emir Kırım",
-                            EquipmentId = 5,
+                            EquipmentId = 1005,
                             Notes = "Ekranda çatlak oluştu, kullanılamaz durumda.",
                             Type = "CheckIn"
                         });
