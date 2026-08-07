@@ -15,6 +15,15 @@ export default function StockMovementsClient() {
     const [selectedMonth, setSelectedMonth] = useState<number | ''>('');
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+            setCurrentPage(1);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -34,8 +43,15 @@ export default function StockMovementsClient() {
         setError(null);
         try {
             const params = new URLSearchParams();
-            params.append('page', currentPage.toString());
-            params.append('pageSize', pageSize.toString());
+            
+            // If searching, fetch a large chunk to filter client-side since backend doesn't support product name search
+            if (debouncedSearch) {
+                params.append('page', '1');
+                params.append('pageSize', '10000');
+            } else {
+                params.append('page', currentPage.toString());
+                params.append('pageSize', pageSize.toString());
+            }
 
             if (selectedMonth !== '') {
                 const startDate = new Date(selectedYear, Number(selectedMonth), 1, 0, 0, 0);
@@ -54,13 +70,23 @@ export default function StockMovementsClient() {
             if (res.ok) {
                 const data = await res.json();
                 const rawData = Array.isArray(data) ? data : data.items || [];
-                const sortedData = rawData.sort((a: any, b: any) => {
+                let sortedData = rawData.sort((a: any, b: any) => {
                     const dateA = new Date(a.createdAt || a.date).getTime();
                     const dateB = new Date(b.createdAt || b.date).getTime();
                     return dateB - dateA;
                 });
+
+                if (debouncedSearch) {
+                    sortedData = sortedData.filter((m: any) => 
+                        (m.productName || '').toLowerCase().includes(debouncedSearch.toLowerCase())
+                    );
+                    setTotalCount(sortedData.length);
+                    sortedData = sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+                } else {
+                    setTotalCount(Array.isArray(data) ? sortedData.length : data.totalRecord || data.TotalRecord || data.totalCount || 0);
+                }
+                
                 setMovements(sortedData);
-                setTotalCount(Array.isArray(data) ? sortedData.length : data.totalRecord || data.TotalRecord || data.totalCount || 0);
             } else {
                 setError('Hareketler yüklenirken bir sorun oluştu.');
             }
@@ -73,11 +99,7 @@ export default function StockMovementsClient() {
 
     useEffect(() => {
         fetchMovements();
-    }, [currentPage, pageSize, selectedMonth, selectedYear]);
-
-    const filteredMovements = movements.filter(m => 
-        (m.productName || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    }, [currentPage, pageSize, selectedMonth, selectedYear, debouncedSearch]);
 
     const handleSuccess = () => {
         setIsModalOpen(false);
@@ -172,13 +194,13 @@ export default function StockMovementsClient() {
                                         {error}
                                     </td>
                                 </tr>
-                            ) : filteredMovements.length === 0 ? (
+                            ) : movements.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
                                         Filtrelerinize uygun depo hareketi bulunamadı.
                                     </td>
                                 </tr>
-                            ) : filteredMovements.map((movement) => (
+                            ) : movements.map((movement) => (
                                 <tr key={movement.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="font-medium">{new Date(movement.createdAt || movement.date).toLocaleDateString('tr-TR')}</div>
