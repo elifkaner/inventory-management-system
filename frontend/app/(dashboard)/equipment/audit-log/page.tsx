@@ -200,9 +200,9 @@ export default function EquipmentAuditLogPage() {
           </div>
       </div>
 
-      {/* Table */}
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden text-sm transition-colors">
-        <table className="w-full text-left whitespace-nowrap">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-slate-50/70 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700 text-xs tracking-wider">
             <tr>
               <th className="pl-6 pr-4 py-4">Tarih</th>
@@ -242,9 +242,9 @@ export default function EquipmentAuditLogPage() {
                   </td>
                   <td className="px-4 py-4">{getConditionText(t.condition)}</td>
                   <td className="px-4 py-4">
-                      <div className="flex flex-col max-w-xs overflow-hidden text-ellipsis">
-                          <span className="truncate" title={t.notes}>{t.notes || '-'}</span>
-                          <span className="text-xs text-brand-primary dark:text-blue-400 font-semibold">{t.createdByUserName || 'Sistem'}</span>
+                      <div className="flex flex-col min-w-[250px] whitespace-normal break-words">
+                          <span>{t.notes || '-'}</span>
+                          <span className="text-xs text-brand-primary dark:text-blue-400 font-semibold mt-1">{t.createdByUserName || 'Sistem'}</span>
                       </div>
                   </td>
                 </tr>
@@ -252,6 +252,7 @@ export default function EquipmentAuditLogPage() {
             )}
           </tbody>
         </table>
+        </div>
         {transactions.length > 0 && (
           <Pagination
               currentPage={currentPage}
