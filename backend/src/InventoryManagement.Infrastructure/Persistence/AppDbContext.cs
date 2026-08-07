@@ -31,6 +31,8 @@ public class AppDbContext : DbContext
 
     public DbSet<AuditLog> AuditLogs { get; set; }
 
+    public DbSet<Equipment> Equipments {get;set;}
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
