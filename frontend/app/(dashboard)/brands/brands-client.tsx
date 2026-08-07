@@ -23,6 +23,7 @@ export default function BrandsClient() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategoryId, setFilterCategoryId] = useState('');
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,10 +72,12 @@ export default function BrandsClient() {
     return cat ? cat.name : '-';
   };
 
-  const filteredBrands = brands.filter((b: any) => 
-    (b.brandName || b.name).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (b.categoryName || getCategoryName(b.categoryId)).toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBrands = brands.filter((b: any) => {
+    const matchesSearch = (b.brandName || b.name).toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (b.categoryName || getCategoryName(b.categoryId)).toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategoryId ? b.categoryId === parseInt(filterCategoryId) : true;
+    return matchesSearch && matchesCategory;
+  });
 
   const openModal = (brand: any = null) => {
     if (brand) {
@@ -168,6 +171,21 @@ export default function BrandsClient() {
                     className="pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-brand-surface dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm w-64 transition-colors"
                 />
                 <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+            <div className="relative hidden md:block">
+                <select
+                    value={filterCategoryId}
+                    onChange={(e) => {setFilterCategoryId(e.target.value); setCurrentPage(1);}}
+                    className="pl-4 pr-10 py-2.5 border border-slate-200 dark:border-slate-600 bg-brand-surface dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm transition-colors appearance-none"
+                >
+                    <option value="">Tüm Kategoriler</option>
+                    {categories.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
             </div>
             <button
             onClick={() => openModal()}
