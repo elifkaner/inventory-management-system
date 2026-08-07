@@ -99,7 +99,18 @@ public class StockMovementService : IStockMovementService
             await _unitOfWork.CommitAsync();
 
             var createdDto = ToDto(created);
-            await _notifier.NotifyMovementCreatedAsync(createdDto);
+
+            // Bildirim, asıl işlemin (stok kaydı) tamamlanmasından SONRA gönderiliyor ve
+            // kendi try/catch'inde izole ediliyor — SignalR bir sebepten başarısız olsa bile,
+            // veritabanına zaten yazılmış olan işlem, kullanıcıya hata olarak yansımamalı.
+            try
+            {
+                await _notifier.NotifyMovementCreatedAsync(createdDto);
+            }
+            catch
+            {
+                // Bildirim gönderilemedi — iş kuralı açısından bir hata değil, yutuluyor.
+            }
 
             return createdDto;
         }
@@ -151,7 +162,14 @@ public class StockMovementService : IStockMovementService
             var result = await _stockMovementRepository.DeleteAsync(id);
             await _unitOfWork.CommitAsync();
 
-            await _notifier.NotifyMovementDeletedAsync(id, movement.ProductId);
+            try
+            {
+                await _notifier.NotifyMovementDeletedAsync(id, movement.ProductId);
+            }
+            catch
+            {
+                // Bildirim gönderilemedi — iş kuralı açısından bir hata değil, yutuluyor.
+            }
 
             return result;
         }
