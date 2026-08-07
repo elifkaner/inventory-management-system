@@ -20,6 +20,7 @@ public class UpdateProductDtoValidatorTests
     private readonly Mock<IProductRepository> _productRepository = new();
     private readonly Mock<IBrandRepository> _brandRepository = new();
     private readonly Mock<IModelRepository> _modelRepository = new();
+    private readonly Mock<IWarehouseLocationRepository> _warehouseLocationRepository = new();
 
     public UpdateProductDtoValidatorTests()
     {
@@ -49,7 +50,8 @@ public class UpdateProductDtoValidatorTests
             _supplierRepository.Object,
             _productRepository.Object,
             _brandRepository.Object,
-            _modelRepository.Object
+            _modelRepository.Object,
+            _warehouseLocationRepository.Object
             );
     }
 

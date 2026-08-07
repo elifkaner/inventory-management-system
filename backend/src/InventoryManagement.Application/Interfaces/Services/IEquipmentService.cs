@@ -5,10 +5,11 @@ public interface IEquipmentService
 {
     Task<List<EquipmentDto>> GetAllEquipmentsAsync();
 
-    Task<EquipmentDto> CreateEquipmentAsync(EquipmentDto dto);
+    Task<EquipmentDto?> GetEquipmentByIdAsync(int id);
 
-    Task<EquipmentDto> UpdateEquipmentAsync(int id);
+    Task<EquipmentDto> CreateEquipmentAsync(CreateEquipmentDto dto);
+
+    Task<EquipmentDto?> UpdateEquipmentAsync(int id, UpdateEquipmentDto dto);
 
     Task<bool> DeleteEquipmentAsync(int id);
-
 }
