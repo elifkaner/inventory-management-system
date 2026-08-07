@@ -13,7 +13,7 @@ export default function StockMovementsClient() {
 
     // Filters
     const [selectedMonth, setSelectedMonth] = useState<number | ''>('');
-    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const [selectedYear, setSelectedYear] = useState<number | ''>(new Date().getFullYear());
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -53,17 +53,19 @@ export default function StockMovementsClient() {
                 params.append('pageSize', pageSize.toString());
             }
 
-            if (selectedMonth !== '') {
-                const startDate = new Date(selectedYear, Number(selectedMonth), 1, 0, 0, 0);
-                const endDate = new Date(selectedYear, Number(selectedMonth) + 1, 0, 23, 59, 59);
-                params.append('fromDate', startDate.toISOString());
-                params.append('toDate', endDate.toISOString());
-            } else {
-                // If year is selected but no month, filter by entire year
-                const startDate = new Date(selectedYear, 0, 1, 0, 0, 0);
-                const endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
-                params.append('fromDate', startDate.toISOString());
-                params.append('toDate', endDate.toISOString());
+            if (selectedYear !== '') {
+                if (selectedMonth !== '') {
+                    const startDate = new Date(selectedYear, Number(selectedMonth), 1, 0, 0, 0);
+                    const endDate = new Date(selectedYear, Number(selectedMonth) + 1, 0, 23, 59, 59);
+                    params.append('fromDate', startDate.toISOString());
+                    params.append('toDate', endDate.toISOString());
+                } else {
+                    // If year is selected but no month, filter by entire year
+                    const startDate = new Date(selectedYear, 0, 1, 0, 0, 0);
+                    const endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
+                    params.append('fromDate', startDate.toISOString());
+                    params.append('toDate', endDate.toISOString());
+                }
             }
 
             const res = await authFetch(`${API_BASE_URL}/api/StockMovement?${params.toString()}`);
@@ -139,11 +141,12 @@ export default function StockMovementsClient() {
                     </div>
                 </div>
                 <div className="w-full md:w-1/4">
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Ay Filtresi</label>
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${selectedYear === '' ? 'text-slate-400 dark:text-slate-500' : 'text-slate-500 dark:text-slate-400'}`}>Ay Filtresi</label>
                     <select
                         value={selectedMonth}
+                        disabled={selectedYear === ''}
                         onChange={(e) => { setSelectedMonth(e.target.value === '' ? '' : Number(e.target.value)); setCurrentPage(1); }}
-                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm"
+                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Tüm Aylar</option>
                         {months.map(m => (
@@ -155,9 +158,19 @@ export default function StockMovementsClient() {
                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Yıl Filtresi</label>
                     <select
                         value={selectedYear}
-                        onChange={(e) => { setSelectedYear(Number(e.target.value)); setCurrentPage(1); }}
+                        onChange={(e) => { 
+                            const val = e.target.value;
+                            if (val === '') {
+                                setSelectedYear('');
+                                setSelectedMonth(''); // Reset month when "All Years" is selected
+                            } else {
+                                setSelectedYear(Number(val)); 
+                            }
+                            setCurrentPage(1); 
+                        }}
                         className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm"
                     >
+                        <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Tüm Yıllar</option>
                         {years.map(y => (
                             <option key={y} value={y} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{y}</option>
                         ))}
