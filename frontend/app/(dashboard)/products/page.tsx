@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { authFetch, API_BASE_URL } from '@/app/lib/api';
 import SearchableSelect from '@/app/ui/searchable-select';
@@ -54,6 +54,13 @@ export default function UrunEnvanterSayfasi() {
     });
 
     const selectedBrandId = watch("brandId");
+
+    // Performans İyileştirmesi 3: Parent bileşen her render olduğunda options dizisinin 
+    // bellekte yeni bir referans oluşturmasını engelliyoruz.
+    const categoryOptions = useMemo(() => categories.map(c => ({ value: c.id, label: c.name })), [categories]);
+    const brandOptions = useMemo(() => brands.map(b => ({ value: b.id, label: b.name })), [brands]);
+    const modelOptions = useMemo(() => models.map(m => ({ value: m.id, label: m.name })), [models]);
+    const supplierOptions = useMemo(() => suppliers.map(s => ({ value: s.id, label: s.companyName })), [suppliers]);
 
     const fetchMetadata = useCallback(async () => {
         try {
@@ -439,7 +446,7 @@ export default function UrunEnvanterSayfasi() {
                                         <SearchableSelect
                                             label="Kategori *"
                                             name="categoryId"
-                                            options={categories.map(c => ({ value: c.id, label: c.name }))}
+                                            options={categoryOptions}
                                             register={register} setValue={setValue} watch={watch}
                                             error={!!errors.categoryId}
                                             placeholder="Kategori Seçiniz"
@@ -449,7 +456,7 @@ export default function UrunEnvanterSayfasi() {
                                                 <SearchableSelect
                                                     label="Marka *"
                                                     name="brandId"
-                                                    options={brands.map(b => ({ value: b.id, label: b.name }))}
+                                                    options={brandOptions}
                                                     register={register} setValue={setValue} watch={watch}
                                                     error={!!errors.brandId}
                                                     placeholder="Marka Seçiniz"
@@ -459,7 +466,7 @@ export default function UrunEnvanterSayfasi() {
                                                 <SearchableSelect
                                                     label="Model *"
                                                     name="modelId"
-                                                    options={models.map(m => ({ value: m.id, label: m.name }))}
+                                                    options={modelOptions}
                                                     register={register} setValue={setValue} watch={watch}
                                                     error={!!errors.modelId}
                                                     placeholder="Model Seçiniz"
@@ -491,7 +498,7 @@ export default function UrunEnvanterSayfasi() {
                                                 <SearchableSelect
                                                     label="Tedarikçi *"
                                                     name="supplierId"
-                                                    options={suppliers.map(s => ({ value: s.id, label: s.companyName }))}
+                                                    options={supplierOptions}
                                                     register={register} setValue={setValue} watch={watch}
                                                     error={!!errors.supplierId}
                                                     placeholder="Tedarikçi Seçiniz"

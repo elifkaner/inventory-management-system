@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 interface Option {
@@ -31,7 +31,11 @@ export default function SearchableSelect({
 
     const selectedValue = watch(name);
 
-    const selectedOption = options.find(opt => String(opt.value) === String(selectedValue));
+    // Performans İyileştirmesi 1: options dizisinden seçili olanı bulurken useMemo kullanıyoruz
+    const selectedOption = useMemo(() => {
+        return options.find(opt => String(opt.value) === String(selectedValue));
+    }, [options, selectedValue]);
+
     const selectedLabel = selectedOption ? selectedOption.label : placeholder;
 
     useEffect(() => {
@@ -44,13 +48,20 @@ export default function SearchableSelect({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const filteredOptions = options.filter(opt =>
-        opt.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    // Performans iyileştirmesi: DOM'a aynı anda en fazla 100 öğe basıyoruz.
-    // Kullanıcı zaten geri kalanını arama çubuğu ile bulacaktır.
-    const visibleOptions = filteredOptions.slice(0, 100);
+    // Performans İyileştirmesi 2: Arama (filtreleme) işlemini useMemo ile önbelleğe alıyoruz.
+    // Her harfe basıldığında 10.000 kere toLowerCase() çalışmasını engeller.
+    const visibleOptions = useMemo(() => {
+        if (!searchTerm) {
+            return options.slice(0, 100);
+        }
+        
+        const searchLower = searchTerm.toLowerCase();
+        const filtered = options.filter(opt =>
+            opt.label.toLowerCase().includes(searchLower)
+        );
+        
+        return filtered.slice(0, 100);
+    }, [options, searchTerm]);
 
     return (
         <div ref={wrapperRef}>
@@ -100,7 +111,7 @@ export default function SearchableSelect({
                             {visibleOptions.length === 0 && (
                                 <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400 text-center">Sonuç bulunamadı.</li>
                             )}
-                            {filteredOptions.length > 100 && (
+                            {options.length > 100 && visibleOptions.length === 100 && (
                                 <li className="px-3 py-2 text-xs text-slate-400 dark:text-slate-500 text-center italic border-t border-slate-100 dark:border-slate-700">
                                     Daha fazla sonuç var, lütfen arama yapın...
                                 </li>
