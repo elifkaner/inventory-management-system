@@ -32,11 +32,11 @@ var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
 var dbName = Environment.GetEnvironmentVariable("DB_NAME");
 var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
 
-// Eğer environment variable doldurulmamışsa (Cloud Run tarafında), Neon varsayılan değerlerine düş
-if (string.IsNullOrWhiteSpace(dbHost)) dbHost = "ep-super-rice-axutcxia-pooler.c-4.us-east-2.aws.neon.tech";
-if (string.IsNullOrWhiteSpace(dbUser)) dbUser = "neondb_owner";
-if (string.IsNullOrWhiteSpace(dbPassword)) dbPassword = "npg_dn4uVOeJWj8T";
-if (string.IsNullOrWhiteSpace(dbName)) dbName = "neondb";
+// Eğer environment variable doldurulmamışsa yerel varsayılan değerlere düş
+if (string.IsNullOrWhiteSpace(dbHost)) dbHost = "localhost";
+if (string.IsNullOrWhiteSpace(dbUser)) dbUser = "postgres";
+if (string.IsNullOrWhiteSpace(dbPassword)) dbPassword = "postgres";
+if (string.IsNullOrWhiteSpace(dbName)) dbName = "inventory_db";
 if (string.IsNullOrWhiteSpace(dbPort)) dbPort = "5432";
 
 var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") ?? "Require";

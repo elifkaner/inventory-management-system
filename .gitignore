@@ -1,0 +1,21 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build & compiled output
+**/bin/
+**/obj/
+node_modules/
+.next/
+dist/
+build/
+
+# Temporary / Log / History files
+git_history*.txt
+git_log*.txt
+*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
