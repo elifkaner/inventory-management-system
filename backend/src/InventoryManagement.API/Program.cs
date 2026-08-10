@@ -26,16 +26,28 @@ else
     DotNetEnv.Env.Load();
 }
 
-var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "";
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+var dbUser = Environment.GetEnvironmentVariable("DB_USER");
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
+
+// Eğer environment variable doldurulmamışsa (Cloud Run tarafında), Neon varsayılan değerlerine düş
+if (string.IsNullOrWhiteSpace(dbHost)) dbHost = "ep-super-rice-axutcxia-pooler.c-4.us-east-2.aws.neon.tech";
+if (string.IsNullOrWhiteSpace(dbUser)) dbUser = "neondb_owner";
+if (string.IsNullOrWhiteSpace(dbPassword)) dbPassword = "npg_dn4uVOeJWj8T";
+if (string.IsNullOrWhiteSpace(dbName)) dbName = "neondb";
+if (string.IsNullOrWhiteSpace(dbPort)) dbPort = "5432";
+
 var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") 
-    ?? (host.Contains("neon.tech") ? "Require" : "Prefer");
+    ?? (dbHost.Contains("neon.tech") ? "Require" : "Prefer");
 
 var connectionString =
-    $"Host={host};" +
-    $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
-    $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
-    $"Username={Environment.GetEnvironmentVariable("DB_USER")};" +
-    $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};" +
+    $"Host={dbHost};" +
+    $"Port={dbPort};" +
+    $"Database={dbName};" +
+    $"Username={dbUser};" +
+    $"Password={dbPassword};" +
     $"SSL Mode={sslMode};";
 var builder = WebApplication.CreateBuilder(args);
 
