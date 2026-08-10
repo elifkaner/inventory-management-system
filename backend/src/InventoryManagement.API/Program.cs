@@ -178,20 +178,32 @@ forwardedHeadersOptions.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeadersOptions);
 
 
-// Bekleyen tüm migration'ları uygulama başlarken otomatik uygular — elle
-// "dotnet ef database update" çalıştırmayı unutma riskini ortadan kaldırır.
-using (var scope = app.Services.CreateScope())
+// Bekleyen tüm migration'ları uygulama başlarken otomatik uygular
+try
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await dbContext.Database.MigrateAsync();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[WARNING] Database migration failed: {ex.Message}");
 }
 
-
-// İlk admin kullanıcısını oluşturur (ADMIN_EMAIL/ADMIN_PASSWORD .env'de tanımlıysa ve henüz yoksa).
-using (var scope = app.Services.CreateScope())
+// İlk admin kullanıcısını oluşturur
+try
 {
-    var authService = scope.ServiceProvider.GetRequiredService<InventoryManagement.Application.Interfaces.Services.IAuthService>();
-    await authService.SeedAdminAsync();
+    using (var scope = app.Services.CreateScope())
+    {
+        var authService = scope.ServiceProvider.GetRequiredService<InventoryManagement.Application.Interfaces.Services.IAuthService>();
+        await authService.SeedAdminAsync();
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[WARNING] Admin seeding failed: {ex.Message}");
 }
 
 
