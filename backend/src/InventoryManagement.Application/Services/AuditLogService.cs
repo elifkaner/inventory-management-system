@@ -36,13 +36,14 @@ public class AuditLogService : IAuditLogService
         var logs = result.Items;
 
         var csv = new StringBuilder();
-        csv.AppendLine("Id,Kullanıcı,Aksiyon,Varlık,Varlık Id,Değişen Kolonlar,Tarih,IP Adresi");
+        csv.AppendLine("Id,Kullanıcı,Rol,Aksiyon,Varlık,Varlık Id,Değişen Kolonlar,Tarih,IP Adresi");
 
         foreach (var log in logs)
         {
             csv.AppendLine(string.Join(",",
                 log.Id,
                 CsvHelper.Escape(log.UserName),
+                CsvHelper.Escape(log.UserRole),
                 CsvHelper.Escape(log.Action),
                 CsvHelper.Escape(log.EntityName),
                 CsvHelper.Escape(log.EntityId),
@@ -59,6 +60,7 @@ public class AuditLogService : IAuditLogService
         Id = log.Id,
         UserId = log.UserId,
         UserName = log.UserName,
+        UserRole = log.UserRole,
         Action = log.Action,
         EntityName = log.EntityName,
         EntityId = log.EntityId,
