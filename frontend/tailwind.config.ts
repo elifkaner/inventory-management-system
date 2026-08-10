@@ -14,12 +14,12 @@ const config: Config = {
       },
       colors: {
         brand: {
-          primary: '#5B67A8',
-          primaryHover: '#4A548A',
-          secondary: '#B695C8',
-          secondaryHover: '#9D7FB0',
-          accent: '#F28C28',
-          accentHover: '#E07B1E',
+          primary: '#5C6BC0', // Koyu Mavi
+          primaryHover: '#3F51B5',
+          secondary: '#B39DDB', // Lila
+          secondaryHover: '#9575CD',
+          accent: '#F57C00', // Turuncu
+          accentHover: '#EF6C00',
           surface: '#F4F5F9',
           surfaceDark: '#E8EAF1',
         },

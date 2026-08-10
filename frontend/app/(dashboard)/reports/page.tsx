@@ -40,6 +40,11 @@ const renderCustomLegend = (props: any) => {
     );
 };
 
+const renderPieLabel = ({ name, percent }: any) => {
+    if (percent < 0.03) return null;
+    return `${name} (${(percent * 100).toFixed(0)}%)`;
+};
+
 
 const renderPieLegend = (props: any) => {
     const { payload } = props;
@@ -64,8 +69,8 @@ export default function AnalizVeRaporlamaSayfasi() {
     const [topProducts, setTopProducts] = useState([]);
     const [supplierData, setSupplierData] = useState([]);
 
-    // Renk paletimiz (Logodaki ve benzer tonlar)
-    const COLORS = ['#5B67A8', '#F28C28', '#B695C8', '#4A548A', '#E07B1E', '#9D7FB0', '#A5B4FC', '#FDBA74'];
+    // Renk paletimiz (Tamamen ayırt edilebilir canlı tonlar)
+    const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6', '#F97316', '#6366F1'];
 
     const fetchReports = useCallback(async () => {
         try {
@@ -148,10 +153,12 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     dataKey="totalProduct"
                                     nameKey="categoryName"
                                     cx="50%"
-                                    cy="42%"
-                                    outerRadius={100}
-                                    innerRadius={60}
+                                    cy="50%"
+                                    outerRadius={85}
+                                    innerRadius={50}
                                     paddingAngle={5}
+                                    label={renderPieLabel}
+                                    labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
                                 >
                                     {groupedCategoryData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -181,8 +188,10 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     dataKey="totalProduct"
                                     nameKey="supplierName"
                                     cx="50%"
-                                    cy="42%"
-                                    outerRadius={100}
+                                    cy="50%"
+                                    outerRadius={85}
+                                    label={renderPieLabel}
+                                    labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
                                 >
                                     {groupedSupplierData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
@@ -205,25 +214,15 @@ export default function AnalizVeRaporlamaSayfasi() {
                     </h2>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={formattedTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="colorGelen" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#5B67A8" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#5B67A8" stopOpacity={0}/>
-                                    </linearGradient>
-                                    <linearGradient id="colorGiden" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#F28C28" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#F28C28" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
+                            <BarChart data={formattedTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} dx={-10} />
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                 <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
                                 <Legend content={renderCustomLegend} />
-                                <Area type="monotone" dataKey="gelen" name="Stok Girişi" stroke="#5B67A8" strokeWidth={3} fillOpacity={1} fill="url(#colorGelen)" />
-                                <Area type="monotone" dataKey="giden" name="Stok Çıkışı" stroke="#F28C28" strokeWidth={3} fillOpacity={1} fill="url(#colorGiden)" />
-                            </AreaChart>
+                                <Bar dataKey="gelen" name="Stok Girişi" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={24} />
+                                <Bar dataKey="giden" name="Stok Çıkışı" fill="#F43F5E" radius={[4, 4, 0, 0]} barSize={24} />
+                            </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>

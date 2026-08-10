@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,6 +10,13 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Kategorisiz kategorisi oluştur (varsa skip et)
+            migrationBuilder.Sql(@"
+                INSERT INTO ""Categories"" (""Name"")
+                SELECT 'Kategorisiz'
+                WHERE NOT EXISTS (SELECT 1 FROM ""Categories"" WHERE ""Name"" = 'Kategorisiz');
+            ");
+
             migrationBuilder.AddColumn<int>(
                 name: "CategoryId",
                 table: "Brands",
@@ -17,27 +24,12 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                 nullable: false,
                 defaultValue: 0);
 
-            // "Kategorisiz" kategorisinin mevcut olduğundan emin ol.
-            migrationBuilder.Sql("""
-                INSERT INTO "Categories" ("Name")
-                SELECT 'Kategorisiz'
-                WHERE NOT EXISTS (
-                    SELECT 1
-                    FROM "Categories"
-                    WHERE "Name" = 'Kategorisiz'
-                );
-            """);
-
             // Mevcut tüm markaları "Kategorisiz" kategorisine bağla.
-            migrationBuilder.Sql("""
-                UPDATE "Brands"
-                SET "CategoryId" = (
-                    SELECT "Id"
-                    FROM "Categories"
-                    WHERE "Name" = 'Kategorisiz'
-                    LIMIT 1
-                );
-            """);
+            migrationBuilder.Sql(@"
+                UPDATE ""Brands""
+                SET ""CategoryId"" = (SELECT ""Id"" FROM ""Categories"" WHERE ""Name"" = 'Kategorisiz' LIMIT 1)
+                WHERE ""CategoryId"" = 0 OR ""CategoryId"" IS NULL;
+            ");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Brands_CategoryId",

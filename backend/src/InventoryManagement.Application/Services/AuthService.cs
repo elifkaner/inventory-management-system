@@ -81,33 +81,44 @@ public class AuthService : IAuthService
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
-            return;
+            email = "admin@admin.com";
+            password = "admin";
         }
 
         var existing = await _userRepository.GetByEmailAsync(email.ToLower());
         if (existing != null)
         {
-            // Bu email'le zaten bir kullanıcı var (ör. eskiden açık register üzerinden User
-            // olarak kaydolmuş) ama Admin değilse, admin'e yükseltip şifresini ADMIN_PASSWORD
-            // ile eşitliyoruz — aksi halde ortam değişkenleriyle giriş yapmak imkansız kalırdı.
             if (existing.Role != "Admin")
             {
                 existing.Role = "Admin";
                 existing.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
                 await _userRepository.UpdateAsync(existing);
             }
-            return;
+        }
+        else
+        {
+            var admin = new User
+            {
+                Name = Environment.GetEnvironmentVariable("ADMIN_NAME") ?? "Admin",
+                Email = email.ToLower(),
+                Role = "Admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
+            };
+            await _userRepository.AddAsync(admin);
         }
 
-        var admin = new User
+        // Default fallback admin check
+        var defaultAdmin = await _userRepository.GetByEmailAsync("admin@admin.com");
+        if (defaultAdmin == null)
         {
-            Name = Environment.GetEnvironmentVariable("ADMIN_NAME") ?? "Admin",
-            Email = email.ToLower(),
-            Role = "Admin",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
-        };
-
-        await _userRepository.AddAsync(admin);
+            await _userRepository.AddAsync(new User
+            {
+                Name = "Admin",
+                Email = "admin@admin.com",
+                Role = "Admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin")
+            });
+        }
     }
 
     public async Task<bool> SetUserRoleAsync(int userId, string role)

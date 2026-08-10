@@ -23,12 +23,15 @@ public class CurrentUserService : ICurrentUserService
             return int.TryParse(claim, out var id) ? id : null;
         }
     }
-        public string UserName => Context?.User?.FindFirst(ClaimTypes.Name)?.Value ?? "System";
 
-        public string? IpAddress => Context?.Connection?.RemoteIpAddress?.ToString();
+    public string UserName => Context?.User?.FindFirst(ClaimTypes.Name)?.Value ?? "System";
 
-         public string? UserAgent => Context?.Request.Headers["User-Agent"].ToString();
-        
-        public string? RequestId => Context?.TraceIdentifier;
+    public string UserRole => Context?.User?.FindFirst(ClaimTypes.Role)?.Value ?? "System";
+
+    public string? IpAddress => Context?.Connection?.RemoteIpAddress?.ToString();
+
+    public string? UserAgent => Context?.Request.Headers["User-Agent"].ToString();
     
+    public string? RequestId => Context?.TraceIdentifier;
+
 }

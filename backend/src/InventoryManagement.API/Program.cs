@@ -15,13 +15,14 @@ using Microsoft.OpenApi;
 
 DotNetEnv.Env.Load();
 
+var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") ?? "Prefer";
 var connectionString =
     $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
     $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
     $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
     $"Username={Environment.GetEnvironmentVariable("DB_USER")};" +
     $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};" +
-    "SSL Mode=Require;";
+    $"SSL Mode={sslMode};";
 var builder = WebApplication.CreateBuilder(args);
 
 // URL, ortam değişkeni ASPNETCORE_URLS ile kontrol edilir (docker-compose'da
@@ -108,8 +109,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("ProductionCors", policy =>
     {
         policy.WithOrigins(
-            "https://inventory-frontend-1059155057805.europe-west1.run.app"
+            "https://inventory-frontend-1059155057805.europe-west1.run.app",
+            "http://localhost:3000",
+            "http://localhost:5050",
+            "http://127.0.0.1:3000"
         )
+        .SetIsOriginAllowed(_ => true)
         .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials();

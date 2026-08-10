@@ -26,9 +26,9 @@ export default function Dashboard() {
         
         if (productsRes.ok) {
           const allProducts = await productsRes.json();
-          // HACK: Backend isCritical filtresi gelene kadar frontend'de stockQuantity <= 10 olanları filtrele
+          // HACK: Backend isCritical filtresi gelene kadar frontend'de stockQuantity <= 25 olanları filtrele
           const criticals = Array.isArray(allProducts) ? allProducts : allProducts.items || [];
-          setCriticalProducts(criticals.filter((p: any) => p.stockQuantity <= 500).slice(0, 5));
+          setCriticalProducts(criticals.filter((p: any) => p.stockQuantity <= 25).slice(0, 5));
         }
 
         if (movementsRes.ok) {
@@ -80,7 +80,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Toplam Stok Kalemi</p>
               <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">
-                {isLoading ? 'Yükleniyor...' : (summary?.totalProducts || 0)}
+                {isLoading ? <span className="text-sm font-medium text-slate-400 animate-pulse">Yükleniyor...</span> : (summary?.totalProducts || 0)}
               </h3>
             </div>
             <div className="p-3 bg-blue-50 dark:bg-blue-900/40 text-brand-primary dark:text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
@@ -98,7 +98,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Düşük Stok Alarmı</p>
               <h3 className="text-3xl font-extrabold text-rose-600 dark:text-rose-500">
-                {isLoading ? 'Yükleniyor...' : (summary?.criticalStockCount || 0)}
+                {isLoading ? <span className="text-sm font-medium text-rose-400 animate-pulse">Yükleniyor...</span> : (summary?.criticalStockCount || 0)}
               </h3>
             </div>
             <div className="p-3 bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 rounded-xl group-hover:scale-110 transition-transform">
@@ -116,7 +116,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Aktif B2B Portföyü</p>
               <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">
-                {isLoading ? 'Yükleniyor...' : supplierCount}
+                {isLoading ? <span className="text-sm font-medium text-slate-400 animate-pulse">Yükleniyor...</span> : supplierCount}
               </h3>
             </div>
             <div className="p-3 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl group-hover:scale-110 transition-transform">
@@ -134,7 +134,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Aktif Satış Oranı</p>
               <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">
-                {isLoading ? 'Yükleniyor...' : `%${summary?.activeSalesRate || 0}`}
+                {isLoading ? <span className="text-sm font-medium text-slate-400 animate-pulse">Yükleniyor...</span> : `%${summary?.activeSalesRate || 0}`}
               </h3>
             </div>
             <div className="p-3 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-xl group-hover:scale-110 transition-transform">

@@ -1,6 +1,8 @@
 services:
   postgres:
     image: postgres:16-alpine
+    env_file:
+      - .env.local
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -23,12 +25,31 @@ services:
       - ./src/InventoryManagement.API/.env
     environment:
       DB_HOST: postgres
+      DB_NAME: inventory_db
+      DB_USER: inventory_user
+      DB_PASSWORD: inventory_password
+      DB_SSL_MODE: Disable
+      ADMIN_EMAIL: admin@admin.com
+      ADMIN_PASSWORD: admin
       ASPNETCORE_URLS: http://0.0.0.0:5000
     depends_on:
       postgres:
         condition: service_healthy
     ports:
       - "5050:5000"
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:5050
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5050
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
 
 volumes:
   pgdata:

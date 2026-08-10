@@ -8,6 +8,8 @@ public class AuditLogResponseDto
 
     public string UserName { get; set; } = "";
 
+    public string UserRole { get; set; } = "";
+
     public string Action { get; set; } = "";
 
     public string EntityName { get; set; } = "";

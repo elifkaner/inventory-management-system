@@ -75,6 +75,12 @@ export default function LoginSayfasi() {
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow-xl shadow-slate-200/50 sm:rounded-2xl sm:px-10 border border-slate-100">
                     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+                        {/* DEMO KULLANICI BİLGİSİ */}
+                        <div className="p-3 bg-blue-50/80 border border-blue-100 rounded-xl text-xs text-blue-700 space-y-1">
+                            <p className="font-semibold text-blue-900">🔑 Varsayılan Giriş Bilgileri:</p>
+                            <p>E-posta: <code className="font-mono bg-blue-100 px-1 py-0.5 rounded text-blue-900">admin@admin.com</code> | Şifre: <code className="font-mono bg-blue-100 px-1 py-0.5 rounded text-blue-900">admin</code></p>
+                        </div>
+
                         {/* E-POSTA İNPUTU */}
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -84,7 +90,7 @@ export default function LoginSayfasi() {
                                 type="email"
                                 {...register("email", { required: "E-posta alanı zorunludur." })}
                                 className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-brand-primary text-sm transition-all ${errors.email ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'}`}
-                                placeholder="ornek@sirket.com"
+                                placeholder="admin@admin.com"
                             />
                             {errors.email && (
                                 <p className="mt-1.5 text-xs font-semibold text-rose-500">{errors.email.message}</p>
