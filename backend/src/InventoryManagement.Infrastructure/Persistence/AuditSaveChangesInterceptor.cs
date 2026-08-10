@@ -49,6 +49,7 @@ public class AuditSaveChangesInterceptor : SaveChangesInterceptor
                 {
                     UserId = _currentUser.UserId,
                     UserName = _currentUser.UserName,
+                    UserRole = _currentUser.UserRole,
                     IpAddress = _currentUser.IpAddress,
                     UserAgent = _currentUser.UserAgent,
                     RequestId = _currentUser.RequestId,

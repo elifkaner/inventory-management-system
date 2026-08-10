@@ -10,6 +10,8 @@ public class AuditLog
 
     public string UserName { get; set; } = string.Empty;
 
+    public string UserRole { get; set; } = string.Empty;
+
     public string Action { get; set; } = string.Empty;
 
     public string EntityName { get; set; } = string.Empty;
