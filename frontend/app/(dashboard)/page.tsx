@@ -78,7 +78,7 @@ export default function Dashboard() {
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Toplam Stok Kalemi</p>
+              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Toplam Stok Kalem</p>
               <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">
                 {isLoading ? <span className="text-sm font-medium text-slate-400 animate-pulse">Yükleniyor...</span> : (summary?.totalProducts || 0)}
               </h3>
