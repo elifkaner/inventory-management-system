@@ -92,7 +92,14 @@ builder.Services.AddInfrastructure(connectionString);
 
 
 // JWT Authentication
-var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")!;
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    jwtSecret = "e34261b05bdd024cb82167eb94726e1822cebde7d041d62853abeecc91f38de9";
+}
+
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "InventoryManagementApi";
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "InventoryManagementClient";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -103,8 +110,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
-            ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
 
