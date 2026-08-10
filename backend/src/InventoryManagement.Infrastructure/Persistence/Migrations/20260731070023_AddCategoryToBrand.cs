@@ -10,6 +10,13 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Kategorisiz kategorisi oluştur (varsa skip et)
+            migrationBuilder.Sql(@"
+                INSERT INTO ""Categories"" (""Name"")
+                SELECT 'Kategorisiz'
+                WHERE NOT EXISTS (SELECT 1 FROM ""Categories"" WHERE ""Name"" = 'Kategorisiz');
+            ");
+
             migrationBuilder.AddColumn<int>(
                 name: "CategoryId",
                 table: "Brands",
@@ -17,9 +24,12 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                 nullable: false,
                 defaultValue: 0);
 
-            // Mevcut markaların hepsi "" değil 0 (defaultValue) ile eklendi — foreign key kısıtlaması
-            // eklenmeden önce hepsini "Kategorisiz" (Id=15) kategorisine bağlıyoruz, yoksa FK hata verir.
-            migrationBuilder.Sql("UPDATE \"Brands\" SET \"CategoryId\" = 15;");
+            // Mevcut markaların hepsi "Kategorisiz" kategorisine bağlanıyor (kategori ID'sini bularak)
+            migrationBuilder.Sql(@"
+                UPDATE ""Brands"" 
+                SET ""CategoryId"" = (SELECT ""Id"" FROM ""Categories"" WHERE ""Name"" = 'Kategorisiz' LIMIT 1)
+                WHERE ""CategoryId"" = 0;
+            ");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Brands_CategoryId",
