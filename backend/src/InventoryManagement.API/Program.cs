@@ -39,7 +39,7 @@ if (string.IsNullOrWhiteSpace(dbPassword)) dbPassword = "npg_dn4uVOeJWj8T";
 if (string.IsNullOrWhiteSpace(dbName)) dbName = "neondb";
 if (string.IsNullOrWhiteSpace(dbPort)) dbPort = "5432";
 
-var sslMode = "Require";
+var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") ?? "Require";
 
 var connectionString =
     $"Host={dbHost};" +
