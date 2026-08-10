@@ -25,6 +25,12 @@ services:
       - ./src/InventoryManagement.API/.env
     environment:
       DB_HOST: postgres
+      DB_NAME: inventory_db
+      DB_USER: inventory_user
+      DB_PASSWORD: inventory_password
+      DB_SSL_MODE: Disable
+      ADMIN_EMAIL: admin@admin.com
+      ADMIN_PASSWORD: admin
       ASPNETCORE_URLS: http://0.0.0.0:5000
     depends_on:
       postgres:

@@ -15,13 +15,14 @@ using Microsoft.OpenApi;
 
 DotNetEnv.Env.Load();
 
+var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") ?? "Prefer";
 var connectionString =
     $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
     $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
     $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
     $"Username={Environment.GetEnvironmentVariable("DB_USER")};" +
-    $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}";
-
+    $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};" +
+    $"SSL Mode={sslMode};";
 var builder = WebApplication.CreateBuilder(args);
 
 // URL, ortam değişkeni ASPNETCORE_URLS ile kontrol edilir (docker-compose'da
@@ -105,14 +106,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("ProductionCors", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.WithOrigins(
+            "https://inventory-frontend-1059155057805.europe-west1.run.app",
+            "http://localhost:3000",
+            "http://localhost:5050",
+            "http://127.0.0.1:3000"
+        )
+        .SetIsOriginAllowed(_ => true)
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
     });
 });
-
 
 // Rate Limiting — /api/Auth altındaki uç noktaları (login, register, refresh, vs.) IP başına
 // dakikada 5 istekle sınırlar. Brute-force şifre denemesi ve token tahmin saldırılarını yavaşlatır.
@@ -168,7 +175,7 @@ app.UseSwaggerUI();
 
 // app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseCors("ProductionCors");
 
 app.UseAuthentication();
 app.UseAuthorization();

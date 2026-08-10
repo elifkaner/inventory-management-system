@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -24,11 +24,11 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                 nullable: false,
                 defaultValue: 0);
 
-            // Mevcut markaların hepsi "Kategorisiz" kategorisine bağlanıyor (kategori ID'sini bularak)
+            // Mevcut tüm markaları "Kategorisiz" kategorisine bağla.
             migrationBuilder.Sql(@"
-                UPDATE ""Brands"" 
+                UPDATE ""Brands""
                 SET ""CategoryId"" = (SELECT ""Id"" FROM ""Categories"" WHERE ""Name"" = 'Kategorisiz' LIMIT 1)
-                WHERE ""CategoryId"" = 0;
+                WHERE ""CategoryId"" = 0 OR ""CategoryId"" IS NULL;
             ");
 
             migrationBuilder.CreateIndex(
