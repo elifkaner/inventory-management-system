@@ -30,5 +30,18 @@ services:
     ports:
       - "5050:5000"
 
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:5050
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5050
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
 volumes:
   pgdata:
