@@ -13,7 +13,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
-DotNetEnv.Env.Load();
+if (File.Exists(".env"))
+{
+    DotNetEnv.Env.Load(".env");
+}
+else if (File.Exists(Path.Combine(AppContext.BaseDirectory, ".env")))
+{
+    DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
+}
+else
+{
+    DotNetEnv.Env.Load();
+}
 
 var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "";
 var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") 

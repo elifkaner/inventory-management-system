@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y libgssapi-krb5-2 && rm -rf /var/lib/apt
 
 WORKDIR /app
 COPY --from=build /app/publish .
+COPY src/InventoryManagement.API/.env ./.env
 
 EXPOSE 5000
 ENTRYPOINT ["dotnet", "InventoryManagement.API.dll"]

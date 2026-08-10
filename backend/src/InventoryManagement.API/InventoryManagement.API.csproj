@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\InventoryManagement.Application\InventoryManagement.Application.csproj" />
     <ProjectReference Include="..\InventoryManagement.Infrastructure\InventoryManagement.Infrastructure.csproj" />
+    <None Include=".env" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" Condition="Exists('.env')" />
   </ItemGroup>
 
 </Project>
