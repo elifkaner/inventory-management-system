@@ -15,9 +15,12 @@ using Microsoft.OpenApi;
 
 DotNetEnv.Env.Load();
 
-var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") ?? "Prefer";
+var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "";
+var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") 
+    ?? (host.Contains("neon.tech") ? "Require" : "Prefer");
+
 var connectionString =
-    $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
+    $"Host={host};" +
     $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
     $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
     $"Username={Environment.GetEnvironmentVariable("DB_USER")};" +
