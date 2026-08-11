@@ -29,7 +29,7 @@ export default function EquipmentPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<EquipmentFormData>();
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<EquipmentFormData>();
 
   const [toast, setToast] = useState<{isOpen: boolean, message: string, type: 'success' | 'error' | 'info'}>({isOpen: false, message: '', type: 'info'});
   const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, id: number | null, name: string}>({isOpen: false, id: null, name: ''});
@@ -97,6 +97,21 @@ export default function EquipmentPage() {
     (e.currentHolderName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const generateNextEquipmentCode = (list: any[]) => {
+    let maxNum = 0;
+    (list || []).forEach((eq: any) => {
+      if (eq.equipmentCode) {
+        const match = eq.equipmentCode.match(/\d+/);
+        if (match) {
+          const num = parseInt(match[0], 10);
+          if (num > maxNum) maxNum = num;
+        }
+      }
+    });
+    const nextNum = maxNum + 1;
+    return `EQP-${String(nextNum).padStart(3, '0')}`;
+  };
+
   const openModal = (equipment: any = null) => {
     if (equipment) {
       reset({ 
@@ -107,7 +122,8 @@ export default function EquipmentPage() {
           currentHolderName: equipment.currentHolderName || ''
       });
     } else {
-      reset({ id: null, equipmentName: '', equipmentCode: '', status: 'Available', currentHolderName: '' });
+      const autoCode = generateNextEquipmentCode(equipmentList);
+      reset({ id: null, equipmentName: '', equipmentCode: autoCode, status: 'Available', currentHolderName: '' });
     }
     setIsModalOpen(true);
   };
@@ -296,13 +312,26 @@ export default function EquipmentPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SKU / Seri No</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">SKU / Cihaz Kodu</label>
+                      <button
+                        type="button"
+                        onClick={() => setValue("equipmentCode", generateNextEquipmentCode(equipmentList))}
+                        className="text-xs text-brand-primary dark:text-blue-400 font-semibold hover:underline flex items-center gap-1"
+                        title="Otomatik boş SKU kodu oluştur"
+                      >
+                        ⚡ Otomatik Üret
+                      </button>
+                    </div>
                     <input
                       type="text"
                       {...register("equipmentCode")}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary font-mono text-sm"
-                      placeholder="SN-12345"
+                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary font-mono text-sm"
+                      placeholder="Örn: EQP-009"
                     />
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                      * Sıradaki boş SKU kodu otomatik atanır.
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Durumu *</label>

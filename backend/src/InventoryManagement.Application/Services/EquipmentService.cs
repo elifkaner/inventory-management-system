@@ -30,9 +30,28 @@ public class EquipmentService : IEquipmentService
 
     public async Task<EquipmentDto> CreateEquipmentAsync(CreateEquipmentDto dto)
     {
+        var code = dto.EquipmentCode;
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            var all = await _equipmentRepository.GetAllAsync();
+            int maxNum = 0;
+            foreach (var eq in all)
+            {
+                if (!string.IsNullOrEmpty(eq.EquipmentCode))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(eq.EquipmentCode, @"\d+");
+                    if (match.Success && int.TryParse(match.Value, out int num) && num > maxNum)
+                    {
+                        maxNum = num;
+                    }
+                }
+            }
+            code = $"EQP-{(maxNum + 1).ToString("D3")}";
+        }
+
         var equipment = new Equipment
         {
-            EquipmentCode = dto.EquipmentCode,
+            EquipmentCode = code,
             EquipmentName = dto.EquipmentName,
             Status = "Available"
         };
