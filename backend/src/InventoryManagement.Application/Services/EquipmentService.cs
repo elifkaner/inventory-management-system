@@ -34,20 +34,27 @@ public class EquipmentService : IEquipmentService
         if (string.IsNullOrWhiteSpace(code))
         {
             var all = await _equipmentRepository.GetAllAsync();
-            int maxNum = 0;
+            var usedNumbers = new HashSet<int>();
+
             foreach (var eq in all)
             {
                 if (!string.IsNullOrEmpty(eq.EquipmentCode))
                 {
                     var match = System.Text.RegularExpressions.Regex.Match(eq.EquipmentCode, @"\d+");
-                    if (match.Success && int.TryParse(match.Value, out int num) && num > maxNum)
+                    if (match.Success && int.TryParse(match.Value, out int num) && num > 0)
                     {
-                        maxNum = num;
+                        usedNumbers.Add(num);
                     }
                 }
             }
-            int nextNum = maxNum + 1;
-            string numStr = nextNum.ToString();
+
+            int candidate = 1;
+            while (usedNumbers.Contains(candidate))
+            {
+                candidate++;
+            }
+
+            string numStr = candidate.ToString();
             string padded = numStr.PadLeft(Math.Max(3, numStr.Length), '0');
             code = $"EQP-{padded}";
         }

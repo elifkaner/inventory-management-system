@@ -16,7 +16,8 @@ public class EquipmentRepository : IEquipmentRepository
 
     public async Task<List<Equipment>> GetAllAsync()
     {
-        return await _context.Equipments.ToListAsync();
+        await _context.Ensure100EquipmentsSeededAsync();
+        return await _context.Equipments.OrderBy(x => x.Id).ToListAsync();
     }
 
     public async Task<Equipment?> GetByIdAsync(int id)

@@ -97,20 +97,26 @@ export default function EquipmentPage() {
     (e.currentHolderName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const generateFixedEqpSku = (list: any[]) => {
-    let maxNum = 0;
+  const generateLowestAvailableEqpSku = (list: any[]) => {
+    const usedNumbers = new Set<number>();
     (list || []).forEach((eq: any) => {
       if (eq.equipmentCode) {
         const match = eq.equipmentCode.match(/\d+/);
         if (match) {
           const num = parseInt(match[0], 10);
-          if (num > maxNum) maxNum = num;
+          if (num > 0) {
+            usedNumbers.add(num);
+          }
         }
       }
     });
 
-    const nextNum = maxNum + 1;
-    const numStr = String(nextNum);
+    let candidate = 1;
+    while (usedNumbers.has(candidate)) {
+      candidate++;
+    }
+
+    const numStr = String(candidate);
     const padded = numStr.padStart(Math.max(3, numStr.length), '0');
     return `EQP-${padded}`;
   };
@@ -125,7 +131,7 @@ export default function EquipmentPage() {
           currentHolderName: equipment.currentHolderName || ''
       });
     } else {
-      const autoCode = generateFixedEqpSku(equipmentList);
+      const autoCode = generateLowestAvailableEqpSku(equipmentList);
       reset({ id: null, equipmentName: '', equipmentCode: autoCode, status: 'Available', currentHolderName: '' });
     }
     setIsModalOpen(true);
@@ -234,7 +240,7 @@ export default function EquipmentPage() {
             className="inline-flex items-center justify-center px-5 py-2.5 bg-brand-primary text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-primary/30 hover:bg-brand-primaryHover transition-transform hover:-translate-y-0.5"
             >
             <svg className="w-5 h-5 mr-1.5 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-            Yeni Ekipman
+            Yeni Ekipman Girişi
             </button>
         </div>
       </div>
@@ -322,17 +328,7 @@ export default function EquipmentPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">SKU / Cihaz Kodu</label>
-                      <button
-                        type="button"
-                        onClick={() => setValue("equipmentCode", generateFixedEqpSku(equipmentList))}
-                        className="text-xs text-brand-primary dark:text-blue-400 font-semibold hover:underline flex items-center gap-1"
-                        title="Otomatik EQP-XXX SKU üret"
-                      >
-                        ⚡ Otomatik Üret
-                      </button>
-                    </div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SKU / Cihaz Kodu</label>
                     <input
                       type="text"
                       {...register("equipmentCode")}
@@ -340,7 +336,7 @@ export default function EquipmentPage() {
                       placeholder="Örn: EQP-001"
                     />
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-                      * EQP-XXX (001...999 ➔ 1000) formatında otomatik atanır.
+                      * Boş olan ilk EQP-XXX kodu otomatik atanır.
                     </p>
                   </div>
                   <div>
