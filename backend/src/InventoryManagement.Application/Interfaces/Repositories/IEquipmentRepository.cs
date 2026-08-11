@@ -12,4 +12,7 @@ public interface IEquipmentRepository
     Task<Equipment?> UpdateAsync(int id, Equipment equipment);
 
     Task<bool> DeleteAsync(int id);
+
+    /// <summary>Takip edilen bir entity'yi doğrudan kaydeder (servis kaydı için).</summary>
+    Task<Equipment?> SaveDirectAsync(Equipment equipment);
 }

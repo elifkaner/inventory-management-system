@@ -14,5 +14,7 @@ public class Equipment
     // Ekipman şu an kimde: teslim alındığında dolar, teslim edildiğinde boşalır.
     public string? CurrentHolderName { get; set; }
 
+    public DateTime? LastMaintenanceDate { get; set; }
+
     public List<EquipmentTransaction> Transactions { get; set; } = new();
 }

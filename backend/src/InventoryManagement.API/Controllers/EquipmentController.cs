@@ -91,4 +91,31 @@ public class EquipmentController : ControllerBase
        return NoContent();
     }
 
+    // POST /api/equipment/service-record
+    // action="send"   → Hurda/Servis Bekliyor cihazı servise gönder (InService)
+    // action="return" → Servisten dönen cihazı teslim al (Available + LastMaintenanceDate=now)
+    [HttpPost("service-record")]
+    public async Task<IActionResult> ProcessServiceRecord([FromBody] ServiceRecordDto dto)
+    {
+        if (dto.EquipmentId <= 0 || (dto.Action != "send" && dto.Action != "return"))
+        {
+            return BadRequest("Geçersiz istek. Action 'send' veya 'return' olmalı.");
+        }
+
+        try
+        {
+            var result = await _equipmentService.ProcessServiceRecordAsync(dto);
+            if (result == null)
+            {
+                return NotFound("Ekipman bulunamadı.");
+            }
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Durum uyuşmazlığı (örn: servise gönderilemez, servisten alınamaz)
+            return BadRequest(ex.Message);
+        }
+    }
+
 }
