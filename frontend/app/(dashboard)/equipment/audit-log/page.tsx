@@ -205,7 +205,7 @@ export default function EquipmentAuditLogPage() {
           <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-slate-50/70 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700 text-xs tracking-wider">
             <tr>
-              <th className="pl-6 pr-4 py-4">Tarih</th>
+              <th className="pl-6 pr-4 py-4 whitespace-nowrap text-center">Tarih / Saat</th>
               <th className="px-4 py-4">İşlem</th>
               <th className="px-4 py-4">Personel</th>
               <th className="px-4 py-4">Ekipman</th>
@@ -229,8 +229,9 @@ export default function EquipmentAuditLogPage() {
             ) : (
               transactions.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((t: any) => (
                 <tr key={t.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
-                  <td className="pl-6 pr-4 py-4">
-                      {new Date(t.date).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit' })}
+                  <td className="pl-6 pr-4 py-4 whitespace-nowrap text-center">
+                      <div className="font-bold text-slate-900 dark:text-slate-100">{new Date(t.date).toLocaleDateString('tr-TR')}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{new Date(t.date).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                   </td>
                   <td className="px-4 py-4">{getTypeBadge(t.type)}</td>
                   <td className="px-4 py-4 font-bold text-slate-900 dark:text-slate-100">{t.employeeName}</td>
@@ -244,7 +245,14 @@ export default function EquipmentAuditLogPage() {
                   <td className="px-4 py-4">
                       <div className="flex flex-col min-w-[250px] whitespace-normal break-words">
                           <span>{t.notes || '-'}</span>
-                          <span className="text-xs text-brand-primary dark:text-blue-400 font-semibold mt-1">{t.createdByUserName || 'Sistem'}</span>
+                          <div className="flex flex-col gap-1 mt-1">
+                            <span className="text-xs text-brand-primary dark:text-blue-400 font-semibold">
+                              Kullanıcı: {t.createdByUserName || 'Sistem'}
+                            </span>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                              Rol: {t.createdByUserRole || 'Admin'}
+                            </span>
+                          </div>
                       </div>
                   </td>
                 </tr>

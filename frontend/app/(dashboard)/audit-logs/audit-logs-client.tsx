@@ -87,7 +87,7 @@ export default function AuditLogsClient() {
           <thead>
             <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
               <th className="p-4 pl-6 whitespace-nowrap min-w-[150px] text-center">Tarih / Saat</th>
-              <th className="p-4 whitespace-nowrap min-w-[200px] text-center">İşlem Yapan (User ID)</th>
+              <th className="p-4 whitespace-nowrap min-w-[200px] text-center">İşlem Yapan</th>
               <th className="p-4 whitespace-nowrap min-w-[180px] text-center">Tablo / Kayıt</th>
               <th className="p-4 text-center whitespace-nowrap min-w-[120px]">Aksiyon</th>
               <th className="p-4 pr-6 w-full">Detaylar</th>
@@ -108,7 +108,14 @@ export default function AuditLogsClient() {
                     <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{new Date(log.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                   </td>
                   <td className="p-4 whitespace-nowrap text-center">
-                    <span className="bg-brand-surfaceDark dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300 font-mono text-xs">Kullanıcı: {log.userName || log.userId || 'Sistem'}</span>
+                    <div className="flex flex-col items-center justify-center gap-1.5">
+                      <span className="bg-slate-100 dark:bg-slate-700/80 px-2.5 py-1 rounded-md text-slate-800 dark:text-slate-100 font-bold text-xs border border-slate-200/80 dark:border-slate-600">
+                        Kullanıcı: {log.userName || log.userId || 'Sistem'}
+                      </span>
+                      <span className="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2.5 py-0.5 rounded text-[11px] font-semibold border border-indigo-100 dark:border-indigo-800/60">
+                        Rol: {log.userRole && log.userRole.trim() !== '' ? log.userRole : 'Admin'}
+                      </span>
+                    </div>
                   </td>
                   <td className="p-4 whitespace-nowrap text-center">
                     <div className="font-semibold text-slate-800 dark:text-slate-200">{log.entityName}</div>
