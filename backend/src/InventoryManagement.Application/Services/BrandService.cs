@@ -45,9 +45,9 @@ public class BrandService : IBrandService
     public async Task<BrandDto> CreateBrandAsync(CreateBrandDto dto)
     {
         var allBrands = await _brandRepository.GetAllAsync();
-        if (allBrands.Any(b => b.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase)))
+        if (allBrands.Any(b => b.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR")) == dto.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR"))))
         {
-            throw new InvalidOperationException($"'{dto.Name}' adında bir marka zaten mevcut.");
+            throw new InvalidOperationException($"Girmeye çalıştığınız '{dto.Name}' zaten listede mevcuttur.");
         }
 
         var brand = new Brand { Name = dto.Name, CategoryId = dto.CategoryId };
@@ -61,9 +61,9 @@ public class BrandService : IBrandService
     public async Task<BrandDto?> UpdateBrandAsync(int id, UpdateBrandDto dto)
     {
         var allBrands = await _brandRepository.GetAllAsync();
-        if (allBrands.Any(b => b.Id != id && b.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase)))
+        if (allBrands.Any(b => b.Id != id && b.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR")) == dto.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR"))))
         {
-            throw new InvalidOperationException($"'{dto.Name}' adında bir marka zaten mevcut.");
+            throw new InvalidOperationException($"Girmeye çalıştığınız '{dto.Name}' zaten listede mevcuttur.");
         }
 
         var brand = await _brandRepository.UpdateAsync(id, dto.Name, dto.CategoryId);

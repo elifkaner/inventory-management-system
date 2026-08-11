@@ -52,9 +52,9 @@ public class CategoryService : ICategoryService
     public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto dto)
     {
         var allCategories = await _categoryRepository.GetAllAsync();
-        if (allCategories.Any(c => c.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase)))
+        if (allCategories.Any(c => c.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR")) == dto.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR"))))
         {
-            throw new InvalidOperationException($"'{dto.Name}' adında bir kategori zaten mevcut.");
+            throw new InvalidOperationException($"Girmeye çalıştığınız '{dto.Name}' zaten listede mevcuttur.");
         }
 
         var category = new Category { Name = dto.Name };
@@ -69,9 +69,9 @@ public class CategoryService : ICategoryService
     public async Task<CategoryDto?> UpdateCategoryAsync(int id, UpdateCategoryDto dto)
     {
         var allCategories = await _categoryRepository.GetAllAsync();
-        if (allCategories.Any(c => c.Id != id && c.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase)))
+        if (allCategories.Any(c => c.Id != id && c.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR")) == dto.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR"))))
         {
-            throw new InvalidOperationException($"'{dto.Name}' adında bir kategori zaten mevcut.");
+            throw new InvalidOperationException($"Girmeye çalıştığınız '{dto.Name}' zaten listede mevcuttur.");
         }
 
         var category = await _categoryRepository.UpdateAsync(id, dto.Name);
