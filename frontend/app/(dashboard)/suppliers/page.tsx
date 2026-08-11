@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { authFetch, API_BASE_URL } from '@/app/lib/api';
+import { API_BASE_URL, authFetch, extractErrorMessage } from '@/app/lib/api';
 // Yeni eklenen bileşenlerimiz
 import Toast from '../../ui/toast';
 import ConfirmDeleteModal from '../../ui/confirm-delete-modal';
@@ -170,7 +170,7 @@ export default function TedarikcilerSayfasi() {
                 fetchSuppliers();
             } else {
                 const errText = await res.text();
-                showToastMessage(errText || "Silme işlemi başarısız oldu.", "error");
+                showToastMessage(extractErrorMessage(errText), 'error');
             }
         } catch (error) {
             showToastMessage("Sunucuya bağlanırken bir hata oluştu.", "error");

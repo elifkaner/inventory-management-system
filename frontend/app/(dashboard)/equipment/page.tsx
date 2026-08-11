@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { API_BASE_URL, authFetch } from '@/app/lib/api';
+import { API_BASE_URL, authFetch, extractErrorMessage } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
 import ConfirmDeleteModal from '@/app/ui/confirm-delete-modal';
 import Pagination from '@/app/ui/pagination';
@@ -173,7 +173,7 @@ export default function EquipmentPage() {
         showToast(data.id ? 'Ekipman başarıyla güncellendi.' : 'Ekipman başarıyla eklendi.');
       } else {
         const errText = await res.text();
-        showToast(errText || 'İşlem sırasında bir hata oluştu.', 'error');
+        showToast(extractErrorMessage(errText), 'error');
       }
     } catch (err) {
       showToast('Sunucu hatası veya API mevcut değil.', 'error');
@@ -236,7 +236,7 @@ export default function EquipmentPage() {
         fetchData();
       } else {
         const errText = await res.text();
-        showToast(errText || 'İşlem başarısız.', 'error');
+        showToast(extractErrorMessage(errText), 'error');
       }
     } catch (err) {
       showToast('Sunucu hatası.', 'error');

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
-import { API_BASE_URL, authFetch } from '@/app/lib/api';
+import { API_BASE_URL, authFetch, extractErrorMessage } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
 import ConfirmDeleteModal from '@/app/ui/confirm-delete-modal';
 import Pagination from '@/app/ui/pagination';
@@ -112,7 +112,7 @@ export default function ModelsClient() {
         showToast(data.id ? 'Model başarıyla güncellendi.' : 'Model başarıyla eklendi.');
       } else {
         const errText = await res.text();
-        showToast(errText || 'İşlem sırasında bir hata oluştu.', 'error');
+        showToast(extractErrorMessage(errText), 'error');
       }
     } catch (err) {
       showToast('Sunucu hatası.', 'error');
@@ -133,7 +133,7 @@ export default function ModelsClient() {
         setDeleteModal({isOpen: false, id: null, name: ''});
       } else {
         const errText = await res.text();
-        showToast(errText || "Silme işlemi başarısız oldu.", 'error');
+        showToast(extractErrorMessage(errText, 'Silme işlemi başarısız oldu.'), 'error');
         setDeleteModal({isOpen: false, id: null, name: ''});
       }
     } catch (error) {

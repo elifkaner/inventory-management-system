@@ -81,3 +81,20 @@ export async function getProductByBarcode(barcode: string): Promise<ProductRespo
 
     return res.json();
 }
+
+// 3. API HATA MESAJLARINI DÜZENLEYEN YARDIMCI FONKSİYON
+export function extractErrorMessage(errText: string, fallback = 'İşlem sırasında bir hata oluştu.'): string {
+    if (!errText) return fallback;
+    try {
+        const json = JSON.parse(errText);
+        // .NET ProblemDetails veya standart error formatları
+        if (json.detail) return json.detail;
+        if (json.title) return json.title;
+        if (json.message) return json.message;
+        if (json.error) return json.error;
+        return fallback;
+    } catch {
+        // Eğer JSON değilse ve çok uzun değilse text'i döndür (html vs gelirse fallback)
+        return errText.length < 200 ? errText : fallback;
+    }
+}
