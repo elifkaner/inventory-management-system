@@ -507,6 +507,8 @@ export default function UrunEnvanterSayfasi() {
         }
     };
 
+    const hasActiveFilters = searchTerm !== "" || statusFilter !== "all" || filterCategoryId !== "" || filterBrandId !== "" || filterModelId !== "" || filterSupplierId !== "";
+
     return (
         <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 font-sans relative transition-colors duration-200">
             <Toast isOpen={infoModal.isOpen} message={infoModal.message} type={infoModal.type} onClose={() => setInfoModal({ ...infoModal, isOpen: false })} />
@@ -585,12 +587,29 @@ export default function UrunEnvanterSayfasi() {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6 flex flex-col gap-4">
-                <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="bg-white/80 backdrop-blur-md dark:bg-slate-800 p-4 rounded-2xl shadow-lg shadow-brand-primary/5 border border-brand-primary/10 dark:border-slate-700 mb-6 flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-2">
                     <div className="relative w-full md:w-96">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
                         <input type="text" placeholder="Ürün adı, SKU veya Barkod ara..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-brand-primary text-sm dark:text-slate-200 transition-colors" />
                     </div>
+                    {hasActiveFilters && (
+                        <button 
+                            onClick={() => {
+                                setSearchTerm("");
+                                setStatusFilter("all");
+                                setFilterCategoryId("");
+                                setFilterBrandId("");
+                                setFilterModelId("");
+                                setFilterSupplierId("");
+                                setCurrentPage(1);
+                            }}
+                            className="text-sm font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors flex items-center gap-1.5"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            Filtreleri Temizle
+                        </button>
+                    )}
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 items-center mb-6">
@@ -670,7 +689,7 @@ export default function UrunEnvanterSayfasi() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden flex flex-col">
+            <div className="bg-white/90 backdrop-blur-sm dark:bg-slate-800 rounded-3xl shadow-2xl shadow-brand-primary/5 dark:shadow-none overflow-hidden flex flex-col border border-brand-primary/10 dark:border-slate-700/50">
                 <div className="overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse table-auto min-w-[1100px]">
                     <thead>
@@ -766,7 +785,7 @@ export default function UrunEnvanterSayfasi() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-[70] overflow-y-auto bg-slate-900/50 backdrop-blur-sm">
                     <div className="flex items-center justify-center min-h-screen p-4">
-                        <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] w-full max-w-4xl relative transition-colors">
+                        <form onSubmit={handleSubmit(onSubmit)} className="bg-white/95 backdrop-blur-xl dark:bg-slate-800 rounded-3xl shadow-[0_20px_60px_-15px_rgba(92,107,192,0.15)] dark:shadow-none w-full max-w-4xl relative transition-colors border border-brand-primary/10 dark:border-slate-700">
                             <input type="hidden" {...register("id")} />
                             <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
                                 <div className="flex justify-between items-center mb-4">

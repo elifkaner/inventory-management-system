@@ -383,8 +383,9 @@ export default function EquipmentPage() {
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transition-colors">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed -inset-10 bg-slate-900/50 backdrop-blur-md z-0"></div>
+          <div className="relative z-10 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transition-colors">
             <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
               <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{watch("id") ? 'Ekipman Düzenle' : 'Yeni Ekipman Ekle'}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
@@ -451,8 +452,9 @@ export default function EquipmentPage() {
 
       {/* Servis Kaydı Modalı */}
       {isServiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transition-colors">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed -inset-10 bg-slate-900/50 backdrop-blur-md z-0"></div>
+          <div className="relative z-10 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transition-colors">
             {/* Modal Başlık */}
             <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-amber-50/70 dark:bg-amber-900/20">
               <div className="flex items-center gap-3">

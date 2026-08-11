@@ -609,8 +609,9 @@ export default function EquipmentAuditLogPage() {
       {/* Add Modal */}
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col overflow-visible transition-colors my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed -inset-10 bg-slate-900/50 backdrop-blur-md z-0"></div>
+          <div className="relative z-10 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col overflow-visible transition-colors my-auto">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 shrink-0 rounded-t-3xl">
               <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
