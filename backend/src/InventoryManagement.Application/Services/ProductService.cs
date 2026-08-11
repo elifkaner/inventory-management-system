@@ -37,9 +37,9 @@ public class ProductService : IProductService
     }
 
     // Arama ve kategori filtresine göre ürünleri listeler
-    public async Task<PagedResult<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null, int? brandId = null, int? supplierId = null, bool? isActive = null, int? page = null, int? pageSize = null)
+    public async Task<PagedResult<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null, int? brandId = null, int? modelId = null, int? supplierId = null, bool? isActive = null, int? page = null, int? pageSize = null)
     {
-        var result = await _productRepository.GetAllAsync(search, categoryId, brandId, supplierId, isActive, page, pageSize);
+        var result = await _productRepository.GetAllAsync(search, categoryId, brandId, modelId, supplierId, isActive, page, pageSize);
 
         return new PagedResult<ProductResponseDto>
         {
@@ -156,11 +156,11 @@ public class ProductService : IProductService
     }
 
     // Listeyi (arama/kategori/marka/tedarikçi filtresi uygulanmış haliyle) CSV olarak dışa aktarır
-    public async Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null, int? brandId = null, int? supplierId = null, bool? isActive = null)
+    public async Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null, int? brandId = null, int? modelId = null, int? supplierId = null, bool? isActive = null)
     {
         // Sayfalama parametresi kasıtlı olarak yok — export, ekranda görünen sayfayı değil,
         // arama/filtreyle eşleşen TÜM ürünleri içermeli.
-        var results = await GetAllProductsAsync(search, categoryId, brandId, supplierId, isActive);
+        var results = await GetAllProductsAsync(search, categoryId, brandId, modelId, supplierId, isActive);
         var products = results.Items;
 
         var csv = new StringBuilder();

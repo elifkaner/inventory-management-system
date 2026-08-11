@@ -40,6 +40,7 @@ export default function UrunEnvanterSayfasi() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [filterCategoryId, setFilterCategoryId] = useState<string>("");
     const [filterBrandId, setFilterBrandId] = useState<string>("");
+    const [filterModelId, setFilterModelId] = useState<string>("");
     const [filterSupplierId, setFilterSupplierId] = useState<string>("");
     const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
@@ -57,6 +58,12 @@ export default function UrunEnvanterSayfasi() {
 
     const selectedBrandId = watch("brandId");
 
+    const [formModels, setFormModels] = useState<any[]>([]);
+    const [allModels, setAllModels] = useState<any[]>([]);
+
+    const filteredBrands = filterCategoryId ? brands.filter(b => b.categoryId?.toString() === filterCategoryId) : brands;
+    const filteredModels = filterBrandId ? allModels.filter(m => m.brandId?.toString() === filterBrandId) : allModels;
+
     // Performans İyileştirmesi 3: Parent bileşen her render olduğunda options dizisinin 
     // bellekte yeni bir referans oluşturmasını engelliyoruz.
     const categoryOptions = useMemo(() => categories.map(c => ({ value: c.id, label: c.name })), [categories]);
@@ -66,17 +73,19 @@ export default function UrunEnvanterSayfasi() {
 
     const fetchMetadata = useCallback(async () => {
         try {
-            const [catRes, supRes, locRes, brandRes] = await Promise.all([
+            const [catRes, supRes, locRes, brandRes, modelRes] = await Promise.all([
                 authFetch(`${API_BASE_URL}/api/Category`),
                 authFetch(`${API_BASE_URL}/api/Supplier`),
                 authFetch(`${API_BASE_URL}/api/WarehouseLocation`),
-                authFetch(`${API_BASE_URL}/api/Brand`)
+                authFetch(`${API_BASE_URL}/api/Brand`),
+                authFetch(`${API_BASE_URL}/api/Model`)
             ]);
 
             if (catRes.ok) setCategories(await catRes.json());
             if (supRes.ok) setSuppliers(await supRes.json());
             if (locRes.ok) setLocations(await locRes.json());
             if (brandRes.ok) setBrands(await brandRes.json());
+            if (modelRes.ok) setAllModels(await modelRes.json());
         } catch (err) {
             console.error("Metadata çekilemedi", err);
         }
@@ -88,8 +97,9 @@ export default function UrunEnvanterSayfasi() {
             const statusQuery = statusFilter === "active" ? "&isActive=true" : statusFilter === "passive" ? "&isActive=false" : "";
             const categoryQuery = filterCategoryId ? `&categoryId=${filterCategoryId}` : "";
             const brandQuery = filterBrandId ? `&brandId=${filterBrandId}` : "";
+            const modelQuery = filterModelId ? `&modelId=${filterModelId}` : "";
             const supplierQuery = filterSupplierId ? `&supplierId=${filterSupplierId}` : "";
-            const res = await authFetch(`${API_BASE_URL}/api/Product?search=${debouncedSearchTerm}${statusQuery}${categoryQuery}${brandQuery}${supplierQuery}&page=${currentPage}&pageSize=${pageSize}`);
+            const res = await authFetch(`${API_BASE_URL}/api/Product?search=${debouncedSearchTerm}${statusQuery}${categoryQuery}${brandQuery}${modelQuery}${supplierQuery}&page=${currentPage}&pageSize=${pageSize}`);
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) {
@@ -107,7 +117,7 @@ export default function UrunEnvanterSayfasi() {
         } finally {
             setIsLoading(false);
         }
-    }, [debouncedSearchTerm, currentPage, pageSize, statusFilter, filterCategoryId, filterBrandId, filterSupplierId]);
+    }, [debouncedSearchTerm, currentPage, pageSize, statusFilter, filterCategoryId, filterBrandId, filterModelId, filterSupplierId]);
 
     useEffect(() => {
         fetchMetadata();
@@ -123,13 +133,13 @@ export default function UrunEnvanterSayfasi() {
                 try {
                     const res = await authFetch(`${API_BASE_URL}/api/Model?brandId=${selectedBrandId}`);
                     if (res.ok) {
-                        setModels(await res.json());
+                        setFormModels(await res.json());
                     }
                 } catch (error) {
                     console.error("Modeller çekilirken hata oluştu", error);
                 }
             } else {
-                setModels([]);
+                setFormModels([]);
             }
         };
 
@@ -194,7 +204,7 @@ export default function UrunEnvanterSayfasi() {
                 const res = await authFetch(`${API_BASE_URL}/api/Model?brandId=${resolvedBrandId}`);
                 if (res.ok) {
                     const brandModels = await res.json();
-                    setModels(brandModels);
+                    setFormModels(brandModels);
 
                     const modelName = product.model || product.modelName;
                     const foundModel = brandModels.find((m: any) => m.name === modelName);
@@ -303,7 +313,7 @@ export default function UrunEnvanterSayfasi() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 items-center mb-6">
-                    <div className="w-full sm:w-1/4">
+                    <div className="w-full sm:w-1/5">
                         <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Durum</label>
                         <select
                             value={statusFilter}
@@ -315,11 +325,16 @@ export default function UrunEnvanterSayfasi() {
                             <option value="passive">Pasif</option>
                         </select>
                     </div>
-                    <div className="w-full sm:w-1/4">
+                    <div className="w-full sm:w-1/5">
                         <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kategori</label>
                         <select
                             value={filterCategoryId}
-                            onChange={(e) => { setFilterCategoryId(e.target.value); setCurrentPage(1); }}
+                            onChange={(e) => { 
+                                setFilterCategoryId(e.target.value); 
+                                setFilterBrandId(""); // Kategori değişince marka ve modeli sıfırla
+                                setFilterModelId("");
+                                setCurrentPage(1); 
+                            }}
                             className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm shadow-sm"
                         >
                             <option value="">Tüm Kategoriler</option>
@@ -328,20 +343,37 @@ export default function UrunEnvanterSayfasi() {
                             ))}
                         </select>
                     </div>
-                    <div className="w-full sm:w-1/4">
+                    <div className="w-full sm:w-1/5">
                         <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Marka</label>
                         <select
                             value={filterBrandId}
-                            onChange={(e) => { setFilterBrandId(e.target.value); setCurrentPage(1); }}
+                            onChange={(e) => { 
+                                setFilterBrandId(e.target.value); 
+                                setFilterModelId(""); // Marka değişince modeli sıfırla
+                                setCurrentPage(1); 
+                            }}
                             className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm shadow-sm"
                         >
                             <option value="">Tüm Markalar</option>
-                            {brands.map(b => (
+                            {filteredBrands.map(b => (
                                 <option key={b.id} value={b.id}>{b.name}</option>
                             ))}
                         </select>
                     </div>
-                    <div className="w-full sm:w-1/4">
+                    <div className="w-full sm:w-1/5">
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Model</label>
+                        <select
+                            value={filterModelId}
+                            onChange={(e) => { setFilterModelId(e.target.value); setCurrentPage(1); }}
+                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm shadow-sm"
+                        >
+                            <option value="">Tüm Modeller</option>
+                            {filteredModels.map(m => (
+                                <option key={m.id} value={m.id}>{m.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="w-full sm:w-1/5">
                         <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tedarikçi</label>
                         <select
                             value={filterSupplierId}
@@ -366,6 +398,7 @@ export default function UrunEnvanterSayfasi() {
                             <th className="px-4 py-3 min-w-[220px] text-center">Ürün Adı</th>
                             <th className="px-4 py-3 min-w-[140px] text-center">Marka / Model</th>
                             <th className="px-4 py-3 text-center">Kategori</th>
+                            <th className="px-4 py-3 text-center">Tedarikçi</th>
                             <th className="px-4 py-3 whitespace-nowrap min-w-[120px] text-center">SKU Kodu</th>
                             <th className="px-4 py-3 whitespace-nowrap min-w-[140px] text-center">Barkod</th>
                             <th className="px-4 py-3 text-center w-1 whitespace-nowrap">Satış Fiyatı</th>
@@ -375,9 +408,9 @@ export default function UrunEnvanterSayfasi() {
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm font-medium text-slate-700 dark:text-slate-300">
                         {isLoading ? (
-                            <tr><td colSpan={9} className="p-8 text-center text-slate-500 dark:text-slate-400 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
+                            <tr><td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
                         ) : paginatedProducts.length === 0 ? (
-                            <tr><td colSpan={9} className="p-8 text-center text-slate-500 dark:text-slate-400">Kayıt bulunamadı.</td></tr>
+                            <tr><td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400">Kayıt bulunamadı.</td></tr>
                         ) : (
                             paginatedProducts.map((prod) => (
                                 <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
@@ -392,6 +425,7 @@ export default function UrunEnvanterSayfasi() {
                                         </div>
                                     </td>
                                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium text-center whitespace-normal break-normal max-w-[140px]">{prod.category || 'Kategorisiz'}</td>
+                                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium text-center whitespace-normal break-normal max-w-[140px]">{prod.supplier || '-'}</td>
 
                                     <td className="px-4 py-3 align-middle text-center">
                                         <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">

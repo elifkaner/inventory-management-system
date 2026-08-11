@@ -30,9 +30,9 @@ public class ProductController : ControllerBase
     // GET /api/Product?search=kahve&categoryId=3
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetAllProducts([FromQuery] string? search, [FromQuery] int? categoryId, [FromQuery] int? brandId, [FromQuery] int? supplierId, [FromQuery] bool? isActive, [FromQuery] int? page, [FromQuery] int? pageSize)
+    public async Task<IActionResult> GetAllProducts([FromQuery] string? search, [FromQuery] int? categoryId, [FromQuery] int? brandId, [FromQuery] int? modelId, [FromQuery] int? supplierId, [FromQuery] bool? isActive, [FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        var products = await _productService.GetAllProductsAsync(search, categoryId, brandId, supplierId, isActive, page, pageSize);
+        var products = await _productService.GetAllProductsAsync(search, categoryId, brandId, modelId, supplierId, isActive, page, pageSize);
 
         return Ok(products);
     }
@@ -50,9 +50,9 @@ public class ProductController : ControllerBase
     // GET /api/Product/export?search=kahve&categoryId=3
     [HttpGet("export")]
     [Authorize(Roles = "Admin,Manager")]
-    public async Task<IActionResult> ExportProductsCsv([FromQuery] string? search, [FromQuery] int? categoryId, [FromQuery] int? brandId, [FromQuery] int? supplierId, [FromQuery] bool? isActive)
+    public async Task<IActionResult> ExportProductsCsv([FromQuery] string? search, [FromQuery] int? categoryId, [FromQuery] int? brandId, [FromQuery] int? modelId, [FromQuery] int? supplierId, [FromQuery] bool? isActive)
     {
-        var csvBytes = await _productService.ExportToCsvAsync(search, categoryId, brandId, supplierId, isActive);
+        var csvBytes = await _productService.ExportToCsvAsync(search, categoryId, brandId, modelId, supplierId, isActive);
 
         var fileName = $"urunler_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
 
