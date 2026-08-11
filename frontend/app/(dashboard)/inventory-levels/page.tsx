@@ -78,7 +78,7 @@ export default function InventoryLevelsPage() {
         const matchesCategory = categoryFilter ? prod.category === categoryFilter : true;
         
         // 3. Durum Filtresi
-        const isCritical = prod.stockQuantity <= 10;
+        const isCritical = prod.stockQuantity <= 25;
         const isOutOfStock = prod.stockQuantity === 0;
         const status = isOutOfStock ? 'Tükendi' : (!isCritical ? 'Yeterli' : 'Kritik');
         const matchesStatus = statusFilter ? status === statusFilter : true;
@@ -94,10 +94,9 @@ export default function InventoryLevelsPage() {
 
     const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-    // getSupplierName fonksiyonu artık kullanılmıyor çünkü backend supplier (şirket adını) doğrudan dönüyor.
-
     return (
-        <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors">
+        <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors relative">
+            
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Depo Konumu</h1>
@@ -192,7 +191,8 @@ export default function InventoryLevelsPage() {
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
                         <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
-                            <th className="p-4 pl-6 text-center">Ürün Adı</th>
+                            <th className="p-4 pl-6 text-center w-1 whitespace-nowrap">Durum</th>
+                            <th className="p-4 text-center">Ürün Adı</th>
                             <th className="p-4 text-center">SKU Kodu</th>
                             <th className="p-4 text-center">Stok Sayısı</th>
                             <th className="p-4 text-center">Kategori</th>
@@ -200,8 +200,7 @@ export default function InventoryLevelsPage() {
                             <th className="p-4 text-center">Koridor</th>
                             <th className="p-4 text-center">Raf</th>
                             <th className="p-4 text-center">Bölüm</th>
-                            <th className="p-4 text-center">Tedarikçi</th>
-                            <th className="p-4 pr-6 text-center">Durum</th>
+                            <th className="p-4 pr-6 text-center">Tedarikçi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -211,13 +210,18 @@ export default function InventoryLevelsPage() {
                             <tr><td colSpan={9} className="p-8 text-center text-slate-500 dark:text-slate-400">Kayıt bulunamadı.</td></tr>
                         ) : (
                             paginatedProducts.map((prod) => {
-                                const isCritical = prod.stockQuantity <= 10;
+                                const isCritical = prod.stockQuantity <= 25;
                                 const isOutOfStock = prod.stockQuantity === 0;
                                 const loc = parseLocation(prod.location);
 
                                 return (
                                     <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(prod.productName)}</td>
+                                        <td className="p-4 pl-6 text-center w-1 whitespace-nowrap">
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${isOutOfStock ? 'bg-brand-surfaceDark dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600' : !isCritical ? 'bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800'}`}>
+                                                {isOutOfStock ? 'Tükendi' : !isCritical ? 'Yeterli' : 'Kritik'}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(prod.productName)}</td>
 
                                         {/* SKU Kodu Sütunu */}
                                         <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 text-center">
@@ -234,11 +238,8 @@ export default function InventoryLevelsPage() {
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.corridor}</td>
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.shelf}</td>
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.section}</td>
-                                        <td className="p-4 text-slate-600 dark:text-slate-400 text-center">{prod.supplier || "Bilinmiyor"}</td>
-                                        <td className="p-4 pr-6 text-center">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${isOutOfStock ? 'bg-brand-surfaceDark dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600' : !isCritical ? 'bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800'}`}>
-                                                {isOutOfStock ? 'Tükendi' : !isCritical ? 'Yeterli' : 'Kritik'}
-                                            </span>
+                                        <td className="p-4 pr-6 text-slate-600 dark:text-slate-400 text-center whitespace-normal break-normal max-w-[120px]">
+                                            {prod.supplier || "Bilinmiyor"}
                                         </td>
                                     </tr>
                                 );
@@ -261,6 +262,7 @@ export default function InventoryLevelsPage() {
                     />
                 </div>
             )}
+
         </div>
     );
 }
