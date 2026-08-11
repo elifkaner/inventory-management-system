@@ -11,6 +11,8 @@ export default function TedarikcilerSayfasi() {
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'passive'>('all');
+    const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'newest'>('name-asc');
     const [formData, setFormData] = useState<any>({
         id: null, companyName: '', contactName: '', phone: '', email: '',
         taxOffice: '', taxNumber: '', address: '', isActive: true
@@ -65,10 +67,26 @@ export default function TedarikcilerSayfasi() {
         fetchSuppliers();
     }, []);
 
-    const filteredSuppliers = suppliers.filter(sup =>
-        sup.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sup.contactName?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredSuppliers = suppliers.filter(sup => {
+        const matchesSearch = 
+            sup.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            sup.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            sup.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            sup.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            sup.taxNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesStatus = 
+            statusFilter === 'all' ? true :
+            statusFilter === 'active' ? sup.isActive === true :
+            sup.isActive === false;
+
+        return matchesSearch && matchesStatus;
+    }).sort((a, b) => {
+        if (sortBy === 'name-asc') return (a.companyName || '').localeCompare(b.companyName || '', 'tr');
+        if (sortBy === 'name-desc') return (b.companyName || '').localeCompare(a.companyName || '', 'tr');
+        if (sortBy === 'newest') return (b.id || 0) - (a.id || 0);
+        return 0;
+    });
 
     const paginatedSuppliers = filteredSuppliers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
@@ -195,11 +213,45 @@ export default function TedarikcilerSayfasi() {
             </div>
 
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center transition-colors">
-                <div className="relative w-full md:w-[28rem]">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-1">
+                    {/* Arama Çubuğu */}
+                    <div className="relative w-full sm:w-80">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                        <input 
+                            type="text" 
+                            placeholder="Firma, yetkili, tel veya vergi no ara..." 
+                            value={searchTerm} 
+                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                            className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200" 
+                        />
                     </div>
-                    <input type="text" placeholder="Firma adı veya yetkili ismine göre ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200" />
+
+                    {/* Durum Filtresi */}
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => { setStatusFilter(e.target.value as any); setCurrentPage(1); }}
+                        className="px-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary cursor-pointer"
+                    >
+                        <option value="all">Tüm Durumlar (Aktif & Pasif)</option>
+                        <option value="active">🟢 Sadece Aktif İş Ortakları</option>
+                        <option value="passive">🔴 Sadece Pasif İş Ortakları</option>
+                    </select>
+                </div>
+
+                {/* Sıralama Filtresi */}
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Sırala:</label>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as any)}
+                        className="px-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary cursor-pointer"
+                    >
+                        <option value="name-asc">Firma Adı (A - Z)</option>
+                        <option value="name-desc">Firma Adı (Z - A)</option>
+                        <option value="newest">En Yeni Eklenen</option>
+                    </select>
                 </div>
             </div>
 
