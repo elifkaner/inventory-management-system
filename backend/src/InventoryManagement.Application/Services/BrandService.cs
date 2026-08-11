@@ -44,6 +44,12 @@ public class BrandService : IBrandService
 
     public async Task<BrandDto> CreateBrandAsync(CreateBrandDto dto)
     {
+        var allBrands = await _brandRepository.GetAllAsync();
+        if (allBrands.Any(b => b.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException($"'{dto.Name}' adında bir marka zaten mevcut.");
+        }
+
         var brand = new Brand { Name = dto.Name, CategoryId = dto.CategoryId };
 
         var created = await _brandRepository.AddAsync(brand);
@@ -54,6 +60,12 @@ public class BrandService : IBrandService
 
     public async Task<BrandDto?> UpdateBrandAsync(int id, UpdateBrandDto dto)
     {
+        var allBrands = await _brandRepository.GetAllAsync();
+        if (allBrands.Any(b => b.Id != id && b.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException($"'{dto.Name}' adında bir marka zaten mevcut.");
+        }
+
         var brand = await _brandRepository.UpdateAsync(id, dto.Name, dto.CategoryId);
         _cache.Remove(AllBrandsCacheKey);
 

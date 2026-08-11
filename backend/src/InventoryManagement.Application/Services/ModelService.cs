@@ -51,6 +51,12 @@ public class ModelService : IModelService
 
     public async Task<ModelDto> CreateModelAsync(CreateModelDto dto)
     {
+        var allModels = await _modelRepository.GetAllAsync(dto.BrandId);
+        if (allModels.Any(m => m.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException($"Bu markada '{dto.Name}' adında bir model zaten mevcut.");
+        }
+
         var model = new ModelEntity { Name = dto.Name, BrandId = dto.BrandId };
 
         var created = await _modelRepository.AddAsync(model);
@@ -64,6 +70,12 @@ public class ModelService : IModelService
 
     public async Task<ModelDto?> UpdateModelAsync(int id, UpdateModelDto dto)
     {
+        var allModels = await _modelRepository.GetAllAsync(dto.BrandId);
+        if (allModels.Any(m => m.Id != id && m.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException($"Bu markada '{dto.Name}' adında bir model zaten mevcut.");
+        }
+
         var model = await _modelRepository.UpdateAsync(id, dto.Name, dto.BrandId);
         if( model != null) 
         {
