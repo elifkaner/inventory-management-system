@@ -244,7 +244,14 @@ export default function EquipmentAuditLogPage() {
                   <td className="px-4 py-4">
                       <div className="flex flex-col min-w-[250px] whitespace-normal break-words">
                           <span>{t.notes || '-'}</span>
-                          <span className="text-xs text-brand-primary dark:text-blue-400 font-semibold mt-1">{t.createdByUserName || 'Sistem'}</span>
+                          <div className="flex flex-col gap-1 mt-1">
+                            <span className="text-xs text-brand-primary dark:text-blue-400 font-semibold">
+                              Kullanıcı: {t.createdByUserName || 'Sistem'}
+                            </span>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                              Rol: {t.createdByUserRole || 'Admin'}
+                            </span>
+                          </div>
                       </div>
                   </td>
                 </tr>
