@@ -83,14 +83,14 @@ export default function AuditLogsClient() {
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden overflow-x-auto transition-colors">
-        <table className="w-full text-left border-collapse whitespace-nowrap">
+        <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
               <th className="p-4 pl-6 whitespace-nowrap min-w-[150px] text-center">Tarih / Saat</th>
               <th className="p-4 whitespace-nowrap min-w-[200px] text-center">İşlem Yapan</th>
               <th className="p-4 whitespace-nowrap min-w-[180px] text-center">Tablo / Kayıt</th>
               <th className="p-4 text-center whitespace-nowrap min-w-[120px]">Aksiyon</th>
-              <th className="p-4 pr-6 w-full">Detaylar</th>
+              <th className="p-4 pr-6 w-full text-center">Detaylar</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -124,16 +124,16 @@ export default function AuditLogsClient() {
                   <td className="p-4 text-center whitespace-nowrap">
                     {getActionBadge(log.action)}
                   </td>
-                  <td className="p-4 pr-6">
-                    <div className="max-w-2xl overflow-x-auto whitespace-pre-wrap break-words text-slate-600 dark:text-slate-300 text-xs font-mono bg-brand-surface dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" title={log.changedColumns}>
+                  <td className="p-4 pr-6 text-center">
+                    <div className="max-w-2xl mx-auto overflow-x-auto whitespace-pre-wrap break-normal text-slate-600 dark:text-slate-300 text-xs font-mono bg-brand-surface dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm text-center" title={log.changedColumns}>
                       {log.action === 'UPDATE' && log.changedColumns && (
-                         <div className="mb-2 text-brand-primary dark:text-blue-400 font-semibold border-b border-blue-100 dark:border-blue-900 pb-1">Değişen Alanlar: {log.changedColumns}</div>
+                         <div className="mb-2 text-brand-primary dark:text-blue-400 font-semibold border-b border-blue-100 dark:border-blue-900 pb-1 text-center">Değişen Alanlar: {log.changedColumns}</div>
                       )}
                       {log.oldValues && log.oldValues !== "{}" && (
-                        <div className="text-rose-600 dark:text-rose-400 mb-1.5 leading-relaxed"><span className="font-bold">Eski:</span> {formatLogValues(log.oldValues)}</div>
+                        <div className="text-rose-600 dark:text-rose-400 mb-1.5 leading-relaxed text-center"><span className="font-bold">Eski:</span> {formatLogValues(log.oldValues)}</div>
                       )}
                       {log.newValues && log.newValues !== "{}" && (
-                        <div className="text-emerald-600 dark:text-emerald-400 leading-relaxed"><span className="font-bold">Yeni:</span> {formatLogValues(log.newValues)}</div>
+                        <div className="text-emerald-600 dark:text-emerald-400 leading-relaxed text-center"><span className="font-bold">Yeni:</span> {formatLogValues(log.newValues)}</div>
                       )}
                       {(!log.oldValues || log.oldValues === "{}") && (!log.newValues || log.newValues === "{}") && (
                         <span>Detay yok</span>

@@ -35,12 +35,15 @@ public class StockMovementRepository : IStockMovementRepository
 
         if (fromDate.HasValue)
         {
-            query = query.Where(s => s.CreatedAt >= fromDate.Value);
+            var fromDateUtc = DateTime.SpecifyKind(fromDate.Value, DateTimeKind.Utc);
+            query = query.Where(s => s.CreatedAt >= fromDateUtc);
         }
 
         if (toDate.HasValue)
         {
-            query = query.Where(s => s.CreatedAt <= toDate.Value);
+            var toDateVal = toDate.Value.TimeOfDay == TimeSpan.Zero ? toDate.Value.Date.AddDays(1).AddTicks(-1) : toDate.Value;
+            var toDateUtc = DateTime.SpecifyKind(toDateVal, DateTimeKind.Utc);
+            query = query.Where(s => s.CreatedAt <= toDateUtc);
         }
         var totalRecords = await query.CountAsync();
         if(page.HasValue && pageSize.HasValue)

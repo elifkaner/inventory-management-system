@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { authFetch, API_BASE_URL } from '@/app/lib/api';
 import Pagination from '@/app/ui/pagination';
+import { formatNoOrphans } from '@/app/lib/utils';
 
 export default function InventoryLevelsPage() {
     const [products, setProducts] = useState<any[]>([]);
@@ -92,15 +93,15 @@ export default function InventoryLevelsPage() {
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
                         <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
-                            <th className="p-4 pl-6">Ürün Adı</th>
-                            <th className="p-4">SKU Kodu</th>
-                            <th className="p-4">Barkod</th>
+                            <th className="p-4 pl-6 text-center">Ürün Adı</th>
+                            <th className="p-4 text-center">SKU Kodu</th>
+                            <th className="p-4 text-center">Barkod</th>
                             <th className="p-4 text-center">Stok Sayısı</th>
                             <th className="p-4 text-center">Koridor</th>
                             <th className="p-4 text-center">Raf</th>
                             <th className="p-4 text-center">Bölüm</th>
-                            <th className="p-4">Tedarikçi</th>
-                            <th className="p-4 pr-6 text-right">Durum</th>
+                            <th className="p-4 text-center">Tedarikçi</th>
+                            <th className="p-4 pr-6 text-center">Durum</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -116,28 +117,28 @@ export default function InventoryLevelsPage() {
 
                                 return (
                                     <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold">{prod.productName}</td>
+                                        <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(prod.productName)}</td>
 
                                         {/* SKU Kodu Sütunu */}
-                                        <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1">{prod.skuCode || '-'}</span>
+                                        <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 text-center">
+                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 whitespace-nowrap">{prod.skuCode || '-'}</span>
                                         </td>
 
                                         {/* Barkod Sütunu */}
-                                        <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1">{prod.barcode || '-'}</span>
+                                        <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 text-center">
+                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 whitespace-nowrap">{prod.barcode || '-'}</span>
                                         </td>
 
                                         <td className="p-4 text-center">
-                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${isOutOfStock ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300' : isCritical ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400' : 'bg-blue-50 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400'}`}>
+                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${isOutOfStock ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300' : isCritical ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400' : 'bg-blue-50 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400'}`}>
                                                 {prod.stockQuantity}
                                             </span>
                                         </td>
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.corridor}</td>
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.shelf}</td>
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.section}</td>
-                                        <td className="p-4 text-slate-600 dark:text-slate-400">{getSupplierName(prod.supplierId)}</td>
-                                        <td className="p-4 pr-6 text-right">
+                                        <td className="p-4 text-slate-600 dark:text-slate-400 text-center">{getSupplierName(prod.supplierId)}</td>
+                                        <td className="p-4 pr-6 text-center">
                                             <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${isOutOfStock ? 'bg-brand-surfaceDark dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600' : !isCritical ? 'bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800'}`}>
                                                 {isOutOfStock ? 'Tükendi' : !isCritical ? 'Yeterli' : 'Kritik'}
                                             </span>

@@ -52,7 +52,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // URL, ortam değişkeni ASPNETCORE_URLS ile kontrol edilir (docker-compose'da
 // http://0.0.0.0:5000 olarak set edilir); yerelde de aynı varsayılan kullanılır.
-builder.WebHost.UseUrls(Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://0.0.0.0:5000");
+builder.WebHost.UseUrls(Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://0.0.0.0:5050");
 
 
 // Controller + JSON Ayarları
@@ -184,18 +184,33 @@ forwardedHeadersOptions.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeadersOptions);
 
 
-// Bekleyen tüm migration'ları uygulama başlarken otomatik uygular
 try
 {
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await dbContext.Database.MigrateAsync();
+        try
+        {
+            await dbContext.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WARNING] Database migration failed: {ex.Message}");
+        }
+
+        try
+        {
+            await dbContext.Ensure100EquipmentsSeededAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WARNING] Equipment seeding failed: {ex.Message}");
+        }
     }
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"[WARNING] Database migration failed: {ex.Message}");
+    Console.WriteLine($"[WARNING] Database init scope failed: {ex.Message}");
 }
 
 // İlk admin kullanıcısını oluşturur

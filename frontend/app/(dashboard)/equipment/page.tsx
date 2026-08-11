@@ -6,6 +6,7 @@ import { API_BASE_URL, authFetch } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
 import ConfirmDeleteModal from '@/app/ui/confirm-delete-modal';
 import Pagination from '@/app/ui/pagination';
+import { formatNoOrphans } from '@/app/lib/utils';
 
 type EquipmentFormData = {
   id?: number | null;
@@ -28,7 +29,7 @@ export default function EquipmentPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<EquipmentFormData>();
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<EquipmentFormData>();
 
   const [toast, setToast] = useState<{isOpen: boolean, message: string, type: 'success' | 'error' | 'info'}>({isOpen: false, message: '', type: 'info'});
   const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, id: number | null, name: string}>({isOpen: false, id: null, name: ''});
@@ -96,6 +97,30 @@ export default function EquipmentPage() {
     (e.currentHolderName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const generateLowestAvailableEqpSku = (list: any[]) => {
+    const usedNumbers = new Set<number>();
+    (list || []).forEach((eq: any) => {
+      if (eq.equipmentCode) {
+        const match = eq.equipmentCode.match(/\d+/);
+        if (match) {
+          const num = parseInt(match[0], 10);
+          if (num > 0) {
+            usedNumbers.add(num);
+          }
+        }
+      }
+    });
+
+    let candidate = 1;
+    while (usedNumbers.has(candidate)) {
+      candidate++;
+    }
+
+    const numStr = String(candidate);
+    const padded = numStr.padStart(Math.max(3, numStr.length), '0');
+    return `EQP-${padded}`;
+  };
+
   const openModal = (equipment: any = null) => {
     if (equipment) {
       reset({ 
@@ -106,9 +131,17 @@ export default function EquipmentPage() {
           currentHolderName: equipment.currentHolderName || ''
       });
     } else {
-      reset({ id: null, equipmentName: '', equipmentCode: '', status: 'Available', currentHolderName: '' });
+      const autoCode = generateLowestAvailableEqpSku(equipmentList);
+      reset({ id: null, equipmentName: '', equipmentCode: autoCode, status: 'Available', currentHolderName: '' });
     }
     setIsModalOpen(true);
+  };
+
+  const handleEquipmentNameChange = (nameVal: string) => {
+    if (!watch("id") && !isCodeUserEdited) {
+      const smartCode = generateSmartSku(nameVal, equipmentList);
+      setValue("equipmentCode", smartCode);
+    }
   };
 
   const handleSave = async (data: EquipmentFormData) => {
@@ -207,7 +240,7 @@ export default function EquipmentPage() {
             className="inline-flex items-center justify-center px-5 py-2.5 bg-brand-primary text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-primary/30 hover:bg-brand-primaryHover transition-transform hover:-translate-y-0.5"
             >
             <svg className="w-5 h-5 mr-1.5 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-            Yeni Ekipman
+            Yeni Ekipman Girişi
             </button>
         </div>
       </div>
@@ -217,12 +250,12 @@ export default function EquipmentPage() {
         <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-slate-50/70 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700 text-xs tracking-wider">
             <tr>
-              <th className="pl-6 pr-4 py-4">Ekipman Adı</th>
-              <th className="px-4 py-4">SKU / Seri No</th>
-              <th className="px-4 py-4">Durum</th>
-              <th className="px-4 py-4">Zimmetli Kişi</th>
-              <th className="px-4 py-4">Son Bakım Tarihi</th>
-              <th className="px-6 py-4 text-right">İşlemler</th>
+              <th className="p-4 pl-6 whitespace-nowrap text-center">Ekipman Adı</th>
+              <th className="p-4 whitespace-nowrap text-center">SKU / Seri No</th>
+              <th className="p-4 whitespace-nowrap text-center">Durum</th>
+              <th className="p-4 whitespace-nowrap text-center">Zimmetli Kişi</th>
+              <th className="p-4 whitespace-nowrap text-center">Son Bakım Tarihi</th>
+              <th className="p-4 pr-6 whitespace-nowrap text-center">İşlemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-300 font-medium">
@@ -241,16 +274,18 @@ export default function EquipmentPage() {
             ) : (
               filteredList.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((e: any) => (
                 <tr key={e.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
-                  <td className="pl-6 pr-4 py-4 text-slate-900 dark:text-slate-100 font-bold">{e.equipmentName}</td>
-                  <td className="px-4 py-4">
-                    <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{e.equipmentCode || '-'}</span>
+                  <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(e.equipmentName)}</td>
+                  <td className="p-4 text-center">
+                    <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded whitespace-nowrap">{e.equipmentCode || '-'}</span>
                   </td>
-                  <td className="px-4 py-4">{getStatusBadge(e.status)}</td>
-                  <td className="px-4 py-4 font-semibold">{e.currentHolderName || '-'}</td>
-                  <td className="px-4 py-4">-</td>
-                  <td className="px-6 py-4 text-right">
-                    <button onClick={() => openModal(e)} className="text-brand-primary dark:text-blue-400 hover:text-brand-primaryHover dark:hover:text-blue-300 font-semibold mr-4">Düzenle</button>
-                    <button onClick={() => setDeleteModal({isOpen: true, id: e.id, name: e.equipmentName})} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold">Sil</button>
+                  <td className="p-4 text-center">{getStatusBadge(e.status)}</td>
+                  <td className="p-4 font-semibold text-center whitespace-normal break-normal max-w-[180px]">{e.currentHolderName || '-'}</td>
+                  <td className="p-4 text-center">-</td>
+                  <td className="p-4 pr-6 text-center">
+                    <div className="flex justify-center gap-3">
+                      <button onClick={() => openModal(e)} className="text-brand-primary dark:text-blue-400 hover:text-brand-primaryHover dark:hover:text-blue-300 font-semibold">Düzenle</button>
+                      <button onClick={() => setDeleteModal({isOpen: true, id: e.id, name: e.equipmentName})} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold">Sil</button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -287,19 +322,22 @@ export default function EquipmentPage() {
                 <input
                   type="text"
                   {...register("equipmentName", { required: true })}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                  placeholder="Örn: El Terminali - Zebra TC21"
+                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm"
+                  placeholder="Örn: El Terminali - Zebra TC21 veya MacBook Pro"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SKU / Seri No</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SKU / Cihaz Kodu</label>
                     <input
                       type="text"
                       {...register("equipmentCode")}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary font-mono text-sm"
-                      placeholder="SN-12345"
+                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary font-mono text-sm uppercase"
+                      placeholder="Örn: EQP-001"
                     />
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                      * Boş olan ilk EQP-XXX kodu otomatik atanır.
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Durumu *</label>

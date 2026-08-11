@@ -106,7 +106,8 @@ public class EquipmentTransactionService : IEquipmentTransactionService
             Condition = t.Condition,
             Date = t.Date,
             Notes = t.Notes,
-            CreatedByUserName = t.CreatedByUser?.Name
+            CreatedByUserName = t.CreatedByUser?.Name,
+            CreatedByUserRole = t.CreatedByUser?.Role
         };
     }
 }

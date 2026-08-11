@@ -30,15 +30,63 @@ public class EquipmentService : IEquipmentService
 
     public async Task<EquipmentDto> CreateEquipmentAsync(CreateEquipmentDto dto)
     {
+        var code = dto.EquipmentCode;
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            var all = await _equipmentRepository.GetAllAsync();
+            var usedNumbers = new HashSet<int>();
+
+            foreach (var eq in all)
+            {
+                if (!string.IsNullOrEmpty(eq.EquipmentCode))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(eq.EquipmentCode, @"\d+");
+                    if (match.Success && int.TryParse(match.Value, out int num) && num > 0)
+                    {
+                        usedNumbers.Add(num);
+                    }
+                }
+            }
+
+            int candidate = 1;
+            while (usedNumbers.Contains(candidate))
+            {
+                candidate++;
+            }
+
+            string numStr = candidate.ToString();
+            string padded = numStr.PadLeft(Math.Max(3, numStr.Length), '0');
+            code = $"EQP-{padded}";
+        }
+
         var equipment = new Equipment
         {
-            EquipmentCode = dto.EquipmentCode,
+            EquipmentCode = code,
             EquipmentName = dto.EquipmentName,
             Status = "Available"
         };
 
         var created = await _equipmentRepository.AddAsync(equipment);
         return ToDto(created);
+    }
+
+    private static string GeneratePrefix(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "EQP";
+
+        var cleanName = System.Text.RegularExpressions.Regex.Replace(name.Trim(), @"[^a-zA-Z0-9\s]", "").ToUpperInvariant();
+        var words = cleanName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (words.Length >= 1 && words[0].Length >= 3)
+        {
+            return words[0].Substring(0, 3);
+        }
+        else if (words.Length >= 1 && words[0].Length >= 2)
+        {
+            return words[0];
+        }
+
+        return "EQP";
     }
 
     public async Task<EquipmentDto?> UpdateEquipmentAsync(int id, UpdateEquipmentDto dto)
