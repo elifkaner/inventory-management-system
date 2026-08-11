@@ -874,6 +874,7 @@ export default function UrunEnvanterSayfasi() {
                                                     error={!!errors.brandId}
                                                     placeholder="Marka Seçiniz"
                                                     disabled={entryMode === 'existing'}
+                                                    direction="up"
                                                 />
                                             </div>
                                             <div>
@@ -885,6 +886,7 @@ export default function UrunEnvanterSayfasi() {
                                                     error={!!errors.modelId}
                                                     placeholder="Model Seçiniz"
                                                     disabled={entryMode === 'existing'}
+                                                    direction="up"
                                                 />
                                             </div>
                                         </div>
