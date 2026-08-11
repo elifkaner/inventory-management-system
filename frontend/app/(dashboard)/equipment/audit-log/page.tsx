@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { API_BASE_URL, authFetch } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
 import Pagination from '@/app/ui/pagination';
+import SearchableSelect from '@/app/ui/searchable-select';
 import { formatNoOrphans } from '@/app/lib/utils';
 
 type TransactionFormData = {
@@ -23,6 +24,7 @@ export default function EquipmentAuditLogPage() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [codeSearch, setCodeSearch] = useState('');
   
   // Filters
   const [filterEquipmentId, setFilterEquipmentId] = useState<string>('');
@@ -33,7 +35,7 @@ export default function EquipmentAuditLogPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<TransactionFormData>();
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TransactionFormData>();
   const [toast, setToast] = useState<{isOpen: boolean, message: string, type: 'success' | 'error' | 'info'}>({isOpen: false, message: '', type: 'info'});
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => setToast({isOpen: true, message, type});
@@ -45,8 +47,18 @@ export default function EquipmentAuditLogPage() {
       // Build query string
       const params = new URLSearchParams();
       if (filterEquipmentId) params.append('equipmentId', filterEquipmentId);
-      if (fromDate) params.append('fromDate', fromDate);
-      if (toDate) params.append('toDate', toDate);
+      if (fromDate) {
+        const startDate = new Date(fromDate + 'T00:00:00');
+        if (!isNaN(startDate.getTime())) {
+          params.append('fromDate', startDate.toISOString());
+        }
+      }
+      if (toDate) {
+        const endDate = new Date(toDate + 'T23:59:59.999');
+        if (!isNaN(endDate.getTime())) {
+          params.append('toDate', endDate.toISOString());
+        }
+      }
 
       const res = await authFetch(`${API_BASE_URL}/api/EquipmentTransaction?${params.toString()}`);
       if (res.ok) {
@@ -83,7 +95,62 @@ export default function EquipmentAuditLogPage() {
     setCurrentPage(1); // Reset to first page when filters change
   }, [filterEquipmentId, fromDate, toDate]);
 
+  const equipmentOptions = useMemo(() => {
+    return equipmentList.map((eq: any) => ({
+      value: String(eq.id),
+      label: `[${eq.equipmentCode || 'KODSUZ'}] ${eq.equipmentName}`
+    }));
+  }, [equipmentList]);
+
+  const employeeOptions = useMemo(() => {
+    const namesSet = new Set<string>();
+
+    equipmentList.forEach(eq => {
+      if (eq.assignedEmployeeName && eq.assignedEmployeeName.trim()) {
+        namesSet.add(eq.assignedEmployeeName.trim());
+      }
+    });
+
+    transactions.forEach(t => {
+      if (t.employeeName && t.employeeName.trim()) {
+        namesSet.add(t.employeeName.trim());
+      }
+    });
+
+    const defaultNames = ["Ahmet Yılmaz", "Ayşe Demir", "Mehmet Kaya", "Zeynep Şahin", "Emir Kırım", "Ali Öztürk", "Fatma Yıldız", "Canan Tekin"];
+    defaultNames.forEach(n => namesSet.add(n));
+
+    return Array.from(namesSet).map(name => ({
+      value: name,
+      label: name
+    }));
+  }, [equipmentList, transactions]);
+
+  const selectedEquipmentId = watch('equipmentId');
+  const selectedEquipment = useMemo(() => {
+    return equipmentList.find(e => String(e.id) === String(selectedEquipmentId));
+  }, [equipmentList, selectedEquipmentId]);
+
+  const handleCodeSearchChange = (val: string) => {
+    setCodeSearch(val);
+    if (!val.trim()) return;
+    
+    const cleanVal = val.trim().toLowerCase();
+    
+    // 1. Koda göre tam veya kısmi eşleşme
+    const codeMatch = equipmentList.find(eq => (eq.equipmentCode || '').toLowerCase().includes(cleanVal));
+    // 2. İsme göre tam veya kısmi eşleşme
+    const nameMatch = equipmentList.find(eq => (eq.equipmentName || '').toLowerCase().includes(cleanVal));
+    
+    const match = codeMatch || nameMatch;
+
+    if (match) {
+      setValue('equipmentId', match.id, { shouldValidate: true });
+    }
+  };
+
   const openModal = () => {
+    setCodeSearch('');
     reset({ equipmentId: 0, employeeName: '', type: 'CheckOut', condition: 'Working', notes: '' });
     setIsModalOpen(true);
   };
@@ -316,76 +383,126 @@ export default function EquipmentAuditLogPage() {
 
       {/* Add Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transition-colors">
-            <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
-              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Yeni İşlem Kaydı Ekle</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col overflow-visible transition-colors my-auto">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 shrink-0 rounded-t-3xl">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-brand-primary"></span>
+                Yeni İşlem Kaydı Ekle
+              </h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <form onSubmit={handleSubmit(handleSave)} className="p-8 space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ekipman Seçiniz *</label>
-                <select
-                  {...register("equipmentId", { required: true, min: 1 })}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                >
-                    <option value="0" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Seçim Yapın...</option>
-                    {equipmentList.map(eq => (
-                        <option key={eq.id} value={eq.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{eq.equipmentCode} - {eq.equipmentName}</option>
-                    ))}
-                </select>
-                {errors.equipmentId && <p className="text-xs text-rose-500 mt-1">Ekipman seçimi zorunludur.</p>}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Personel Adı *</label>
-                <input
-                  type="text"
-                  {...register("employeeName", { required: true })}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                  placeholder="Zimmeti alan veya teslim eden..."
-                />
+
+            {/* Modal Form */}
+            <form onSubmit={handleSubmit(handleSave)} className="flex flex-col flex-1 overflow-visible">
+              <div className="p-6 flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-visible">
+                
+                {/* Sol Sütun: Ekipman Seçimi & Personel */}
+                <div className="space-y-4">
+                  {/* Cihaz Kodu ile Hızlı Arama & Seçim */}
+                  <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        Cihaz Kodu veya Adı ile Hızlı Ara / Tara
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={codeSearch}
+                          onChange={(e) => handleCodeSearchChange(e.target.value)}
+                          placeholder="Örn: EQP-001 veya MacBook (Yazınca otomatik seçer)"
+                          className="w-full pl-9 pr-4 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm font-medium"
+                        />
+                        <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    <SearchableSelect
+                      label="VEYA Listeden Arayarak Ekipman Seçiniz *"
+                      name="equipmentId"
+                      options={equipmentOptions}
+                      register={register}
+                      setValue={setValue}
+                      watch={watch}
+                      error={!!errors.equipmentId || (selectedEquipmentId === 0 || !selectedEquipmentId)}
+                      errorMessage="Ekipman seçimi zorunludur."
+                      placeholder="Ekipman kodu veya adı yazarak arayın..."
+                    />
+
+                    {selectedEquipment && (
+                      <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 p-2.5 rounded-xl text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                        <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="truncate">
+                          Seçildi: <strong className="font-bold text-emerald-900 dark:text-emerald-200">{selectedEquipment.equipmentName}</strong> (<code className="font-mono bg-emerald-100 dark:bg-emerald-900/60 px-1 py-0.5 rounded">{selectedEquipment.equipmentCode}</code>)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <SearchableSelect
+                    label="Personel Adı *"
+                    name="employeeName"
+                    options={employeeOptions}
+                    register={register}
+                    setValue={setValue}
+                    watch={watch}
+                    error={!!errors.employeeName}
+                    errorMessage="Personel adı zorunludur."
+                    placeholder="Personel seçin veya yazarak yeni ekleyin..."
+                    allowCustom={true}
+                  />
+                </div>
+
+                {/* Sağ Sütun: İşlem Tipi, Durum & Not */}
+                <div className="space-y-4 flex flex-col justify-between">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">İşlem Tipi *</label>
+                      <select
+                        {...register("type", { required: true })}
+                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm cursor-pointer"
+                      >
+                          <option value="CheckOut" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Zimmet Verildi</option>
+                          <option value="CheckIn" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Geri Alındı</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fiziksel Durum *</label>
+                      <select
+                        {...register("condition", { required: true })}
+                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm cursor-pointer"
+                      >
+                          <option value="Working" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Sorunsuz / Çalışıyor</option>
+                          <option value="Damaged" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Hasarlı</option>
+                          <option value="NeedsRepair" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Bakım Gerekiyor</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 flex flex-col">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Not / Açıklama</label>
+                    <textarea
+                      {...register("notes")}
+                      rows={5}
+                      className="w-full p-4 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary resize-none text-sm flex-1"
+                      placeholder="Ekstra detaylar veya teslim notları..."
+                    />
+                  </div>
+                </div>
+
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">İşlem Tipi *</label>
-                    <select
-                      {...register("type", { required: true })}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                    >
-                        <option value="CheckOut" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Zimmet Verildi</option>
-                        <option value="CheckIn" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Geri Alındı</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fiziksel Durum *</label>
-                    <select
-                      {...register("condition", { required: true })}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                    >
-                        <option value="Working" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Sorunsuz / Çalışıyor</option>
-                        <option value="Damaged" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Hasarlı</option>
-                        <option value="NeedsRepair" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Bakım Gerekiyor</option>
-                    </select>
-                  </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Not / Açıklama</label>
-                <textarea
-                  {...register("notes")}
-                  rows={3}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary resize-none"
-                  placeholder="Ekstra detaylar..."
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">İptal</button>
-                <button type="submit" disabled={isAdding} className="px-5 py-2.5 text-sm font-bold text-white bg-brand-primary rounded-full hover:bg-brand-primaryHover disabled:opacity-50 transition-colors shadow-md shadow-brand-primary/30">
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50/50 dark:bg-slate-900/50 shrink-0 rounded-b-3xl">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">İptal</button>
+                <button type="submit" disabled={isAdding} className="px-5 py-2.5 text-sm font-bold text-white bg-brand-primary rounded-xl hover:bg-brand-primaryHover disabled:opacity-50 transition-colors shadow-md shadow-brand-primary/30">
                   {isAdding ? 'Kaydediliyor...' : 'Kaydet'}
                 </button>
               </div>

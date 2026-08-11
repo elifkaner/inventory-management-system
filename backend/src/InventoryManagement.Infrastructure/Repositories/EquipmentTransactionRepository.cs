@@ -28,12 +28,19 @@ public class EquipmentTransactionRepository : IEquipmentTransactionRepository
 
         if (fromDate.HasValue)
         {
-            query = query.Where(t => t.Date >= fromDate.Value);
+            var fromDateUtc = fromDate.Value.Kind == DateTimeKind.Utc
+                ? fromDate.Value
+                : DateTime.SpecifyKind(fromDate.Value, DateTimeKind.Utc);
+            query = query.Where(t => t.Date >= fromDateUtc);
         }
 
         if (toDate.HasValue)
         {
-            query = query.Where(t => t.Date <= toDate.Value);
+            var toDateVal = toDate.Value.TimeOfDay == TimeSpan.Zero ? toDate.Value.Date.AddDays(1).AddTicks(-1) : toDate.Value;
+            var toDateUtc = toDateVal.Kind == DateTimeKind.Utc
+                ? toDateVal
+                : DateTime.SpecifyKind(toDateVal, DateTimeKind.Utc);
+            query = query.Where(t => t.Date <= toDateUtc);
         }
 
         return await query.OrderByDescending(t => t.Date).ToListAsync();
