@@ -58,6 +58,7 @@ export default function UrunEnvanterSayfasi() {
     const [isSubmittingOrder, setIsSubmittingOrder] = useState<{ [key: number]: boolean }>({});
     const [pendingOrders, setPendingOrders] = useState<any[]>([]);
     const [criticalProducts, setCriticalProducts] = useState<any[]>([]);
+    const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
     const [isFetchingCritical, setIsFetchingCritical] = useState(false);
     
     // Ürün Ekleme Modu: 'new' (Sıfırdan) veya 'existing' (Var olanı kopyala/doldur)
@@ -283,6 +284,11 @@ export default function UrunEnvanterSayfasi() {
                     const nextSku = `${skuPrefix}${nextNum.toString().padStart(3, '0')}`;
                     // Eğer kullanıcı kendisi bir şey yazmamışsa veya zaten otomatik doldurulmuş bir şey varsa değiştir
                     setValue("skuCode", nextSku, { shouldValidate: true });
+                    
+                    // Sadece rakamlardan oluşan otomatik barkod üret (13 hane, 869 ön ekiyle)
+                    const randomDigits = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+                    const nextBarcode = `869${randomDigits}`;
+                    setValue("barcode", nextBarcode, { shouldValidate: true });
                 }
             } catch (error) {
                 console.error("SKU generate hatası:", error);
@@ -557,11 +563,19 @@ export default function UrunEnvanterSayfasi() {
                                 </div>
                                 <button 
                                     onClick={() => {
-                                        const newPending = pendingOrders.filter(p => p.id !== order.id);
-                                        updatePendingOrders(newPending);
+                                        setConfirmModal({
+                                            isOpen: true,
+                                            title: 'Siparişi İptal Et',
+                                            message: 'Bu siparişi iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+                                            onConfirm: () => {
+                                                const newPending = pendingOrders.filter(p => p.id !== order.id);
+                                                updatePendingOrders(newPending);
+                                                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                            }
+                                        });
                                     }}
                                     className="ml-2 text-slate-400 hover:text-rose-500 transition-colors"
-                                    title="Listeden Kaldır"
+                                    title="Siparişi İptal Et"
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
@@ -821,7 +835,7 @@ export default function UrunEnvanterSayfasi() {
                                                 <input type="text" {...register("skuCode", { required: true })} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm font-mono ${errors.skuCode ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600'}`} />
                                                 {errors.skuCode && <ErrorMessage />}
                                                 {!watch("id") && entryMode === 'new' && (
-                                                    <p className="text-[10px] text-slate-400 mt-1 italic">Kategori seçilince otomatik atanacaktır.</p>
+                                                    <p className="text-[10px] text-slate-400 mt-1 italic">Kategori seçilince SKU ve Barkod otomatik atanacaktır.</p>
                                                 )}
                                             </div>
                                             <div>
@@ -913,6 +927,28 @@ export default function UrunEnvanterSayfasi() {
                     </div>
                 </div>
             )}
+
+            {/* Confirm Modal */}
+            {confirmModal.isOpen && (
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden text-center p-8 border border-slate-100 dark:border-slate-700">
+                        <div className="mx-auto w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mb-6">
+                            <svg className="w-10 h-10 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-3">{confirmModal.title}</h2>
+                        <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
+                            {confirmModal.message}
+                        </p>
+                        <div className="flex gap-4 w-full">
+                            <button onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))} className="flex-1 px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-colors shadow-sm">İptal</button>
+                            <button onClick={confirmModal.onConfirm} className="flex-1 px-5 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-lg shadow-rose-500/30 transition-colors">Evet, İptal Et</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Sipariş Modal */}
             {isOrderModalOpen && (
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
