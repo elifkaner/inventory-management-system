@@ -60,7 +60,7 @@ const menuItems = [
         ),
         subLinks: [
             { name: 'Ekipman Paneli', href: '/equipment' },
-            { name: 'Teslim Logları', href: '/equipment/audit-log' }
+            { name: 'Ekipman Logları', href: '/equipment/audit-log' }
         ]
     },
     {
