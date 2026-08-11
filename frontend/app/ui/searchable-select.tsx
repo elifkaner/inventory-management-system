@@ -20,11 +20,12 @@ interface SearchableSelectProps {
     direction?: 'up' | 'down';
     hideSearch?: boolean;
     allowCustom?: boolean;
+    disabled?: boolean;
 }
 
 export default function SearchableSelect({
     label, name, options, register, setValue, watch, error,
-    errorMessage = "Bu alan zorunludur.", placeholder = "Seçiniz...", direction = 'down', hideSearch = false, allowCustom = false
+    errorMessage = "Bu alan zorunludur.", placeholder = "Seçiniz...", direction = 'down', hideSearch = false, allowCustom = false, disabled = false
 }: SearchableSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -68,10 +69,10 @@ export default function SearchableSelect({
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>
             <input type="hidden" {...register(name, { required: true })} />
 
-            <div className="relative">
+            <div className={`relative ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
                 <div
-                    className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 cursor-pointer flex justify-between items-center ${error ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600'}`}
-                    onClick={() => setIsOpen(!isOpen)}
+                    className={`w-full p-2.5 border rounded-lg ${disabled ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900 cursor-pointer'} flex justify-between items-center ${error ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600'}`}
+                    onClick={() => { if (!disabled) setIsOpen(!isOpen); }}
                 >
                     <span className={selectedValue ? 'text-slate-900 dark:text-slate-100 text-sm font-medium' : 'text-slate-500 dark:text-slate-400 text-sm'}>
                         {selectedLabel}

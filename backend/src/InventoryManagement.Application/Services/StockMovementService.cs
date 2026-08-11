@@ -211,6 +211,8 @@ public class StockMovementService : IStockMovementService
             Id = movement.Id,
             ProductId = movement.ProductId,
             ProductName = movement.Product?.ProductName ?? "",
+            BrandName = movement.Product?.Brand?.Name ?? "",
+            ModelName = movement.Product?.Model?.Name ?? "",
             TransactionType = movement.TransactionType,
             TransactionAmounth = movement.TransactionAmounth,
             Quantity = movement.Quantity,

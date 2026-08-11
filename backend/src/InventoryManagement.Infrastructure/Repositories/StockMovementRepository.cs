@@ -20,6 +20,9 @@ public class StockMovementRepository : IStockMovementRepository
     {
         var query = _context.StockMovements
             .Include(s => s.Product)
+                .ThenInclude(p => p.Brand)
+            .Include(s => s.Product)
+                .ThenInclude(p => p.Model)
             .Include(s => s.CreatedByUser)
             .AsQueryable();
 
@@ -65,6 +68,9 @@ public class StockMovementRepository : IStockMovementRepository
     {
         return await _context.StockMovements
             .Include(s => s.Product)
+                .ThenInclude(p => p.Brand)
+            .Include(s => s.Product)
+                .ThenInclude(p => p.Model)
             .Include(s => s.CreatedByUser)
             .FirstOrDefaultAsync(s => s.Id == id);
     }

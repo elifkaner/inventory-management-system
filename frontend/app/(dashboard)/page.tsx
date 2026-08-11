@@ -96,7 +96,7 @@ export default function Dashboard() {
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Düşük Stok Alarmı</p>
+              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Düşük Stok <br/> Alarmı</p>
               <h3 className="text-3xl font-extrabold text-rose-600 dark:text-rose-500">
                 {isLoading ? <span className="text-sm font-medium text-rose-400 animate-pulse">Yükleniyor...</span> : (summary?.criticalStockCount || 0)}
               </h3>
@@ -157,7 +157,7 @@ export default function Dashboard() {
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
               Acil Sipariş Bekleyenler
             </h2>
-            <Link href="/inventory-levels" className="text-sm font-semibold text-brand-primary hover:text-brand-primaryHover transition-colors">Envantere Git</Link>
+            <Link href="/products" className="text-sm font-semibold text-brand-primary hover:text-brand-primaryHover transition-colors">Envantere Git</Link>
           </div>
           <div className="flex-1 overflow-y-auto">
             {isLoading ? (

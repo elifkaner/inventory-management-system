@@ -44,6 +44,7 @@ public class EquipmentRepository : IEquipmentRepository
         equipment.EquipmentName = updatedEquipment.EquipmentName;
         equipment.Status = updatedEquipment.Status;
         equipment.CurrentHolderName = updatedEquipment.CurrentHolderName;
+        equipment.LastMaintenanceDate = updatedEquipment.LastMaintenanceDate;
 
         await _context.SaveChangesAsync();
         return equipment;
@@ -60,5 +61,13 @@ public class EquipmentRepository : IEquipmentRepository
         _context.Remove(equipment);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<Equipment?> SaveDirectAsync(Equipment equipment)
+    {
+        // Entity zaten context tarafından takip ediliyor (GetByIdAsync'ten geldi)
+        // Update() çağrısı zaten takip edilen entity'de tracking conflict'e yol açabilir
+        await _context.SaveChangesAsync();
+        return equipment;
     }
 }

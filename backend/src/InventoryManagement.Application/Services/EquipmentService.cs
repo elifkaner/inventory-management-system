@@ -9,10 +9,12 @@ namespace InventoryManagement.Application.Services;
 public class EquipmentService : IEquipmentService
 {
     private readonly IEquipmentRepository _equipmentRepository;
+    private readonly IEquipmentTransactionRepository _transactionRepository;
 
-    public EquipmentService(IEquipmentRepository equipmentRepository)
+    public EquipmentService(IEquipmentRepository equipmentRepository, IEquipmentTransactionRepository transactionRepository)
     {
         _equipmentRepository = equipmentRepository;
+        _transactionRepository = transactionRepository;
     }
 
     public async Task<List<EquipmentDto>> GetAllEquipmentsAsync()
@@ -63,7 +65,8 @@ public class EquipmentService : IEquipmentService
         {
             EquipmentCode = code,
             EquipmentName = dto.EquipmentName,
-            Status = "Available"
+            Status = "Available",
+            LastMaintenanceDate = dto.LastMaintenanceDate.HasValue ? DateTime.SpecifyKind(dto.LastMaintenanceDate.Value, DateTimeKind.Utc) : null
         };
 
         var created = await _equipmentRepository.AddAsync(equipment);
@@ -95,7 +98,8 @@ public class EquipmentService : IEquipmentService
         {
             EquipmentCode = dto.EquipmentCode,
             EquipmentName = dto.EquipmentName,
-            Status = dto.Status
+            Status = dto.Status,
+            LastMaintenanceDate = dto.LastMaintenanceDate.HasValue ? DateTime.SpecifyKind(dto.LastMaintenanceDate.Value, DateTimeKind.Utc) : null
         };
 
         var updated = await _equipmentRepository.UpdateAsync(id, equipment);
@@ -112,6 +116,66 @@ public class EquipmentService : IEquipmentService
         return deleted;
     }
 
+    public async Task<EquipmentDto?> ProcessServiceRecordAsync(ServiceRecordDto dto)
+    {
+        var existing = await _equipmentRepository.GetByIdAsync(dto.EquipmentId);
+        if (existing == null) return null;
+
+        string transactionType;
+        string notes;
+
+        if (dto.Action == "send")
+        {
+            // Sadece Hurda veya Servis Bekliyor olanlar servise gönderilebilir
+            if (existing.Status != "UnderMaintenance" && existing.Status != "Retired")
+            {
+                throw new InvalidOperationException(
+                    $"Bu cihaz servise gönderilemez. Mevcut durumu: '{existing.Status}'. " +
+                    "Yalnızca 'Servis Bekliyor' veya 'Hurda' durumundaki cihazlar servise gönderilebilir.");
+            }
+
+            existing.Status = "InService";
+            transactionType = "SentToService";
+            notes = $"{existing.EquipmentName} ({existing.EquipmentCode}) servise gönderildi.";
+        }
+        else if (dto.Action == "return")
+        {
+            // Sadece Serviste (InService) olanlar teslim alınabilir
+            if (existing.Status != "InService")
+            {
+                throw new InvalidOperationException(
+                    $"Bu cihaz servisten teslim alınamaz. Mevcut durumu: '{existing.Status}'. " +
+                    "Yalnızca 'Serviste' durumundaki cihazlar teslim alınabilir.");
+            }
+
+            existing.Status = "Available";
+            existing.LastMaintenanceDate = DateTime.UtcNow;
+            transactionType = "ReturnedFromService";
+            var descPart = !string.IsNullOrWhiteSpace(dto.Description) ? $" Yapılan işlem: {dto.Description.Trim()}." : "";
+            notes = $"{existing.EquipmentName} ({existing.EquipmentCode}) servisten teslim alındı. Son bakım tarihi: {DateTime.UtcNow:dd.MM.yyyy}.{descPart}";
+        }
+        else
+        {
+            return null;
+        }
+
+        // Servis kaydı logla
+        var log = new EquipmentTransaction
+        {
+            EquipmentId = existing.Id,
+            EmployeeName = "Servis",
+            Type = transactionType,
+            Condition = "Working",
+            Date = DateTime.UtcNow,
+            Notes = notes,
+            CreatedByUserId = null
+        };
+        await _transactionRepository.AddAsync(log);
+
+        var updated = await _equipmentRepository.SaveDirectAsync(existing);
+        return updated == null ? null : ToDto(updated);
+    }
+
     private static EquipmentDto ToDto(Equipment e)
     {
         return new EquipmentDto
@@ -120,7 +184,8 @@ public class EquipmentService : IEquipmentService
             EquipmentCode = e.EquipmentCode,
             EquipmentName = e.EquipmentName,
             Status = e.Status,
-            CurrentHolderName = e.CurrentHolderName
+            CurrentHolderName = e.CurrentHolderName,
+            LastMaintenanceDate = e.LastMaintenanceDate
         };
     }
 }

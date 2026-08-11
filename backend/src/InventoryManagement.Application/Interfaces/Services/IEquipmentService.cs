@@ -12,4 +12,10 @@ public interface IEquipmentService
     Task<EquipmentDto?> UpdateEquipmentAsync(int id, UpdateEquipmentDto dto);
 
     Task<bool> DeleteEquipmentAsync(int id);
+
+    /// <summary>
+    /// action="send"   → durumu InService yapar
+    /// action="return" → durumu Available, LastMaintenanceDate=UtcNow yapar
+    /// </summary>
+    Task<EquipmentDto?> ProcessServiceRecordAsync(ServiceRecordDto dto);
 }

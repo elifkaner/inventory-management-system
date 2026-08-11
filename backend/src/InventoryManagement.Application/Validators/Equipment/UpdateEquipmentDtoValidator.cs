@@ -5,7 +5,7 @@ namespace InventoryManagement.Application.Validators.Equipment;
 
 public class UpdateEquipmentDtoValidator : AbstractValidator<UpdateEquipmentDto>
 {
-    private static readonly string[] ValidStatuses = { "Available", "InUse", "UnderMaintenance", "Retired" };
+    private static readonly string[] ValidStatuses = { "Available", "InUse", "UnderMaintenance", "Retired", "InService" };
 
     public UpdateEquipmentDtoValidator()
     {

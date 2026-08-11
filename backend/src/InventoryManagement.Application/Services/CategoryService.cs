@@ -51,6 +51,12 @@ public class CategoryService : ICategoryService
     // Yeni kategori oluşturur
     public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto dto)
     {
+        var allCategories = await _categoryRepository.GetAllAsync();
+        if (allCategories.Any(c => c.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR")) == dto.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR"))))
+        {
+            throw new InvalidOperationException($"Girmeye çalıştığınız '{dto.Name}' zaten listede mevcuttur.");
+        }
+
         var category = new Category { Name = dto.Name };
 
         var created = await _categoryRepository.AddAsync(category);
@@ -62,6 +68,12 @@ public class CategoryService : ICategoryService
     // Kategori güncelleme
     public async Task<CategoryDto?> UpdateCategoryAsync(int id, UpdateCategoryDto dto)
     {
+        var allCategories = await _categoryRepository.GetAllAsync();
+        if (allCategories.Any(c => c.Id != id && c.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR")) == dto.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR"))))
+        {
+            throw new InvalidOperationException($"Girmeye çalıştığınız '{dto.Name}' zaten listede mevcuttur.");
+        }
+
         var category = await _categoryRepository.UpdateAsync(id, dto.Name);
         if (category != null ) 
         {

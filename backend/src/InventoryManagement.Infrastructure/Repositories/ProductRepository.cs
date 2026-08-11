@@ -16,7 +16,7 @@ public class ProductRepository : IProductRepository
         _context = context;
     }
 
-    public async Task<PagedResult<Product>> GetAllAsync(string? search = null, int? categoryId = null, bool? isActive = null, int? page = null, int? pageSize = null)
+    public async Task<PagedResult<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? brandId = null, int? modelId = null, int? supplierId = null, bool? isActive = null, int? page = null, int? pageSize = null)
     {
         var query = _context.Products
             .Include(p => p.Supplier)
@@ -46,6 +46,21 @@ public class ProductRepository : IProductRepository
         if (categoryId.HasValue && categoryId.Value > 0)
         {
             query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
+
+        if (brandId.HasValue && brandId.Value > 0)
+        {
+            query = query.Where(p => p.BrandId == brandId.Value);
+        }
+
+        if (modelId.HasValue && modelId.Value > 0)
+        {
+            query = query.Where(p => p.ModelId == modelId.Value);
+        }
+
+        if (supplierId.HasValue && supplierId.Value > 0)
+        {
+            query = query.Where(p => p.SupplierId == supplierId.Value);
         }
         var totalRecord = await query.CountAsync();
 

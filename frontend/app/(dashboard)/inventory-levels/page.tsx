@@ -8,8 +8,17 @@ import { formatNoOrphans } from '@/app/lib/utils';
 export default function InventoryLevelsPage() {
     const [products, setProducts] = useState<any[]>([]);
     const [suppliers, setSuppliers] = useState<any[]>([]);
+    const [brands, setBrands] = useState<any[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [supplierFilter, setSupplierFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [brandFilter, setBrandFilter] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("");
+    const [corridorFilter, setCorridorFilter] = useState("");
+    const [shelfFilter, setShelfFilter] = useState("");
+    const [sectionFilter, setSectionFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
@@ -17,9 +26,11 @@ export default function InventoryLevelsPage() {
         const fetchData = async () => {
             try {
                 setIsLoading(true);
-                const [prodRes, supRes] = await Promise.all([
+                const [prodRes, supRes, brandRes, catRes] = await Promise.all([
                     authFetch(`${API_BASE_URL}/api/Product?pageSize=10000`),
-                    authFetch(`${API_BASE_URL}/api/Supplier`)
+                    authFetch(`${API_BASE_URL}/api/Supplier`),
+                    authFetch(`${API_BASE_URL}/api/Brand`),
+                    authFetch(`${API_BASE_URL}/api/Category`)
                 ]);
 
                 if (prodRes.ok) {
@@ -29,6 +40,12 @@ export default function InventoryLevelsPage() {
                 if (supRes.ok) {
                     setSuppliers(await supRes.json());
                 }
+                if (brandRes.ok) {
+                    setBrands(await brandRes.json());
+                }
+                if (catRes.ok) {
+                    setCategories(await catRes.json());
+                }
             } catch (error) {
                 console.error("Veriler yüklenemedi:", error);
             } finally {
@@ -37,15 +54,6 @@ export default function InventoryLevelsPage() {
         };
         fetchData();
     }, []);
-
-    // SKU Araması Eklendi
-    const filteredProducts = products.filter(prod =>
-        prod.productName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prod.skuCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prod.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     const parseLocation = (locationString: string) => {
         if (!locationString) return { corridor: "-", shelf: "-", section: "-" };
@@ -57,34 +65,124 @@ export default function InventoryLevelsPage() {
         };
     };
 
-    const getSupplierName = (supplierId: number) => {
-        if (!supplierId) return "Bilinmiyor";
-        const sup = suppliers.find(s => s.id === supplierId);
-        return sup ? sup.companyName : "Bilinmiyor";
-    };
+    // Detaylı Filtreleme Mantığı
+    const filteredProducts = products.filter(prod => {
+        // 1. Genel Arama (İsim, SKU, Barkod)
+        const matchesSearch = prod.productName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              prod.skuCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              prod.barcode?.toLowerCase().includes(searchTerm.toLowerCase());
+                              
+        // 2. Tedarikçi, Marka ve Kategori Filtresi
+        const matchesSupplier = supplierFilter ? prod.supplier === supplierFilter : true;
+        const matchesBrand = brandFilter ? prod.brandName === brandFilter : true;
+        const matchesCategory = categoryFilter ? prod.category === categoryFilter : true;
+        
+        // 3. Durum Filtresi
+        const isCritical = prod.stockQuantity <= 25;
+        const isOutOfStock = prod.stockQuantity === 0;
+        const status = isOutOfStock ? 'Tükendi' : (!isCritical ? 'Yeterli' : 'Kritik');
+        const matchesStatus = statusFilter ? status === statusFilter : true;
+        
+        // 4. Konum Filtreleri (Koridor, Raf, Bölüm)
+        const loc = parseLocation(prod.location);
+        const matchesCorridor = corridorFilter ? loc.corridor.toLowerCase().includes(corridorFilter.toLowerCase()) : true;
+        const matchesShelf = shelfFilter ? loc.shelf.toLowerCase().includes(shelfFilter.toLowerCase()) : true;
+        const matchesSection = sectionFilter ? loc.section.toLowerCase().includes(sectionFilter.toLowerCase()) : true;
+        
+        return matchesSearch && matchesSupplier && matchesBrand && matchesCategory && matchesStatus && matchesCorridor && matchesShelf && matchesSection;
+    });
+
+    const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     return (
-        <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors">
+        <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors relative">
+            
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Envanter Miktarı</h1>
+                    <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Depo Konumu</h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Fiziksel depo konumlarına ve tedarikçilere göre stok durumunuzu anlık takip edin.</p>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center transition-colors">
-                <div className="relative w-full md:w-[28rem]">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6 transition-colors space-y-4">
+                <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+                    <div className="relative w-full md:w-[28rem]">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Ürün adı, SKU veya barkoda göre ara..."
+                            value={searchTerm}
+                            onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
+                            className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
+                        />
                     </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => {setCategoryFilter(e.target.value); setCurrentPage(1);}}
+                        className="w-full px-3 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
+                    >
+                        <option value="">Tüm Kategoriler</option>
+                        {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    </select>
+
+                    <select
+                        value={brandFilter}
+                        onChange={(e) => {setBrandFilter(e.target.value); setCurrentPage(1);}}
+                        className="w-full px-3 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
+                    >
+                        <option value="">Tüm Markalar</option>
+                        {brands.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
+                    </select>
+
+                    <select
+                        value={supplierFilter}
+                        onChange={(e) => {setSupplierFilter(e.target.value); setCurrentPage(1);}}
+                        className="w-full px-3 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
+                    >
+                        <option value="">Tüm Tedarikçiler</option>
+                        {suppliers.map(s => <option key={s.id} value={s.companyName}>{s.companyName}</option>)}
+                    </select>
+
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => {setStatusFilter(e.target.value); setCurrentPage(1);}}
+                        className="w-full px-3 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
+                    >
+                        <option value="">Tüm Durumlar</option>
+                        <option value="Yeterli">Yeterli</option>
+                        <option value="Kritik">Kritik</option>
+                        <option value="Tükendi">Tükendi</option>
+                    </select>
+
                     <input
                         type="text"
-                        placeholder="Ürün adı, SKU veya barkoda göre ara..."
-                        value={searchTerm}
-                        onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
-                        className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
+                        placeholder="Koridor (Örn: A)"
+                        value={corridorFilter}
+                        onChange={(e) => {setCorridorFilter(e.target.value); setCurrentPage(1);}}
+                        className="w-full px-3 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
+                    />
+
+                    <input
+                        type="text"
+                        placeholder="Raf (Örn: 1)"
+                        value={shelfFilter}
+                        onChange={(e) => {setShelfFilter(e.target.value); setCurrentPage(1);}}
+                        className="w-full px-3 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
+                    />
+
+                    <input
+                        type="text"
+                        placeholder="Bölüm (Örn: C)"
+                        value={sectionFilter}
+                        onChange={(e) => {setSectionFilter(e.target.value); setCurrentPage(1);}}
+                        className="w-full px-3 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary text-sm dark:text-slate-200"
                     />
                 </div>
             </div>
@@ -93,15 +191,16 @@ export default function InventoryLevelsPage() {
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
                         <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
-                            <th className="p-4 pl-6 text-center">Ürün Adı</th>
+                            <th className="p-4 pl-6 text-center w-1 whitespace-nowrap">Durum</th>
+                            <th className="p-4 text-center">Ürün Adı</th>
                             <th className="p-4 text-center">SKU Kodu</th>
-                            <th className="p-4 text-center">Barkod</th>
                             <th className="p-4 text-center">Stok Sayısı</th>
+                            <th className="p-4 text-center">Kategori</th>
+                            <th className="p-4 text-center">Marka</th>
                             <th className="p-4 text-center">Koridor</th>
                             <th className="p-4 text-center">Raf</th>
                             <th className="p-4 text-center">Bölüm</th>
-                            <th className="p-4 text-center">Tedarikçi</th>
-                            <th className="p-4 pr-6 text-center">Durum</th>
+                            <th className="p-4 pr-6 text-center">Tedarikçi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -111,22 +210,22 @@ export default function InventoryLevelsPage() {
                             <tr><td colSpan={9} className="p-8 text-center text-slate-500 dark:text-slate-400">Kayıt bulunamadı.</td></tr>
                         ) : (
                             paginatedProducts.map((prod) => {
-                                const isCritical = prod.stockQuantity <= 10;
+                                const isCritical = prod.stockQuantity <= 25;
                                 const isOutOfStock = prod.stockQuantity === 0;
                                 const loc = parseLocation(prod.location);
 
                                 return (
                                     <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(prod.productName)}</td>
+                                        <td className="p-4 pl-6 text-center w-1 whitespace-nowrap">
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${isOutOfStock ? 'bg-brand-surfaceDark dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600' : !isCritical ? 'bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800'}`}>
+                                                {isOutOfStock ? 'Tükendi' : !isCritical ? 'Yeterli' : 'Kritik'}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(prod.productName)}</td>
 
                                         {/* SKU Kodu Sütunu */}
                                         <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 text-center">
                                             <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 whitespace-nowrap">{prod.skuCode || '-'}</span>
-                                        </td>
-
-                                        {/* Barkod Sütunu */}
-                                        <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 text-center">
-                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 whitespace-nowrap">{prod.barcode || '-'}</span>
                                         </td>
 
                                         <td className="p-4 text-center">
@@ -134,14 +233,13 @@ export default function InventoryLevelsPage() {
                                                 {prod.stockQuantity}
                                             </span>
                                         </td>
+                                        <td className="p-4 text-center text-slate-600 dark:text-slate-400">{prod.category || "-"}</td>
+                                        <td className="p-4 text-center text-slate-600 dark:text-slate-400 font-semibold">{prod.brandName || "-"}</td>
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.corridor}</td>
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.shelf}</td>
                                         <td className="p-4 text-center text-slate-600 dark:text-slate-400">{loc.section}</td>
-                                        <td className="p-4 text-slate-600 dark:text-slate-400 text-center">{getSupplierName(prod.supplierId)}</td>
-                                        <td className="p-4 pr-6 text-center">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${isOutOfStock ? 'bg-brand-surfaceDark dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600' : !isCritical ? 'bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800'}`}>
-                                                {isOutOfStock ? 'Tükendi' : !isCritical ? 'Yeterli' : 'Kritik'}
-                                            </span>
+                                        <td className="p-4 pr-6 text-slate-600 dark:text-slate-400 text-center whitespace-normal break-normal max-w-[120px]">
+                                            {prod.supplier || "Bilinmiyor"}
                                         </td>
                                     </tr>
                                 );
@@ -164,6 +262,7 @@ export default function InventoryLevelsPage() {
                     />
                 </div>
             )}
+
         </div>
     );
 }

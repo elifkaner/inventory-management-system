@@ -51,6 +51,12 @@ public class ModelService : IModelService
 
     public async Task<ModelDto> CreateModelAsync(CreateModelDto dto)
     {
+        var allModels = await _modelRepository.GetAllAsync(dto.BrandId);
+        if (allModels.Any(m => m.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR")) == dto.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR"))))
+        {
+            throw new InvalidOperationException($"Girmeye çalıştığınız '{dto.Name}' zaten listede mevcuttur.");
+        }
+
         var model = new ModelEntity { Name = dto.Name, BrandId = dto.BrandId };
 
         var created = await _modelRepository.AddAsync(model);
@@ -64,6 +70,12 @@ public class ModelService : IModelService
 
     public async Task<ModelDto?> UpdateModelAsync(int id, UpdateModelDto dto)
     {
+        var allModels = await _modelRepository.GetAllAsync(dto.BrandId);
+        if (allModels.Any(m => m.Id != id && m.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR")) == dto.Name.Trim().ToLower(new System.Globalization.CultureInfo("tr-TR"))))
+        {
+            throw new InvalidOperationException($"Girmeye çalıştığınız '{dto.Name}' zaten listede mevcuttur.");
+        }
+
         var model = await _modelRepository.UpdateAsync(id, dto.Name, dto.BrandId);
         if( model != null) 
         {

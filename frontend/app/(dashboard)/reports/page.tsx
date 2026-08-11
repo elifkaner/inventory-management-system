@@ -9,7 +9,6 @@ import {
     AreaChart, Area
 } from 'recharts';
 
-
 const groupData = (data: any[], nameKey: string, valueKey: string, maxItems = 4) => {
     if (!data || data.length <= maxItems) return data;
     const sorted = [...data].sort((a, b) => b[valueKey] - a[valueKey]);
@@ -24,7 +23,6 @@ const groupData = (data: any[], nameKey: string, valueKey: string, maxItems = 4)
     }
     return top;
 };
-
 
 const renderCustomLegend = (props: any) => {
     const { payload } = props;
@@ -44,7 +42,6 @@ const renderPieLabel = ({ name, percent }: any) => {
     if (percent < 0.03) return null;
     return `${name} (${(percent * 100).toFixed(0)}%)`;
 };
-
 
 const renderPieLegend = (props: any) => {
     const { payload } = props;
@@ -69,8 +66,12 @@ export default function AnalizVeRaporlamaSayfasi() {
     const [topProducts, setTopProducts] = useState([]);
     const [supplierData, setSupplierData] = useState([]);
 
-    // Renk paletimiz (Tamamen ayırt edilebilir canlı tonlar)
-    const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6', '#F97316', '#6366F1'];
+    // Dinamik Ayarlar
+    const [monthsBack, setMonthsBack] = useState<number>(6);
+    const [topN, setTopN] = useState<number>(5);
+
+    // Premium Renk Paletleri
+    const COLORS = ['#5C6BC0', '#F57C00', '#B39DDB', '#10B981', '#F43F5E', '#3B82F6', '#8B5CF6', '#14B8A6'];
 
     const fetchReports = useCallback(async () => {
         try {
@@ -79,8 +80,8 @@ export default function AnalizVeRaporlamaSayfasi() {
             
             const [catRes, trendRes, prodRes, supRes] = await Promise.all([
                 authFetch(`${API_BASE_URL}/api/Reports/category-distribution`),
-                authFetch(`${API_BASE_URL}/api/Reports/monthly-movement-trend?monthsBack=6`),
-                authFetch(`${API_BASE_URL}/api/Reports/top-moved-products?topN=5`),
+                authFetch(`${API_BASE_URL}/api/Reports/monthly-movement-trend?monthsBack=${monthsBack}`),
+                authFetch(`${API_BASE_URL}/api/Reports/top-moved-products?topN=${topN}`),
                 authFetch(`${API_BASE_URL}/api/Reports/supplier-distribution`)
             ]);
 
@@ -95,24 +96,38 @@ export default function AnalizVeRaporlamaSayfasi() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [monthsBack, topN]);
 
     useEffect(() => {
         fetchReports();
     }, [fetchReports]);
 
-    if (isLoading) {
-        return (
-            <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen flex justify-center items-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
-            </div>
-        );
-    }
+    const handleExport = async (endpoint: string, filename: string) => {
+        try {
+            const res = await authFetch(`${API_BASE_URL}${endpoint}`);
+            if (res.ok) {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert("Dışa aktarma başarısız oldu.");
+            }
+        } catch (error) {
+            console.error("Export error", error);
+            alert("Dışa aktarma sırasında hata oluştu.");
+        }
+    };
 
     if (error) {
         return (
             <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen">
-                <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-xl flex flex-col items-center">
+                <div className="bg-white/80 backdrop-blur-xl dark:bg-slate-800 p-8 rounded-3xl shadow-xl border border-brand-primary/10 flex flex-col items-center">
                     <ErrorMessage message={error} />
                     <button onClick={fetchReports} className="mt-4 text-brand-primary font-bold">Tekrar Dene</button>
                 </div>
@@ -123,7 +138,6 @@ export default function AnalizVeRaporlamaSayfasi() {
     const groupedCategoryData = groupData(categoryData, 'categoryName', 'totalProduct', 4);
     const groupedSupplierData = groupData(supplierData, 'supplierName', 'totalProduct', 4);
 
-    // Harita: trendData => month name
     const formattedTrendData = trendData.map((t: any) => ({
         name: `${t.month}/${t.year}`,
         gelen: t.totalIn,
@@ -131,10 +145,65 @@ export default function AnalizVeRaporlamaSayfasi() {
     }));
 
     return (
-        <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200">
-            <div className="mb-8">
-                <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Analiz ve Raporlama</h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Sistemdeki stok hareketlerini ve envanter dağılımını görselleştirilmiş grafiklerle inceleyin.</p>
+        <div className="p-4 md:p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200">
+            
+            {/* Üst Kısım: Başlık ve Export Center */}
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary tracking-tight">Analiz ve Raporlama</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm max-w-2xl">Envanter performansınızı gelişmiş, dinamik grafiklerle izleyin ve raporları dilediğiniz formda dışa aktarın.</p>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                    <button onClick={() => handleExport('/api/Product/export', 'urun-envanteri.csv')} className="bg-white/80 backdrop-blur-md hover:bg-brand-primary hover:text-white dark:bg-slate-800 dark:hover:bg-brand-primary text-brand-primary px-4 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-brand-primary/10 border border-brand-primary/20 transition-all flex items-center gap-2 group">
+                        <svg className="w-5 h-5 text-brand-primary group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Ürün Listesi
+                    </button>
+                    <button onClick={() => handleExport('/api/StockMovement/export', 'stok-hareketleri.csv')} className="bg-white/80 backdrop-blur-md hover:bg-brand-accent hover:text-white dark:bg-slate-800 dark:hover:bg-brand-accent text-brand-accent px-4 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-brand-accent/10 border border-brand-accent/20 transition-all flex items-center gap-2 group">
+                        <svg className="w-5 h-5 text-brand-accent group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        Stok Hareketleri
+                    </button>
+                    <button onClick={() => handleExport('/api/AuditLog/export', 'sistem-loglari.csv')} className="bg-white/80 backdrop-blur-md hover:bg-slate-700 hover:text-white dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-slate-200 dark:shadow-slate-900 border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-2 group">
+                        <svg className="w-5 h-5 text-slate-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        Sistem Logları
+                    </button>
+                </div>
+            </div>
+
+            {/* Dinamik Ayar (Filtre) Barı */}
+            <div className="bg-white/90 backdrop-blur-xl dark:bg-slate-800 p-5 rounded-2xl shadow-xl shadow-brand-primary/5 border border-brand-primary/10 dark:border-slate-700 mb-8 flex flex-wrap gap-6 items-center">
+                <div className="flex items-center gap-3">
+                    <label className="text-sm font-bold text-slate-600 dark:text-slate-300">Trend Aralığı:</label>
+                    <select 
+                        value={monthsBack} 
+                        onChange={(e) => setMonthsBack(Number(e.target.value))}
+                        className="bg-brand-surface/50 dark:bg-slate-900 border border-brand-primary/20 dark:border-slate-700 rounded-lg px-4 py-2 text-sm font-semibold text-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/30 transition-all cursor-pointer"
+                    >
+                        <option value={3}>Son 3 Ay</option>
+                        <option value={6}>Son 6 Ay</option>
+                        <option value={12}>Son 1 Yıl</option>
+                    </select>
+                </div>
+                <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                <div className="flex items-center gap-3">
+                    <label className="text-sm font-bold text-slate-600 dark:text-slate-300">Sıralama (Top N):</label>
+                    <select 
+                        value={topN} 
+                        onChange={(e) => setTopN(Number(e.target.value))}
+                        className="bg-brand-surface/50 dark:bg-slate-900 border border-brand-primary/20 dark:border-slate-700 rounded-lg px-4 py-2 text-sm font-semibold text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-primary/30 transition-all cursor-pointer"
+                    >
+                        <option value={3}>Top 3</option>
+                        <option value={5}>Top 5</option>
+                        <option value={10}>Top 10</option>
+                    </select>
+                </div>
+                
+                {isLoading && (
+                    <div className="ml-auto flex items-center gap-2 text-sm font-bold text-brand-primary animate-pulse">
+                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Veriler Güncelleniyor...
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -231,7 +300,7 @@ export default function AnalizVeRaporlamaSayfasi() {
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl shadow-slate-200/40 dark:shadow-none border-0 lg:col-span-2">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        En Çok Hareket Gören Ürünler (Top 5)
+                        En Çok Hareket Gören Ürünler (Top {topN})
                     </h2>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">

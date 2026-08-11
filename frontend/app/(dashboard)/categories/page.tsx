@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { authFetch, API_BASE_URL } from '@/app/lib/api';
-import Toast from '../../ui/toast';
+import { API_BASE_URL, authFetch, extractErrorMessage } from '@/app/lib/api';
+import Toast from '@/app/ui/toast';
 import ConfirmDeleteModal from '../../ui/confirm-delete-modal';
 import Pagination from '@/app/ui/pagination';
 
@@ -74,12 +74,7 @@ export default function KategorilerSayfasi() {
 
             if (!res.ok) {
                 const errText = await res.text();
-                try {
-                    const parsed = JSON.parse(errText);
-                    throw new Error(parsed.message || "İşlem başarısız");
-                } catch {
-                    throw new Error(errText || "İşlem başarısız");
-                }
+                throw new Error(extractErrorMessage(errText, "İşlem başarısız"));
             }
 
             setIsModalOpen(false);
@@ -109,19 +104,13 @@ export default function KategorilerSayfasi() {
                 setDeletingCategoryId(null);
             } else if (res.status === 409) {
                 // Backend requires us to transfer products
-                const errData = await res.json();
                 setIsDeleteModalOpen(false); // Close normal delete modal
                 setCategoryToTransfer({ id: deletingCategoryId, name: deletingCategoryName });
                 setIsTransferModalOpen(true); // Open transfer modal
                 // Do not setDeletingCategoryId(null) yet so we remember what we are deleting
             } else {
                 const errText = await res.text();
-                try {
-                    const parsed = JSON.parse(errText);
-                    showToastMsg(parsed.message || "Silme işlemi başarısız oldu.", "error");
-                } catch {
-                    showToastMsg(errText || "Silme işlemi başarısız oldu.", "error");
-                }
+                showToastMsg(extractErrorMessage(errText, "Silme işlemi başarısız oldu."), "error");
                 setIsDeleteModalOpen(false);
                 setDeletingCategoryId(null);
             }
