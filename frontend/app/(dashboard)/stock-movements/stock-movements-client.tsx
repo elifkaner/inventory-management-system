@@ -4,6 +4,7 @@ import MovementBadge from '../../ui/stock-movements/movement-badge';
 import AddMovementModal from '../../ui/stock-movements/add-movement-modal';
 import { API_BASE_URL, authFetch } from '@/app/lib/api';
 import Pagination from '@/app/ui/pagination';
+import { formatNoOrphans } from '@/app/lib/utils';
 
 export default function StockMovementsClient() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -222,8 +223,8 @@ export default function StockMovementsClient() {
                                     <td className="px-6 py-4 text-center">
                                         <MovementBadge type={movement.transactionType || movement.type} />
                                     </td>
-                                    <td className="px-6 py-4 text-center font-bold text-slate-900 dark:text-slate-100 whitespace-normal break-words max-w-[220px]">
-                                        {movement.productName}
+                                    <td className="px-6 py-4 text-center font-bold text-slate-900 dark:text-slate-100 whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">
+                                        {formatNoOrphans(movement.productName)}
                                     </td>
                                     <td className="px-6 py-4 text-center font-semibold">
                                         {(movement.transactionType || movement.type) === 'IN' ? (
@@ -232,7 +233,7 @@ export default function StockMovementsClient() {
                                             <span className="text-rose-600 font-bold">-{movement.quantity}</span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 text-center whitespace-normal break-words max-w-xs text-slate-500 dark:text-slate-400" title={movement.description}>
+                                    <td className="px-6 py-4 text-center whitespace-normal break-normal max-w-xs text-slate-500 dark:text-slate-400" title={movement.description}>
                                         {movement.description || '-'}
                                     </td>
                                 </tr>

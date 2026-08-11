@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { API_BASE_URL, authFetch } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
 import Pagination from '@/app/ui/pagination';
+import { formatNoOrphans } from '@/app/lib/utils';
 
 type TransactionFormData = {
   equipmentId: number;
@@ -260,7 +261,7 @@ export default function EquipmentAuditLogPage() {
                       <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{new Date(t.date).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                   </td>
                   <td className="p-4 whitespace-nowrap text-center">{getTypeBadge(t.type)}</td>
-                  <td className="p-4 whitespace-normal break-words text-center max-w-[190px] mx-auto">
+                  <td className="p-4 whitespace-normal break-normal text-center max-w-[190px] mx-auto">
                       <div className="flex flex-col items-center justify-center gap-1.5 -mt-1">
                           <span className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600">
                             Zimmet Sahibi
@@ -270,18 +271,18 @@ export default function EquipmentAuditLogPage() {
                           </span>
                       </div>
                   </td>
-                  <td className="p-4 whitespace-normal break-words text-center max-w-[260px] min-w-[220px] mx-auto">
+                  <td className="p-4 whitespace-normal break-normal text-center max-w-[260px] min-w-[220px] mx-auto">
                       <div className="flex flex-col items-center justify-center">
-                          <span className="font-semibold">{t.equipmentName}</span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{t.equipmentCode}</span>
+                          <span className="font-semibold [text-wrap:pretty]">{formatNoOrphans(t.equipmentName)}</span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">{t.equipmentCode}</span>
                       </div>
                   </td>
                   <td className="p-4 whitespace-nowrap text-center">{getConditionBadge(t.condition)}</td>
-                  <td className="p-4 whitespace-normal break-words text-center min-w-[250px] max-w-md text-slate-600 dark:text-slate-300 text-sm">
+                  <td className="p-4 whitespace-normal break-normal text-center min-w-[250px] max-w-md text-slate-600 dark:text-slate-300 text-sm">
                       {t.notes || '-'}
                   </td>
                   <td className="p-4 pr-6 text-center">
-                      <div className="flex flex-col items-center justify-center min-w-[170px] whitespace-normal break-words mx-auto">
+                      <div className="flex flex-col items-center justify-center min-w-[170px] whitespace-normal break-normal mx-auto">
                           <div className="flex flex-col items-center justify-center gap-1 bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700 p-2.5 rounded-xl w-full shadow-sm">
                             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">İşlem Yapan</span>
                             <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">

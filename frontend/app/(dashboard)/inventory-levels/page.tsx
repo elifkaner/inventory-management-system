@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { authFetch, API_BASE_URL } from '@/app/lib/api';
 import Pagination from '@/app/ui/pagination';
+import { formatNoOrphans } from '@/app/lib/utils';
 
 export default function InventoryLevelsPage() {
     const [products, setProducts] = useState<any[]>([]);
@@ -116,20 +117,20 @@ export default function InventoryLevelsPage() {
 
                                 return (
                                     <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-words max-w-[200px]">{prod.productName}</td>
+                                        <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(prod.productName)}</td>
 
                                         {/* SKU Kodu Sütunu */}
                                         <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 text-center">
-                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1">{prod.skuCode || '-'}</span>
+                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 whitespace-nowrap">{prod.skuCode || '-'}</span>
                                         </td>
 
                                         {/* Barkod Sütunu */}
                                         <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 text-center">
-                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1">{prod.barcode || '-'}</span>
+                                            <span className="bg-brand-surfaceDark dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 whitespace-nowrap">{prod.barcode || '-'}</span>
                                         </td>
 
                                         <td className="p-4 text-center">
-                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${isOutOfStock ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300' : isCritical ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400' : 'bg-blue-50 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400'}`}>
+                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${isOutOfStock ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300' : isCritical ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400' : 'bg-blue-50 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400'}`}>
                                                 {prod.stockQuantity}
                                             </span>
                                         </td>

@@ -6,6 +6,7 @@ import { API_BASE_URL, authFetch } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
 import ConfirmDeleteModal from '@/app/ui/confirm-delete-modal';
 import Pagination from '@/app/ui/pagination';
+import { formatNoOrphans } from '@/app/lib/utils';
 
 type EquipmentFormData = {
   id?: number | null;
@@ -241,12 +242,12 @@ export default function EquipmentPage() {
             ) : (
               filteredList.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((e: any) => (
                 <tr key={e.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
-                  <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-words max-w-[200px]">{e.equipmentName}</td>
+                  <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(e.equipmentName)}</td>
                   <td className="p-4 text-center">
-                    <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{e.equipmentCode || '-'}</span>
+                    <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded whitespace-nowrap">{e.equipmentCode || '-'}</span>
                   </td>
                   <td className="p-4 text-center">{getStatusBadge(e.status)}</td>
-                  <td className="p-4 font-semibold text-center whitespace-normal break-words max-w-[180px]">{e.currentHolderName || '-'}</td>
+                  <td className="p-4 font-semibold text-center whitespace-normal break-normal max-w-[180px]">{e.currentHolderName || '-'}</td>
                   <td className="p-4 text-center">-</td>
                   <td className="p-4 pr-6 text-center">
                     <div className="flex justify-center gap-3">

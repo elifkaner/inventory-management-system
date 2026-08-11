@@ -67,3 +67,8 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
     totalPages,
   ];
 };
+
+export const formatNoOrphans = (text: string | null | undefined): string => {
+  if (!text) return '';
+  return text.replace(/(\d+)\s+([A-Za-zĞÜŞİÖÇğüşıöç₺$]+)/g, '$1\u00A0$2');
+};

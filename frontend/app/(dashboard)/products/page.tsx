@@ -9,6 +9,7 @@ import ErrorMessage from '@/app/ui/error-message';
 import StatusBadge from '@/app/ui/status-badge';
 import Pagination from '@/app/ui/pagination';
 import { useDebounce } from 'use-debounce';
+import { formatNoOrphans } from '@/app/lib/utils';
 
 type ProductFormData = {
     id?: number | null;
@@ -359,14 +360,14 @@ export default function UrunEnvanterSayfasi() {
                                     <td className="px-4 py-3 pl-6 w-1 whitespace-nowrap text-center">
                                         <StatusBadge isActive={prod.isActive} />
                                     </td>
-                                    <td className="px-4 py-3 text-slate-900 dark:text-slate-100 font-semibold text-center whitespace-normal break-words max-w-[220px]">{prod.productName}</td>
-                                    <td className="px-4 py-3 text-center whitespace-normal break-words max-w-[160px]">
+                                    <td className="px-4 py-3 text-slate-900 dark:text-slate-100 font-semibold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(prod.productName)}</td>
+                                    <td className="px-4 py-3 text-center whitespace-normal break-normal max-w-[160px]">
                                         <div className="flex flex-col items-center justify-center">
                                             <span className="text-slate-700 dark:text-slate-300 font-semibold text-sm">{prod.brand || prod.brandName || '-'}</span>
                                             <span className="text-slate-400 dark:text-slate-500 text-xs">{prod.model || prod.modelName || '-'}</span>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium text-center whitespace-normal break-words max-w-[140px]">{prod.category || 'Kategorisiz'}</td>
+                                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium text-center whitespace-normal break-normal max-w-[140px]">{prod.category || 'Kategorisiz'}</td>
 
                                     <td className="px-4 py-3 align-middle text-center">
                                         <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">

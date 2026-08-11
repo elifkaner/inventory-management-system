@@ -125,7 +125,7 @@ export default function AuditLogsClient() {
                     {getActionBadge(log.action)}
                   </td>
                   <td className="p-4 pr-6 text-center">
-                    <div className="max-w-2xl mx-auto overflow-x-auto whitespace-pre-wrap break-words text-slate-600 dark:text-slate-300 text-xs font-mono bg-brand-surface dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm text-center" title={log.changedColumns}>
+                    <div className="max-w-2xl mx-auto overflow-x-auto whitespace-pre-wrap break-normal text-slate-600 dark:text-slate-300 text-xs font-mono bg-brand-surface dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm text-center" title={log.changedColumns}>
                       {log.action === 'UPDATE' && log.changedColumns && (
                          <div className="mb-2 text-brand-primary dark:text-blue-400 font-semibold border-b border-blue-100 dark:border-blue-900 pb-1 text-center">Değişen Alanlar: {log.changedColumns}</div>
                       )}

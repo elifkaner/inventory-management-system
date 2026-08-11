@@ -280,8 +280,8 @@ export default function TedarikcilerSayfasi() {
                                             {sup.isActive ? 'Aktif' : 'Pasif'}
                                         </span>
                                     </td>
-                                    <td className="p-4 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-words max-w-[220px]">{sup.companyName}</td>
-                                    <td className="p-4 text-slate-600 dark:text-slate-300 text-center whitespace-normal break-words max-w-[180px]">
+                                    <td className="p-4 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-normal max-w-[240px]">{sup.companyName}</td>
+                                    <td className="p-4 text-slate-600 dark:text-slate-300 text-center whitespace-normal break-normal max-w-[180px]">
                                         <div className="flex items-center justify-center gap-2">
                                             <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400 flex items-center justify-center text-xs font-bold shrink-0">{sup.contactName?.charAt(0) || '-'}</div>
                                             {sup.contactName}
