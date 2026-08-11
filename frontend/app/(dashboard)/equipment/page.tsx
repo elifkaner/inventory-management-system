@@ -97,22 +97,45 @@ export default function EquipmentPage() {
     (e.currentHolderName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const generateNextEquipmentCode = (list: any[]) => {
+  const generateSmartSku = (name: string, list: any[]) => {
+    let prefix = 'EQP';
+    if (name && name.trim().length >= 2) {
+      const cleanName = name.trim()
+        .replace(/[^a-zA-Z0-9\s]/g, '')
+        .toUpperCase();
+        
+      const words = cleanName.split(/\s+/).filter(Boolean);
+      if (words.length >= 1 && words[0].length >= 3) {
+        prefix = words[0].substring(0, 3);
+      } else if (words.length >= 1 && words[0].length >= 2) {
+        prefix = words[0];
+      }
+    }
+
+    prefix = prefix.replace(/[^A-Z0-9]/g, '');
+    if (prefix.length < 2) prefix = 'EQP';
+
     let maxNum = 0;
+    const prefixRegex = new RegExp(`^${prefix}-(\\d+)`, 'i');
+
     (list || []).forEach((eq: any) => {
       if (eq.equipmentCode) {
-        const match = eq.equipmentCode.match(/\d+/);
+        const match = eq.equipmentCode.match(prefixRegex);
         if (match) {
-          const num = parseInt(match[0], 10);
+          const num = parseInt(match[1], 10);
           if (num > maxNum) maxNum = num;
         }
       }
     });
+
     const nextNum = maxNum + 1;
-    return `EQP-${String(nextNum).padStart(3, '0')}`;
+    return `${prefix}-${String(nextNum).padStart(3, '0')}`;
   };
 
+  const [isCodeUserEdited, setIsCodeUserEdited] = useState(false);
+
   const openModal = (equipment: any = null) => {
+    setIsCodeUserEdited(false);
     if (equipment) {
       reset({ 
           id: equipment.id, 
@@ -122,10 +145,16 @@ export default function EquipmentPage() {
           currentHolderName: equipment.currentHolderName || ''
       });
     } else {
-      const autoCode = generateNextEquipmentCode(equipmentList);
-      reset({ id: null, equipmentName: '', equipmentCode: autoCode, status: 'Available', currentHolderName: '' });
+      reset({ id: null, equipmentName: '', equipmentCode: 'EQP-001', status: 'Available', currentHolderName: '' });
     }
     setIsModalOpen(true);
+  };
+
+  const handleEquipmentNameChange = (nameVal: string) => {
+    if (!watch("id") && !isCodeUserEdited) {
+      const smartCode = generateSmartSku(nameVal, equipmentList);
+      setValue("equipmentCode", smartCode);
+    }
   };
 
   const handleSave = async (data: EquipmentFormData) => {
@@ -306,8 +335,12 @@ export default function EquipmentPage() {
                 <input
                   type="text"
                   {...register("equipmentName", { required: true })}
-                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                  placeholder="Örn: El Terminali - Zebra TC21"
+                  onChange={(e) => {
+                    register("equipmentName").onChange(e);
+                    handleEquipmentNameChange(e.target.value);
+                  }}
+                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm"
+                  placeholder="Örn: Zebra TC21 veya MacBook Pro"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -316,9 +349,12 @@ export default function EquipmentPage() {
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">SKU / Cihaz Kodu</label>
                       <button
                         type="button"
-                        onClick={() => setValue("equipmentCode", generateNextEquipmentCode(equipmentList))}
+                        onClick={() => {
+                          setIsCodeUserEdited(false);
+                          setValue("equipmentCode", generateSmartSku(watch("equipmentName"), equipmentList));
+                        }}
                         className="text-xs text-brand-primary dark:text-blue-400 font-semibold hover:underline flex items-center gap-1"
-                        title="Otomatik boş SKU kodu oluştur"
+                        title="Cihaz adına göre akıllı SKU üret"
                       >
                         ⚡ Otomatik Üret
                       </button>
@@ -326,11 +362,15 @@ export default function EquipmentPage() {
                     <input
                       type="text"
                       {...register("equipmentCode")}
-                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary font-mono text-sm"
-                      placeholder="Örn: EQP-009"
+                      onChange={(e) => {
+                        register("equipmentCode").onChange(e);
+                        setIsCodeUserEdited(true);
+                      }}
+                      className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary font-mono text-sm uppercase"
+                      placeholder="Örn: ZEB-001 veya MAC-001"
                     />
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-                      * Sıradaki boş SKU kodu otomatik atanır.
+                      * Cihaz adına göre Akıllı SKU (Örn: MAC-001) otomatik üretilir.
                     </p>
                   </div>
                   <div>
