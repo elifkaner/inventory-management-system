@@ -217,12 +217,12 @@ export default function EquipmentPage() {
         <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-slate-50/70 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700 text-xs tracking-wider">
             <tr>
-              <th className="pl-6 pr-4 py-4">Ekipman Adı</th>
-              <th className="px-4 py-4">SKU / Seri No</th>
-              <th className="px-4 py-4">Durum</th>
-              <th className="px-4 py-4">Zimmetli Kişi</th>
-              <th className="px-4 py-4">Son Bakım Tarihi</th>
-              <th className="px-6 py-4 text-right">İşlemler</th>
+              <th className="p-4 pl-6 whitespace-nowrap text-center">Ekipman Adı</th>
+              <th className="p-4 whitespace-nowrap text-center">SKU / Seri No</th>
+              <th className="p-4 whitespace-nowrap text-center">Durum</th>
+              <th className="p-4 whitespace-nowrap text-center">Zimmetli Kişi</th>
+              <th className="p-4 whitespace-nowrap text-center">Son Bakım Tarihi</th>
+              <th className="p-4 pr-6 whitespace-nowrap text-center">İşlemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-300 font-medium">
@@ -241,16 +241,18 @@ export default function EquipmentPage() {
             ) : (
               filteredList.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((e: any) => (
                 <tr key={e.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
-                  <td className="pl-6 pr-4 py-4 text-slate-900 dark:text-slate-100 font-bold">{e.equipmentName}</td>
-                  <td className="px-4 py-4">
+                  <td className="p-4 pl-6 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-words max-w-[200px]">{e.equipmentName}</td>
+                  <td className="p-4 text-center">
                     <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{e.equipmentCode || '-'}</span>
                   </td>
-                  <td className="px-4 py-4">{getStatusBadge(e.status)}</td>
-                  <td className="px-4 py-4 font-semibold">{e.currentHolderName || '-'}</td>
-                  <td className="px-4 py-4">-</td>
-                  <td className="px-6 py-4 text-right">
-                    <button onClick={() => openModal(e)} className="text-brand-primary dark:text-blue-400 hover:text-brand-primaryHover dark:hover:text-blue-300 font-semibold mr-4">Düzenle</button>
-                    <button onClick={() => setDeleteModal({isOpen: true, id: e.id, name: e.equipmentName})} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold">Sil</button>
+                  <td className="p-4 text-center">{getStatusBadge(e.status)}</td>
+                  <td className="p-4 font-semibold text-center whitespace-normal break-words max-w-[180px]">{e.currentHolderName || '-'}</td>
+                  <td className="p-4 text-center">-</td>
+                  <td className="p-4 pr-6 text-center">
+                    <div className="flex justify-center gap-3">
+                      <button onClick={() => openModal(e)} className="text-brand-primary dark:text-blue-400 hover:text-brand-primaryHover dark:hover:text-blue-300 font-semibold">Düzenle</button>
+                      <button onClick={() => setDeleteModal({isOpen: true, id: e.id, name: e.equipmentName})} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold">Sil</button>
+                    </div>
                   </td>
                 </tr>
               ))

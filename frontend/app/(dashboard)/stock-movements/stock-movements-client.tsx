@@ -182,13 +182,13 @@ export default function StockMovementsClient() {
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden text-sm transition-colors">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left whitespace-nowrap">
-                        <thead className="bg-brand-surface dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700">
+                        <thead className="bg-brand-surface dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700 text-xs tracking-wider">
                             <tr>
-                                <th className="px-6 py-4">Tarih / Saat</th>
-                                <th className="px-6 py-4">İşlem Tipi</th>
-                                <th className="px-6 py-4">Ürün</th>
-                                <th className="px-6 py-4 text-right">Miktar</th>
-                                <th className="px-6 py-4 w-1/3">Açıklama</th>
+                                <th className="px-6 py-4 text-center">Tarih / Saat</th>
+                                <th className="px-6 py-4 text-center">İşlem Tipi</th>
+                                <th className="px-6 py-4 text-center">Ürün</th>
+                                <th className="px-6 py-4 text-center">Miktar</th>
+                                <th className="px-6 py-4 text-center">Açıklama</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-300">
@@ -215,24 +215,24 @@ export default function StockMovementsClient() {
                                 </tr>
                             ) : movements.map((movement) => (
                                 <tr key={movement.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="font-medium">{new Date(movement.createdAt || movement.date).toLocaleDateString('tr-TR')}</div>
-                                        <div className="text-xs text-slate-500 mt-0.5">{new Date(movement.createdAt || movement.date).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</div>
+                                    <td className="px-6 py-4 text-center">
+                                        <div className="font-bold text-slate-900 dark:text-slate-100">{new Date(movement.createdAt || movement.date).toLocaleDateString('tr-TR')}</div>
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{new Date(movement.createdAt || movement.date).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-6 py-4 text-center">
                                         <MovementBadge type={movement.transactionType || movement.type} />
                                     </td>
-                                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
+                                    <td className="px-6 py-4 text-center font-bold text-slate-900 dark:text-slate-100 whitespace-normal break-words max-w-[220px]">
                                         {movement.productName}
                                     </td>
-                                    <td className="px-6 py-4 text-right font-semibold">
+                                    <td className="px-6 py-4 text-center font-semibold">
                                         {(movement.transactionType || movement.type) === 'IN' ? (
-                                            <span className="text-emerald-600">+{movement.quantity}</span>
+                                            <span className="text-emerald-600 font-bold">+{movement.quantity}</span>
                                         ) : (
-                                            <span className="text-rose-600">-{movement.quantity}</span>
+                                            <span className="text-rose-600 font-bold">-{movement.quantity}</span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 truncate max-w-xs text-slate-500 dark:text-slate-400" title={movement.description}>
+                                    <td className="px-6 py-4 text-center whitespace-normal break-words max-w-xs text-slate-500 dark:text-slate-400" title={movement.description}>
                                         {movement.description || '-'}
                                     </td>
                                 </tr>

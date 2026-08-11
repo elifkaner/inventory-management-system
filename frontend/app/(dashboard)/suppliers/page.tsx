@@ -207,12 +207,12 @@ export default function TedarikcilerSayfasi() {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
-                            <th className="p-4 pl-6">Durum</th>
-                            <th className="p-4">Firma Ünvanı</th>
-                            <th className="p-4">Yetkili Kişi</th>
-                            <th className="p-4">İletişim Bilgileri</th>
-                            <th className="p-4">Vergi No</th>
-                            <th className="p-4 pr-6 text-right">İşlemler</th>
+                            <th className="p-4 pl-6 text-center">Durum</th>
+                            <th className="p-4 text-center">Firma Ünvanı</th>
+                            <th className="p-4 text-center">Yetkili Kişi</th>
+                            <th className="p-4 text-center">İletişim Bilgileri</th>
+                            <th className="p-4 text-center">Vergi No</th>
+                            <th className="p-4 pr-6 text-center">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -223,26 +223,32 @@ export default function TedarikcilerSayfasi() {
                         ) : (
                             paginatedSuppliers.map((sup) => (
                                 <tr key={sup.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                                    <td className="p-4 pl-6">
+                                    <td className="p-4 pl-6 text-center">
                                         <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${sup.isActive ? 'bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800'}`}>
                                             {sup.isActive ? 'Aktif' : 'Pasif'}
                                         </span>
                                     </td>
-                                    <td className="p-4 text-slate-900 dark:text-slate-100 font-bold">{sup.companyName}</td>
-                                    <td className="p-4 text-slate-600 dark:text-slate-300 flex items-center gap-2">
-                                        <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400 flex items-center justify-center text-xs font-bold">{sup.contactName?.charAt(0) || '-'}</div>
-                                        {sup.contactName}
+                                    <td className="p-4 text-slate-900 dark:text-slate-100 font-bold text-center whitespace-normal break-words max-w-[220px]">{sup.companyName}</td>
+                                    <td className="p-4 text-slate-600 dark:text-slate-300 text-center whitespace-normal break-words max-w-[180px]">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/50 text-brand-primaryHover dark:text-blue-400 flex items-center justify-center text-xs font-bold shrink-0">{sup.contactName?.charAt(0) || '-'}</div>
+                                            {sup.contactName}
+                                        </div>
                                     </td>
-                                    <td className="p-4 text-slate-500 dark:text-slate-400">
-                                        <div className="flex flex-col gap-1 text-xs">
+                                    <td className="p-4 text-slate-500 dark:text-slate-400 text-center">
+                                        <div className="flex flex-col items-center justify-center gap-1 text-xs">
                                             <span className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg> {sup.phone}</span>
                                             {sup.email && <span className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> {sup.email}</span>}
                                         </div>
                                     </td>
-                                    <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surface dark:bg-slate-900 rounded px-2 py-1 inline-block mt-2">{sup.taxNumber}</td>
-                                    <td className="p-4 pr-6 text-right">
-                                        <button onClick={() => handleEditClick(sup)} className="text-brand-primary dark:text-blue-400 hover:text-brand-primaryHover dark:hover:text-blue-300 transition-colors font-semibold mr-4">Düzenle</button>
-                                        <button onClick={() => handleDeleteClick(sup.id, sup.companyName)} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors font-semibold">Sil</button>
+                                    <td className="p-4 text-center">
+                                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surface dark:bg-slate-900 rounded px-2 py-1 inline-block">{sup.taxNumber}</span>
+                                    </td>
+                                    <td className="p-4 pr-6 text-center">
+                                        <div className="flex justify-center gap-3">
+                                            <button onClick={() => handleEditClick(sup)} className="text-brand-primary dark:text-blue-400 hover:text-brand-primaryHover dark:hover:text-blue-300 transition-colors font-semibold">Düzenle</button>
+                                            <button onClick={() => handleDeleteClick(sup.id, sup.companyName)} className="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors font-semibold">Sil</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))

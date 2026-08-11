@@ -11,4 +11,5 @@ public class EquipmentTransactionDto
     public DateTime Date { get; set; }
     public string? Notes { get; set; }
     public string? CreatedByUserName { get; set; }
+    public string? CreatedByUserRole { get; set; }
 }
