@@ -233,9 +233,9 @@ export default function EquipmentAuditLogPage() {
               <th className="p-4 pl-6 whitespace-nowrap text-center">Tarih / Saat</th>
               <th className="p-4 whitespace-nowrap text-center">İşlem</th>
               <th className="p-4 whitespace-nowrap text-center">Zimmet Sahibi Personel</th>
-              <th className="p-4 whitespace-nowrap text-center">Ekipman</th>
+              <th className="p-4 whitespace-nowrap text-center min-w-[220px]">Ekipman</th>
               <th className="p-4 whitespace-nowrap text-center">Durum</th>
-              <th className="p-4 whitespace-nowrap text-center min-w-[180px]">Not / Açıklama</th>
+              <th className="p-4 whitespace-nowrap text-center min-w-[250px]">Not / Açıklama</th>
               <th className="p-4 pr-6 whitespace-nowrap text-center">İşlemi Yapan Yetkili</th>
             </tr>
           </thead>
@@ -261,23 +261,23 @@ export default function EquipmentAuditLogPage() {
                   </td>
                   <td className="p-4 whitespace-nowrap text-center">{getTypeBadge(t.type)}</td>
                   <td className="p-4 whitespace-normal break-words text-center max-w-[190px] mx-auto">
-                      <div className="flex flex-col items-center justify-center gap-1">
+                      <div className="flex flex-col items-center justify-center gap-1.5 -mt-1">
                           <span className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600">
                             Zimmet Sahibi
                           </span>
-                          <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                          <span className="font-bold text-slate-900 dark:text-slate-100 text-sm mt-0.5">
                             {t.employeeName}
                           </span>
                       </div>
                   </td>
-                  <td className="p-4 whitespace-normal break-words text-center max-w-[200px] mx-auto">
+                  <td className="p-4 whitespace-normal break-words text-center max-w-[260px] min-w-[220px] mx-auto">
                       <div className="flex flex-col items-center justify-center">
                           <span className="font-semibold">{t.equipmentName}</span>
                           <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{t.equipmentCode}</span>
                       </div>
                   </td>
                   <td className="p-4 whitespace-nowrap text-center">{getConditionBadge(t.condition)}</td>
-                  <td className="p-4 whitespace-normal break-words text-center max-w-xs text-slate-600 dark:text-slate-300 text-sm">
+                  <td className="p-4 whitespace-normal break-words text-center min-w-[250px] max-w-md text-slate-600 dark:text-slate-300 text-sm">
                       {t.notes || '-'}
                   </td>
                   <td className="p-4 pr-6 text-center">
