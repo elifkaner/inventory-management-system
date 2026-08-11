@@ -33,22 +33,23 @@ public class EquipmentService : IEquipmentService
         var code = dto.EquipmentCode;
         if (string.IsNullOrWhiteSpace(code))
         {
-            var prefix = GeneratePrefix(dto.EquipmentName);
             var all = await _equipmentRepository.GetAllAsync();
             int maxNum = 0;
-            var regex = new System.Text.RegularExpressions.Regex($@"^{prefix}-(\d+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             foreach (var eq in all)
             {
                 if (!string.IsNullOrEmpty(eq.EquipmentCode))
                 {
-                    var match = regex.Match(eq.EquipmentCode);
-                    if (match.Success && int.TryParse(match.Groups[1].Value, out int num) && num > maxNum)
+                    var match = System.Text.RegularExpressions.Regex.Match(eq.EquipmentCode, @"\d+");
+                    if (match.Success && int.TryParse(match.Value, out int num) && num > maxNum)
                     {
                         maxNum = num;
                     }
                 }
             }
-            code = $"{prefix}-{(maxNum + 1).ToString("D3")}";
+            int nextNum = maxNum + 1;
+            string numStr = nextNum.ToString();
+            string padded = numStr.PadLeft(Math.Max(3, numStr.Length), '0');
+            code = $"EQP-{padded}";
         }
 
         var equipment = new Equipment
