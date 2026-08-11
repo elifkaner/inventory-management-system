@@ -6,7 +6,7 @@ namespace InventoryManagement.Application.Interfaces.Services;
 
 public interface IProductService
 {
-    Task<PagedResult<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null, bool? isActive = null, int? page = null, int? pageSize = null);
+    Task<PagedResult<ProductResponseDto>> GetAllProductsAsync(string? search = null, int? categoryId = null, int? brandId = null, int? supplierId = null, bool? isActive = null, int? page = null, int? pageSize = null);
 
     Task<ProductResponseDto?> GetProductByIdAsync(int id);
 
@@ -20,5 +20,5 @@ public interface IProductService
 
     Task<DashboardSummaryDto> GetSummaryAsync(bool includeFinancials);
 
-    Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null, bool? isActive = null);
+    Task<byte[]> ExportToCsvAsync(string? search = null, int? categoryId = null, int? brandId = null, int? supplierId = null, bool? isActive = null);
 }

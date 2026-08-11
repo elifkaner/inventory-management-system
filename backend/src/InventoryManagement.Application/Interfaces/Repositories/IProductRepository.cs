@@ -12,7 +12,7 @@ public record ProductSummaryStats(
 
 public interface IProductRepository
 {
-    Task<PagedResult<Product>> GetAllAsync(string? search = null, int? categoryId = null, bool? isActive = null, int? page = null, int? pageSize = null);
+    Task<PagedResult<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? brandId = null, int? supplierId = null, bool? isActive = null, int? page = null, int? pageSize = null);
 
     Task<Product?> GetByIdAsync(int id);
 

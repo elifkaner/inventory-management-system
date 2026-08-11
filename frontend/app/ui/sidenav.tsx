@@ -35,7 +35,7 @@ const menuItems = [
         ),
         subLinks: [
             { name: 'Depo Hareketleri', href: '/stock-movements' },
-            { name: 'Envanter Miktarı', href: '/inventory-levels' }
+            { name: 'Depo Konumu', href: '/inventory-levels' }
         ]
     },
     {

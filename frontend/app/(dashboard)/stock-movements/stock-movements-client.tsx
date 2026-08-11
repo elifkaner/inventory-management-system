@@ -17,6 +17,28 @@ export default function StockMovementsClient() {
     const [selectedYear, setSelectedYear] = useState<number | ''>(new Date().getFullYear());
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [brandFilter, setBrandFilter] = useState('');
+    const [modelFilter, setModelFilter] = useState('');
+
+    const [brands, setBrands] = useState<any[]>([]);
+    const [models, setModels] = useState<any[]>([]);
+    const filteredModels = brandFilter ? models.filter(m => m.brandName === brandFilter) : models;
+
+    useEffect(() => {
+        const fetchMetadata = async () => {
+            try {
+                const [brandRes, modelRes] = await Promise.all([
+                    authFetch(`${API_BASE_URL}/api/Brand`),
+                    authFetch(`${API_BASE_URL}/api/Model`)
+                ]);
+                if (brandRes.ok) setBrands(await brandRes.json());
+                if (modelRes.ok) setModels(await modelRes.json());
+            } catch (err) {
+                console.error("Metadata yüklenemedi", err);
+            }
+        };
+        fetchMetadata();
+    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -79,10 +101,13 @@ export default function StockMovementsClient() {
                     return dateB - dateA;
                 });
 
-                if (debouncedSearch) {
-                    sortedData = sortedData.filter((m: any) => 
-                        (m.productName || '').toLowerCase().includes(debouncedSearch.toLowerCase())
-                    );
+                if (debouncedSearch || brandFilter || modelFilter) {
+                    sortedData = sortedData.filter((m: any) => {
+                        const matchesSearch = !debouncedSearch || (m.productName || '').toLowerCase().includes(debouncedSearch.toLowerCase());
+                        const matchesBrand = !brandFilter || m.brandName === brandFilter;
+                        const matchesModel = !modelFilter || m.modelName === modelFilter;
+                        return matchesSearch && matchesBrand && matchesModel;
+                    });
                     setTotalCount(sortedData.length);
                     sortedData = sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
                 } else {
@@ -102,7 +127,7 @@ export default function StockMovementsClient() {
 
     useEffect(() => {
         fetchMovements();
-    }, [currentPage, pageSize, selectedMonth, selectedYear, debouncedSearch]);
+    }, [currentPage, pageSize, selectedMonth, selectedYear, debouncedSearch, brandFilter, modelFilter]);
 
     const handleSuccess = () => {
         setIsModalOpen(false);
@@ -177,6 +202,36 @@ export default function StockMovementsClient() {
                         ))}
                     </select>
                 </div>
+                <div className="w-full md:w-1/4">
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-500 dark:text-slate-400">Marka</label>
+                    <select
+                        value={brandFilter}
+                        onChange={(e) => { 
+                            setBrandFilter(e.target.value); 
+                            setModelFilter(''); // Reset model when brand changes
+                            setCurrentPage(1); 
+                        }}
+                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm"
+                    >
+                        <option value="">Tüm Markalar</option>
+                        {brands.map(b => (
+                            <option key={b.id} value={b.name}>{b.name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="w-full md:w-1/4">
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-500 dark:text-slate-400">Model</label>
+                    <select
+                        value={modelFilter}
+                        onChange={(e) => { setModelFilter(e.target.value); setCurrentPage(1); }}
+                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm"
+                    >
+                        <option value="">Tüm Modeller</option>
+                        {filteredModels.map(m => (
+                            <option key={m.id} value={m.name}>{m.name}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Table */}
@@ -187,15 +242,16 @@ export default function StockMovementsClient() {
                             <tr>
                                 <th className="px-6 py-4 text-center">Tarih / Saat</th>
                                 <th className="px-6 py-4 text-center">İşlem Tipi</th>
-                                <th className="px-6 py-4 text-center">Ürün</th>
-                                <th className="px-6 py-4 text-center">Miktar</th>
+                                <th className="px-6 py-4 text-left font-bold w-1/4">Ürün Adı</th>
+                                <th className="px-6 py-4 text-left font-bold w-1/6">Marka / Model</th>
+                                <th className="px-6 py-4 text-left font-bold w-1/6">İşlem</th>
                                 <th className="px-6 py-4 text-center">Açıklama</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-300">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
                                         <div className="flex flex-col items-center justify-center">
                                             <svg className="animate-spin h-6 w-6 text-emerald-500 mb-2" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                             Veriler yükleniyor...
@@ -204,13 +260,13 @@ export default function StockMovementsClient() {
                                 </tr>
                             ) : error ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-rose-500 font-medium">
+                                    <td colSpan={6} className="px-6 py-8 text-center text-rose-500 font-medium">
                                         {error}
                                     </td>
                                 </tr>
                             ) : movements.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
                                         Filtrelerinize uygun depo hareketi bulunamadı.
                                     </td>
                                 </tr>
@@ -223,10 +279,15 @@ export default function StockMovementsClient() {
                                     <td className="px-6 py-4 text-center">
                                         <MovementBadge type={movement.transactionType || movement.type} />
                                     </td>
-                                    <td className="px-6 py-4 text-center font-bold text-slate-900 dark:text-slate-100 whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">
-                                        {formatNoOrphans(movement.productName)}
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formatNoOrphans(movement.productName)}</div>
                                     </td>
-                                    <td className="px-6 py-4 text-center font-semibold">
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm text-slate-600 dark:text-slate-400">
+                                            {movement.brandName || '-'} / {movement.modelName || '-'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-left font-semibold">
                                         {(movement.transactionType || movement.type) === 'IN' ? (
                                             <span className="text-emerald-600 font-bold">+{movement.quantity}</span>
                                         ) : (

@@ -8,6 +8,10 @@ public class StockMovementResponseDto
 
     public string ProductName { get; set; } = "";
 
+    public string BrandName { get; set; } = "";
+
+    public string ModelName { get; set; } = "";
+
     public string TransactionType { get; set; } = "";
 
     public decimal TransactionAmounth { get; set; }
