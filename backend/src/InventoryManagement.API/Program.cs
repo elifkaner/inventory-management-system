@@ -146,7 +146,6 @@ builder.Services.AddCors(options =>
             "http://localhost:5050",
             "http://127.0.0.1:3000"
         )
-        .SetIsOriginAllowed(_ => true)
         .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials();
@@ -182,6 +181,8 @@ var forwardedHeadersOptions = new ForwardedHeadersOptions
 forwardedHeadersOptions.KnownIPNetworks.Clear();
 forwardedHeadersOptions.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeadersOptions);
+
+app.UseCors("ProductionCors");
 
 app.Use(async (context, next) =>
 {
@@ -244,10 +245,6 @@ catch (Exception ex)
 app.UseSwagger();
 app.UseSwaggerUI();
 
-
-// app.UseHttpsRedirection();
-
-app.UseCors("ProductionCors");
 
 app.UseAuthentication();
 app.UseAuthorization();
