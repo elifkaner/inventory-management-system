@@ -92,9 +92,10 @@ builder.Services.AddInfrastructure(connectionString);
 
 // JWT Authentication
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
+
 if (string.IsNullOrWhiteSpace(jwtSecret))
 {
-    jwtSecret = "e34261b05bdd024cb82167eb94726e1822cebde7d041d62853abeecc91f38de9";
+    throw new InvalidOperationException("JWT_SECRET environment variable is not configured.");
 }
 
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "InventoryManagementApi";
