@@ -19,6 +19,7 @@ public class ProductRepository : IProductRepository
     public async Task<PagedResult<Product>> GetAllAsync(string? search = null, int? categoryId = null, int? brandId = null, int? modelId = null, int? supplierId = null, bool? isActive = null, int? page = null, int? pageSize = null)
     {
         var query = _context.Products
+            .AsNoTracking()
             .Include(p => p.Supplier)
             .Include(p => p.Category)
             .Include(p => p.Brand)
@@ -82,6 +83,7 @@ public class ProductRepository : IProductRepository
     public async Task<Product?> GetByIdAsync(int id)
     {
         return await _context.Products
+            .AsNoTracking()
             .Include(p => p.Supplier)
             .Include(p => p.Category)
             .Include(p => p.Brand)
@@ -92,6 +94,7 @@ public class ProductRepository : IProductRepository
     public async Task<Product?> GetByBarcodeAsync(string Barcode)
     {
         return await _context.Products
+            .AsNoTracking()
             .Include(p => p.Supplier)
             .Include(p => p.Category)
             .Include(p => p.Brand)
@@ -102,6 +105,7 @@ public class ProductRepository : IProductRepository
     public async Task<Product?> GetBySkuCodeAsync(string SkuCode)
     {
         return await _context.Products
+            .AsNoTracking()
             .Include(p => p.Supplier)
             .Include(p => p.Category)
             .Include(p => p.Brand)
