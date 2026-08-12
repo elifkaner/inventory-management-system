@@ -14,14 +14,14 @@ const config: Config = {
       },
       colors: {
         brand: {
-          primary: '#5C6BC0', // Koyu Mavi
-          primaryHover: '#3F51B5',
-          secondary: '#B39DDB', // Lila
-          secondaryHover: '#9575CD',
-          accent: '#F57C00', // Turuncu
-          accentHover: '#EF6C00',
-          surface: '#F4F5F9',
-          surfaceDark: '#E8EAF1',
+          primary: '#4F46E5', // Indigo 600 - Daha dolgun ve canlı
+          primaryHover: '#4338CA', // Indigo 700
+          secondary: '#8B5CF6', // Violet 500 - Lila yerine daha canlı mor
+          secondaryHover: '#7C3AED', // Violet 600
+          accent: '#F97316', // Orange 500 - Canlı Turuncu
+          accentHover: '#EA580C', // Orange 600
+          surface: '#F1F5F9', // Slate 100 - Göz yormayan, biraz daha koyu/tok arka plan
+          surfaceDark: '#E2E8F0', // Slate 200
         },
         blue: {
           400: '#2589FE',

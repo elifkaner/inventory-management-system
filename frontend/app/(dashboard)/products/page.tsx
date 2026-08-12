@@ -249,7 +249,14 @@ export default function UrunEnvanterSayfasi() {
                         if (resolvedBrandId) setValue("brandId", String(resolvedBrandId), { shouldValidate: true });
                         if (resolvedModelId) setValue("modelId", String(resolvedModelId), { shouldValidate: true });
 
-                        setInfoModal({ isOpen: true, message: `SKU Kodu (${debouncedSkuCode}) ile eşleşen ürün bilgileri otomatik dolduruldu!`, type: 'info' });
+                        // Pending Orders'da bu SKU var mı kontrol et, varsa stok miktarını otomatik doldur
+                        const pendingOrderMatch = pendingOrders.find((po: any) => po.skuCode === debouncedSkuCode);
+                        if (pendingOrderMatch) {
+                            setValue("stockQuantity", pendingOrderMatch.orderQuantity, { shouldValidate: true });
+                            setInfoModal({ isOpen: true, message: `SKU Kodu (${debouncedSkuCode}) ile eşleşen ürün bilgileri otomatik dolduruldu! Bekleyen siparişlerdeki stok miktarı (${pendingOrderMatch.orderQuantity}) eklendi.`, type: 'info' });
+                        } else {
+                            setInfoModal({ isOpen: true, message: `SKU Kodu (${debouncedSkuCode}) ile eşleşen ürün bilgileri otomatik dolduruldu!`, type: 'info' });
+                        }
                     }
                 }
             } catch (error) {
@@ -258,7 +265,7 @@ export default function UrunEnvanterSayfasi() {
         };
 
         checkSkuAndAutofill();
-    }, [debouncedSkuCode, entryMode]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [debouncedSkuCode, entryMode, pendingOrders]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // SKU Auto-generate logic
     const watchedCategoryId = watch("categoryId");
@@ -838,10 +845,34 @@ export default function UrunEnvanterSayfasi() {
                                     </div>
                                 )}
                                 {(!watch("id") || entryMode === 'existing') && entryMode === 'new' && (
-                                    <p className="text-xs text-slate-500 mt-2">Kategori seçildiğinde SKU kodu (örn: SKU-KAT-001) otomatik oluşturulur.</p>
+                                    <div className="mt-4 p-4 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40 rounded-2xl border border-orange-300 dark:border-orange-700/50 flex items-start gap-4 shadow-md animate-fade-in-up">
+                                        <div className="bg-white dark:bg-orange-800 p-2.5 rounded-xl text-orange-600 dark:text-orange-300 shadow-sm border border-orange-200 dark:border-orange-700">
+                                            <svg className="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-orange-900 dark:text-orange-200">Otomatik Üretim Aktif</p>
+                                            <p className="text-xs font-medium text-orange-800 dark:text-orange-300 mt-1 leading-relaxed">
+                                                Kategori seçildiğinde <span className="font-extrabold text-orange-700 dark:text-orange-400">SKU kodu</span> (örn: SKU-KAT-001) ve <span className="font-extrabold text-orange-700 dark:text-orange-400">Barkod</span> otomatik olarak oluşturulur.
+                                            </p>
+                                        </div>
+                                    </div>
                                 )}
                                 {(!watch("id") || entryMode === 'existing') && entryMode === 'existing' && (
-                                    <p className="text-xs text-slate-500 mt-2">Sistemdeki bir ürünün SKU kodunu yazarak bilgilerini otomatik çekebilirsiniz.</p>
+                                    <div className="mt-4 p-4 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 rounded-2xl border border-blue-300 dark:border-blue-700/50 flex items-start gap-4 shadow-md animate-fade-in-up">
+                                        <div className="bg-white dark:bg-blue-800 p-2.5 rounded-xl text-blue-600 dark:text-blue-300 shadow-sm border border-blue-200 dark:border-blue-700">
+                                            <svg className="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-blue-900 dark:text-blue-200">Akıllı Veri Çekme Aktif</p>
+                                            <p className="text-xs font-medium text-blue-800 dark:text-blue-300 mt-1 leading-relaxed">
+                                                Sistemdeki bir ürünün <span className="font-extrabold text-blue-700 dark:text-blue-400">SKU kodunu</span> yazarak bilgilerini otomatik çekebilirsiniz.
+                                            </p>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                             <div className="p-8">
@@ -923,9 +954,16 @@ export default function UrunEnvanterSayfasi() {
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Başlangıç Stoğu *</label>
-                                                <input type="number" disabled={!!watch("id")} {...register("stockQuantity", { required: !watch("id") })} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm disabled:bg-slate-100 dark:disabled:bg-slate-800 dark:disabled:text-slate-500 ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600'}`} />
-                                                {errors.stockQuantity && <ErrorMessage />}
+                                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                                                    Stok Sayısı
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                        <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                                                    </div>
+                                                    <input type="number" {...register("stockQuantity", { required: true })} className={`w-full pl-10 pr-4 py-2.5 border rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:border-brand-primary text-sm transition-all ${errors.stockQuantity ? 'border-rose-500 bg-rose-50/30 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'}`} />
+                                                </div>
+                                                {errors.stockQuantity && <p className="text-rose-500 text-xs mt-1 font-medium flex items-center gap-1"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Bu alan zorunludur</p>}
                                             </div>
                                             <div>
                                                 <SearchableSelect
