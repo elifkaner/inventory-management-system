@@ -19,6 +19,7 @@ public class StockMovementRepository : IStockMovementRepository
     public async Task<PagedResult<StockMovement>> GetAllAsync(int? productId = null, string? transactionType = null, DateTime? fromDate = null, DateTime? toDate = null,int? page = null, int? pageSize = null)
     {
         var query = _context.StockMovements
+            .AsNoTracking()
             .Include(s => s.Product)
                 .ThenInclude(p => p.Brand)
             .Include(s => s.Product)

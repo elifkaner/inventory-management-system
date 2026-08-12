@@ -17,6 +17,7 @@ public class EquipmentTransactionRepository : IEquipmentTransactionRepository
     public async Task<List<EquipmentTransaction>> GetAllAsync(int? equipmentId, DateTime? fromDate, DateTime? toDate)
     {
         var query = _context.EquipmentTransactions
+            .AsNoTracking()
             .Include(t => t.Equipment)
             .Include(t => t.CreatedByUser)
             .AsQueryable();

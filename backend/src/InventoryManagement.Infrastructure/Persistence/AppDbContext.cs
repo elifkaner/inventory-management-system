@@ -35,6 +35,9 @@ public class AppDbContext : DbContext
 
     public DbSet<EquipmentTransaction> EquipmentTransactions {get;set;}
 
+    public DbSet<PendingOrder> PendingOrders { get; set; }
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -116,6 +119,14 @@ public class AppDbContext : DbContext
             .WithMany(b => b.Brands)
             .HasForeignKey(m => m.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // PendingOrder -> Product (Many to One)
+        modelBuilder.Entity<PendingOrder>()
+            .HasOne(po => po.Product)
+            .WithMany() // Product.cs doesn't need a collection for now
+            .HasForeignKey(po => po.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+
 
         modelBuilder.Entity<Equipment>().HasIndex(e => e.EquipmentCode).IsUnique();
 

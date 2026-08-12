@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<IEquipmentRepository, EquipmentRepository>();
         services.AddScoped<IEquipmentTransactionRepository, EquipmentTransactionRepository>();
+        services.AddScoped<IPendingOrderRepository, PendingOrderRepository>();
 
         services.AddSignalR();
         services.AddScoped<IStockMovementNotifier, SignalRStockMovementNotifier>();

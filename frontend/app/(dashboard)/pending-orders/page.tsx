@@ -1,27 +1,32 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { formatNoOrphans } from '@/app/lib/utils';
+import { authFetch, API_BASE_URL } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
+import Pagination from '@/app/ui/pagination';
 
 export default function PendingOrdersPage() {
     const [pendingOrders, setPendingOrders] = useState<any[]>([]);
     const [toast, setToast] = useState<{ isOpen: boolean; message: string; type: 'success' | 'error' | 'info' }>({ isOpen: false, message: '', type: 'info' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
     useEffect(() => {
-        const stored = localStorage.getItem('pendingOrders');
-        if (stored) {
-            try {
-                setPendingOrders(JSON.parse(stored));
-            } catch (e) {
-                console.error("Siparişler yüklenemedi", e);
-            }
-        }
+        fetchPendingOrders();
     }, []);
 
-    const updateOrders = (newOrders: any[]) => {
-        setPendingOrders(newOrders);
-        localStorage.setItem('pendingOrders', JSON.stringify(newOrders));
+    const fetchPendingOrders = async () => {
+        try {
+            const res = await authFetch(`${API_BASE_URL}/api/PendingOrder`);
+            if (res.ok) {
+                const data = await res.json();
+                setPendingOrders(data);
+            }
+        } catch (error) {
+            console.error("Bekleyen siparişler getirilemedi:", error);
+            setToast({ isOpen: true, message: 'Siparişler yüklenemedi.', type: 'error' });
+        }
     };
 
     const handleRemoveOrder = (id: number) => {
@@ -29,10 +34,16 @@ export default function PendingOrdersPage() {
             isOpen: true,
             title: 'Siparişi İptal Et',
             message: 'Bu siparişi iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
-            onConfirm: () => {
-                const filtered = pendingOrders.filter(p => p.id !== id);
-                updateOrders(filtered);
-                setToast({ isOpen: true, message: 'Sipariş başarıyla iptal edildi.', type: 'info' });
+            onConfirm: async () => {
+                try {
+                    const res = await authFetch(`${API_BASE_URL}/api/PendingOrder/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        setToast({ isOpen: true, message: 'Sipariş başarıyla iptal edildi.', type: 'info' });
+                        fetchPendingOrders();
+                    }
+                } catch (error) {
+                    setToast({ isOpen: true, message: 'Sipariş iptal edilemedi.', type: 'error' });
+                }
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
             }
         });
@@ -43,13 +54,34 @@ export default function PendingOrdersPage() {
             isOpen: true,
             title: 'Tüm Siparişleri İptal Et',
             message: 'Tüm siparişleri iptal etmek istediğinize emin misiniz? Tüm liste temizlenecek ve bu işlem geri alınamaz.',
-            onConfirm: () => {
-                updateOrders([]);
-                setToast({ isOpen: true, message: 'Tüm siparişler başarıyla iptal edildi.', type: 'success' });
+            onConfirm: async () => {
+                try {
+                    // Tek tek silmek yerine hepsini silen endpoint de yapılabilirdi, 
+                    // ama şimdilik mevcut pendingOrders'i dönüp silebiliriz
+                    for (const order of pendingOrders) {
+                        await authFetch(`${API_BASE_URL}/api/PendingOrder/${order.id}`, { method: 'DELETE' });
+                    }
+                    setToast({ isOpen: true, message: 'Tüm siparişler başarıyla iptal edildi.', type: 'success' });
+                    fetchPendingOrders();
+                } catch (error) {
+                    setToast({ isOpen: true, message: 'Siparişler iptal edilirken hata oluştu.', type: 'error' });
+                }
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
             }
         });
     };
+
+    const totalPages = Math.ceil(pendingOrders.length / pageSize);
+    const indexOfLastItem = currentPage * pageSize;
+    const indexOfFirstItem = indexOfLastItem - pageSize;
+    const currentOrders = pendingOrders.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Silme sonrası sayfa boşalırsa bir önceki sayfaya geç
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
+        }
+    }, [pendingOrders.length, currentPage, totalPages]);
 
     return (
         <div className="w-full flex flex-col min-h-[calc(100vh-2rem)] md:min-h-full">
@@ -107,7 +139,7 @@ export default function PendingOrdersPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                pendingOrders.map((order, idx) => (
+                                currentOrders.map((order, idx) => (
                                     <tr key={`${order.id}-${idx}`} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors group">
                                         <td className="px-6 py-4 text-slate-900 dark:text-slate-100 font-bold whitespace-normal max-w-[250px]">
                                             {formatNoOrphans(order.productName)}
@@ -140,8 +172,23 @@ export default function PendingOrdersPage() {
                                 ))
                             )}
                         </tbody>
+
                     </table>
                 </div>
+                            {pendingOrders.length > 0 && (
+                <div className="mt-4">
+                    <Pagination
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        totalCount={pendingOrders.length}
+                        onPageChange={setCurrentPage}
+                        onPageSizeChange={(size) => {
+                            setPageSize(size);
+                            setCurrentPage(1);
+                        }}
+                    />
+                </div>
+            )}
             </div>
 
             {/* Confirm Modal */}

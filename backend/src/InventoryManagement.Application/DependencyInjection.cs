@@ -24,6 +24,8 @@ public static class DependencyInjection
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IEquipmentTransactionService, EquipmentTransactionService>();
+        services.AddScoped<IPendingOrderService, PendingOrderService>();
+
 
         return services;
     }
