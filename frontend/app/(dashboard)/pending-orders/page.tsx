@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { formatNoOrphans } from '@/app/lib/utils';
+import { authFetch, API_BASE_URL } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
 
 export default function PendingOrdersPage() {
@@ -9,19 +10,20 @@ export default function PendingOrdersPage() {
     const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
     useEffect(() => {
-        const stored = localStorage.getItem('pendingOrders');
-        if (stored) {
-            try {
-                setPendingOrders(JSON.parse(stored));
-            } catch (e) {
-                console.error("Siparişler yüklenemedi", e);
-            }
-        }
+        fetchPendingOrders();
     }, []);
 
-    const updateOrders = (newOrders: any[]) => {
-        setPendingOrders(newOrders);
-        localStorage.setItem('pendingOrders', JSON.stringify(newOrders));
+    const fetchPendingOrders = async () => {
+        try {
+            const res = await authFetch(`${API_BASE_URL}/api/PendingOrder`);
+            if (res.ok) {
+                const data = await res.json();
+                setPendingOrders(data);
+            }
+        } catch (error) {
+            console.error("Bekleyen siparişler getirilemedi:", error);
+            setToast({ isOpen: true, message: 'Siparişler yüklenemedi.', type: 'error' });
+        }
     };
 
     const handleRemoveOrder = (id: number) => {
@@ -29,10 +31,16 @@ export default function PendingOrdersPage() {
             isOpen: true,
             title: 'Siparişi İptal Et',
             message: 'Bu siparişi iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
-            onConfirm: () => {
-                const filtered = pendingOrders.filter(p => p.id !== id);
-                updateOrders(filtered);
-                setToast({ isOpen: true, message: 'Sipariş başarıyla iptal edildi.', type: 'info' });
+            onConfirm: async () => {
+                try {
+                    const res = await authFetch(`${API_BASE_URL}/api/PendingOrder/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        setToast({ isOpen: true, message: 'Sipariş başarıyla iptal edildi.', type: 'info' });
+                        fetchPendingOrders();
+                    }
+                } catch (error) {
+                    setToast({ isOpen: true, message: 'Sipariş iptal edilemedi.', type: 'error' });
+                }
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
             }
         });
@@ -43,9 +51,18 @@ export default function PendingOrdersPage() {
             isOpen: true,
             title: 'Tüm Siparişleri İptal Et',
             message: 'Tüm siparişleri iptal etmek istediğinize emin misiniz? Tüm liste temizlenecek ve bu işlem geri alınamaz.',
-            onConfirm: () => {
-                updateOrders([]);
-                setToast({ isOpen: true, message: 'Tüm siparişler başarıyla iptal edildi.', type: 'success' });
+            onConfirm: async () => {
+                try {
+                    // Tek tek silmek yerine hepsini silen endpoint de yapılabilirdi, 
+                    // ama şimdilik mevcut pendingOrders'i dönüp silebiliriz
+                    for (const order of pendingOrders) {
+                        await authFetch(`${API_BASE_URL}/api/PendingOrder/${order.id}`, { method: 'DELETE' });
+                    }
+                    setToast({ isOpen: true, message: 'Tüm siparişler başarıyla iptal edildi.', type: 'success' });
+                    fetchPendingOrders();
+                } catch (error) {
+                    setToast({ isOpen: true, message: 'Siparişler iptal edilirken hata oluştu.', type: 'error' });
+                }
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
             }
         });

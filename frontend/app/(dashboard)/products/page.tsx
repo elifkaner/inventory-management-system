@@ -65,16 +65,32 @@ export default function UrunEnvanterSayfasi() {
     const [entryMode, setEntryMode] = useState<'new' | 'existing'>('new');
 
     useEffect(() => {
-        const stored = localStorage.getItem('pendingOrders');
-        if (stored) {
-            try { setPendingOrders(JSON.parse(stored)); } catch (e) { console.error(e); }
-        }
+        const fetchPending = async () => {
+            try {
+                const res = await authFetch(`${API_BASE_URL}/api/PendingOrder`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setPendingOrders(data);
+                }
+            } catch (error) {
+                console.error("Bekleyen siparişler getirilemedi:", error);
+            }
+        };
+        fetchPending();
     }, []);
 
-    const updatePendingOrders = (newOrders: any[]) => {
-        setPendingOrders(newOrders);
-        localStorage.setItem('pendingOrders', JSON.stringify(newOrders));
+    const fetchPendingOrders = async () => {
+        try {
+            const res = await authFetch(`${API_BASE_URL}/api/PendingOrder`);
+            if (res.ok) {
+                const data = await res.json();
+                setPendingOrders(data);
+            }
+        } catch (error) {
+            console.error("Bekleyen siparişler getirilemedi:", error);
+        }
     };
+
 
     const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<ProductFormData>({
         defaultValues: { isActive: true }
@@ -332,9 +348,10 @@ export default function UrunEnvanterSayfasi() {
             if (!response.ok) throw new Error("Kayıt Başarısız!");
 
             // Yeni ürün eklendiğinde veya güncellendiğinde sipariş listesinden düşür
-            const updatedPending = pendingOrders.filter(p => p.skuCode !== data.skuCode && p.productName !== data.productName);
-            if (updatedPending.length !== pendingOrders.length) {
-                updatePendingOrders(updatedPending);
+            const pendingToDelete = pendingOrders.find(p => p.skuCode === data.skuCode || p.productName === data.productName);
+            if (pendingToDelete) {
+                await authFetch(`${API_BASE_URL}/api/PendingOrder/${pendingToDelete.id}`, { method: 'DELETE' });
+                fetchPendingOrders();
             }
 
             setInfoModal({ isOpen: true, message: isEditing ? "Ürün başarıyla güncellendi." : "Yeni ürün başarıyla eklendi.", type: 'success' });
@@ -369,15 +386,14 @@ export default function UrunEnvanterSayfasi() {
 
             if (res.ok) {
                 setInfoModal({ isOpen: true, message: `${product.productName} için ${quantity} adet sipariş oluşturuldu!`, type: 'success' });
-                // Pending orders listesine ekle (zaten varsa miktarını güncelle)
-                const existingIndex = pendingOrders.findIndex(p => p.id === product.id);
-                let newOrders = [...pendingOrders];
-                if (existingIndex >= 0) {
-                    newOrders[existingIndex].orderQuantity += quantity;
-                } else {
-                    newOrders.push({ ...product, orderQuantity: quantity, orderDate: new Date().toISOString() });
-                }
-                updatePendingOrders(newOrders);
+                // Pending orders listesine backend'e ekle
+                await authFetch(`${API_BASE_URL}/api/PendingOrder`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: product.id, orderQuantity: quantity })
+                });
+                
+                fetchPendingOrders();
                 
                 // Update local state temporarily so it reflects without re-fetching
                 setProducts(prev => prev.map(p => p.id === product.id ? { ...p, stockQuantity: p.stockQuantity + quantity } : p));
@@ -569,9 +585,9 @@ export default function UrunEnvanterSayfasi() {
                                             isOpen: true,
                                             title: 'Siparişi İptal Et',
                                             message: 'Bu siparişi iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
-                                            onConfirm: () => {
-                                                const newPending = pendingOrders.filter(p => p.id !== order.id);
-                                                updatePendingOrders(newPending);
+                                            onConfirm: async () => {
+                                                await authFetch(`${API_BASE_URL}/api/PendingOrder/${order.id}`, { method: 'DELETE' });
+                                                fetchPendingOrders();
                                                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
                                             }
                                         });
