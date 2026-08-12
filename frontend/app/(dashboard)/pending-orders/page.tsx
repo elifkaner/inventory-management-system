@@ -7,6 +7,7 @@ import Pagination from '@/app/ui/pagination';
 
 export default function PendingOrdersPage() {
     const [pendingOrders, setPendingOrders] = useState<any[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [toast, setToast] = useState<{ isOpen: boolean; message: string; type: 'success' | 'error' | 'info' }>({ isOpen: false, message: '', type: 'info' });
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -71,17 +72,20 @@ export default function PendingOrdersPage() {
         });
     };
 
-    const totalPages = Math.ceil(pendingOrders.length / pageSize);
+    const filteredOrders = pendingOrders.filter(order => 
+        (order.productName || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const totalPages = Math.ceil(filteredOrders.length / pageSize);
     const indexOfLastItem = currentPage * pageSize;
     const indexOfFirstItem = indexOfLastItem - pageSize;
-    const currentOrders = pendingOrders.slice(indexOfFirstItem, indexOfLastItem);
+    const currentOrders = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
 
     // Silme sonrası sayfa boşalırsa bir önceki sayfaya geç
     useEffect(() => {
         if (currentPage > totalPages && totalPages > 0) {
             setCurrentPage(totalPages);
         }
-    }, [pendingOrders.length, currentPage, totalPages]);
+    }, [filteredOrders.length, currentPage, totalPages]);
 
     return (
         <div className="w-full flex flex-col min-h-[calc(100vh-2rem)] md:min-h-full">
@@ -100,15 +104,29 @@ export default function PendingOrdersPage() {
                     <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Kritik stok seviyesine düşüp siparişi verilmiş ürünlerin tam listesi.</p>
                 </div>
 
-                {pendingOrders.length > 0 && (
-                    <button 
-                        onClick={handleClearAll}
-                        className="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2"
-                    >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        Tüm Siparişleri İptal Et
-                    </button>
-                )}
+                <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                    <div className="relative w-full md:w-64">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                        <input 
+                            type="text" 
+                            placeholder="Ürün adına göre ara..." 
+                            value={searchTerm}
+                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all shadow-sm text-slate-900 dark:text-slate-100"
+                        />
+                    </div>
+                    {pendingOrders.length > 0 && (
+                        <button 
+                            onClick={handleClearAll}
+                            className="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto"
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            Tüm Siparişleri İptal Et
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden flex-1 flex flex-col border border-slate-100 dark:border-slate-700/50">
@@ -175,12 +193,12 @@ export default function PendingOrdersPage() {
 
                     </table>
                 </div>
-                            {pendingOrders.length > 0 && (
+                            {filteredOrders.length > 0 && (
                 <div className="mt-4">
                     <Pagination
                         currentPage={currentPage}
                         pageSize={pageSize}
-                        totalCount={pendingOrders.length}
+                        totalCount={filteredOrders.length}
                         onPageChange={setCurrentPage}
                         onPageSizeChange={(size) => {
                             setPageSize(size);

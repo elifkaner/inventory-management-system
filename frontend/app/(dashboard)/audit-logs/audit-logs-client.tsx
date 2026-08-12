@@ -8,6 +8,10 @@ export default function AuditLogsClient() {
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Date filters
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,7 +22,10 @@ export default function AuditLogsClient() {
     const fetchLogs = async () => {
       try {
         setIsLoading(true);
-        const res = await authFetch(`${API_BASE_URL}/api/AuditLog?page=${currentPage}&pageSize=${pageSize}`);
+        let url = `${API_BASE_URL}/api/AuditLog?page=${currentPage}&pageSize=${pageSize}`;
+        if (fromDate) url += `&fromDate=${encodeURIComponent(fromDate)}`;
+        if (toDate) url += `&toDate=${encodeURIComponent(toDate)}`;
+        const res = await authFetch(url);
         if (res.ok) {
           const data = await res.json();
           const rawLogs = Array.isArray(data) ? data : data.items || [];
@@ -42,7 +49,7 @@ export default function AuditLogsClient() {
       }
     };
     fetchLogs();
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, fromDate, toDate]);
 
   const getActionBadge = (action: string) => {
     switch (action.toUpperCase()) {
@@ -75,10 +82,38 @@ export default function AuditLogsClient() {
 
   return (
     <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans transition-colors">
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Sistem Günlükleri (Audit Logs)</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Sistemde yapılan tüm kritik değişikliklerin (ekleme, güncelleme, silme) tarihçesi.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">Başlangıç:</label>
+            <input 
+              type="datetime-local" 
+              value={fromDate}
+              onChange={(e) => { setFromDate(e.target.value); setCurrentPage(1); }}
+              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-slate-700 dark:text-slate-200 w-full sm:w-auto"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">Bitiş:</label>
+            <input 
+              type="datetime-local" 
+              value={toDate}
+              onChange={(e) => { setToDate(e.target.value); setCurrentPage(1); }}
+              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-slate-700 dark:text-slate-200 w-full sm:w-auto"
+            />
+          </div>
+          {(fromDate || toDate) && (
+            <button
+              onClick={() => { setFromDate(''); setToDate(''); setCurrentPage(1); }}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold transition-colors w-full sm:w-auto"
+            >
+              Temizle
+            </button>
+          )}
         </div>
       </div>
 
