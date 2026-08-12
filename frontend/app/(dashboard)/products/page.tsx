@@ -32,7 +32,11 @@ export default function UrunEnvanterSayfasi() {
     const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
     const [suppliers, setSuppliers] = useState<{ id: number; companyName: string }[]>([]);
     const [locations, setLocations] = useState<any[]>([]);
-    const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
+    const [brands, setBrands] = useState<{
+        id: number;
+        name: string;
+        categoryId?: number;
+    }[]>([]);
     const [models, setModels] = useState<{ id: number; name: string }[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -60,9 +64,9 @@ export default function UrunEnvanterSayfasi() {
     const [pendingOrdersPage, setPendingOrdersPage] = useState(1);
     const [pendingOrdersPageSize, setPendingOrdersPageSize] = useState(4);
     const [criticalProducts, setCriticalProducts] = useState<any[]>([]);
-    const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+    const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void }>({ isOpen: false, title: '', message: '', onConfirm: () => { } });
     const [isFetchingCritical, setIsFetchingCritical] = useState(false);
-    
+
     // Ürün Ekleme Modu: 'new' (Sıfırdan) veya 'existing' (Var olanı kopyala/doldur)
     const [entryMode, setEntryMode] = useState<'new' | 'existing'>('new');
 
@@ -205,11 +209,11 @@ export default function UrunEnvanterSayfasi() {
                     const items = Array.isArray(data) ? data : (data.items || data.Items || []);
                     // Tam eşleşen SKU var mı?
                     const match = items.find((p: any) => p.skuCode === debouncedSkuCode);
-                    
+
                     if (match) {
                         const foundCat = categories.find(c => c.name === match.category);
                         const foundSup = suppliers.find(s => s.companyName === match.supplier);
-                        
+
                         const brandName = match.brand || match.brandName;
                         const foundBrand = brands.find(b => b.name === brandName);
                         const resolvedBrandId = match.brandId || (foundBrand ? foundBrand.id : '');
@@ -233,13 +237,13 @@ export default function UrunEnvanterSayfasi() {
                                 console.error("Model verileri çekilemedi:", err);
                             }
                         } else if (resolvedBrandId) {
-                             // Sadece form seçeneklerini doldurmak için de modeli çekiyoruz
-                             try {
-                                 const modelRes = await authFetch(`${API_BASE_URL}/api/Model?brandId=${resolvedBrandId}`);
-                                 if (modelRes.ok) {
-                                     setFormModels(await modelRes.json());
-                                 }
-                             } catch(err) {}
+                            // Sadece form seçeneklerini doldurmak için de modeli çekiyoruz
+                            try {
+                                const modelRes = await authFetch(`${API_BASE_URL}/api/Model?brandId=${resolvedBrandId}`);
+                                if (modelRes.ok) {
+                                    setFormModels(await modelRes.json());
+                                }
+                            } catch (err) { }
                         }
 
                         setValue("id", match.id, { shouldValidate: true });
@@ -247,7 +251,7 @@ export default function UrunEnvanterSayfasi() {
                         setValue("barcode", match.barcode || '', { shouldValidate: true });
                         setValue("categoryId", foundCat ? String(foundCat.id) : '', { shouldValidate: true });
                         setValue("supplierId", foundSup ? String(foundSup.id) : '', { shouldValidate: true });
-                        
+
                         if (resolvedBrandId) setValue("brandId", String(resolvedBrandId), { shouldValidate: true });
                         if (resolvedModelId) setValue("modelId", String(resolvedModelId), { shouldValidate: true });
 
@@ -290,7 +294,7 @@ export default function UrunEnvanterSayfasi() {
                 if (res.ok) {
                     const data = await res.json();
                     const items = Array.isArray(data) ? data : (data.items || data.Items || []);
-                    
+
                     let maxNum = 0;
                     items.forEach((p: any) => {
                         if (p.skuCode && p.skuCode.startsWith(skuPrefix)) {
@@ -309,7 +313,7 @@ export default function UrunEnvanterSayfasi() {
                     const nextSku = `${skuPrefix}${nextNum.toString().padStart(3, '0')}`;
                     // Eğer kullanıcı kendisi bir şey yazmamışsa veya zaten otomatik doldurulmuş bir şey varsa değiştir
                     setValue("skuCode", nextSku, { shouldValidate: true });
-                    
+
                     // Sadece rakamlardan oluşan otomatik barkod üret (13 hane, 869 ön ekiyle)
                     const randomDigits = Math.floor(1000000000 + Math.random() * 9000000000).toString();
                     const nextBarcode = `869${randomDigits}`;
@@ -401,9 +405,9 @@ export default function UrunEnvanterSayfasi() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ productId: product.id, orderQuantity: quantity })
                 });
-                
+
                 fetchPendingOrders();
-                
+
                 // Update local state temporarily so it reflects without re-fetching
                 setProducts(prev => prev.map(p => p.id === product.id ? { ...p, stockQuantity: p.stockQuantity + quantity } : p));
                 setCriticalProducts(prev => prev.map(p => p.id === product.id ? { ...p, stockQuantity: p.stockQuantity + quantity } : p));
@@ -589,7 +593,7 @@ export default function UrunEnvanterSayfasi() {
                                     <p className="text-xs font-semibold text-brand-primary dark:text-brand-primaryHover">+{order.orderQuantity} Adet</p>
                                     <p className="text-[10px] text-slate-400">{new Date(order.orderDate).toLocaleDateString('tr-TR')}</p>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setConfirmModal({
                                             isOpen: true,
@@ -617,10 +621,10 @@ export default function UrunEnvanterSayfasi() {
                 <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-2">
                     <div className="relative w-full md:w-96">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
-                        <input type="text" placeholder="Ürün adı, SKU veya Barkod ara..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-brand-primary text-sm dark:text-slate-200 transition-colors" />
+                        <input type="text" placeholder="Ürün adı, SKU veya Barkod ara..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full pl-10 pr-4 py-2.5 bg-brand-surface dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-brand-primary text-sm dark:text-slate-200 transition-colors" />
                     </div>
                     {hasActiveFilters && (
-                        <button 
+                        <button
                             onClick={() => {
                                 setSearchTerm("");
                                 setStatusFilter("all");
@@ -655,11 +659,11 @@ export default function UrunEnvanterSayfasi() {
                         <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kategori</label>
                         <select
                             value={filterCategoryId}
-                            onChange={(e) => { 
-                                setFilterCategoryId(e.target.value); 
+                            onChange={(e) => {
+                                setFilterCategoryId(e.target.value);
                                 setFilterBrandId(""); // Kategori değişince marka ve modeli sıfırla
                                 setFilterModelId("");
-                                setCurrentPage(1); 
+                                setCurrentPage(1);
                             }}
                             className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm shadow-sm"
                         >
@@ -673,10 +677,10 @@ export default function UrunEnvanterSayfasi() {
                         <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Marka</label>
                         <select
                             value={filterBrandId}
-                            onChange={(e) => { 
-                                setFilterBrandId(e.target.value); 
+                            onChange={(e) => {
+                                setFilterBrandId(e.target.value);
                                 setFilterModelId(""); // Marka değişince modeli sıfırla
-                                setCurrentPage(1); 
+                                setCurrentPage(1);
                             }}
                             className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm shadow-sm"
                         >
@@ -718,83 +722,82 @@ export default function UrunEnvanterSayfasi() {
             <div className="bg-white/90 backdrop-blur-sm dark:bg-slate-800 rounded-3xl shadow-2xl shadow-brand-primary/5 dark:shadow-none overflow-hidden flex flex-col border border-brand-primary/10 dark:border-slate-700/50">
                 <div className="overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse table-auto min-w-[1100px]">
-                    <thead>
-                        <tr className="bg-slate-50/70 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
-                            <th className="px-4 py-3 pl-6 w-1 whitespace-nowrap text-center">Durum</th>
-                            <th className="px-4 py-3 min-w-[220px] text-center">Ürün Adı</th>
-                            <th className="px-4 py-3 min-w-[140px] text-center">Marka / Model</th>
-                            <th className="px-4 py-3 text-center">Kategori</th>
-                            <th className="px-4 py-3 text-center">Tedarikçi</th>
-                            <th className="px-4 py-3 whitespace-nowrap min-w-[120px] text-center">SKU Kodu</th>
-                            <th className="px-4 py-3 whitespace-nowrap min-w-[140px] text-center">Barkod</th>
-                            <th className="px-4 py-3 text-center w-1 whitespace-nowrap">Satış Fiyatı</th>
-                            <th className="px-4 py-3 text-center w-1 whitespace-nowrap">Stok Durumu</th>
-                            <th className="px-4 py-3 text-center w-1 whitespace-nowrap">Stok</th>
-                            <th className="px-4 py-3 pr-6 text-center w-1 whitespace-nowrap">İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {isLoading ? (
-                            <tr><td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
-                        ) : paginatedProducts.length === 0 ? (
-                            <tr><td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400">Kayıt bulunamadı.</td></tr>
-                        ) : (
-                            paginatedProducts.map((prod) => (
-                                <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
-                                    <td className="px-4 py-3 pl-6 w-1 whitespace-nowrap text-center">
-                                        <StatusBadge isActive={prod.isActive} />
-                                    </td>
-                                    <td className="px-4 py-3 text-slate-900 dark:text-slate-100 font-semibold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(prod.productName)}</td>
-                                    <td className="px-4 py-3 text-center whitespace-normal break-normal max-w-[160px]">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <span className="text-slate-700 dark:text-slate-300 font-semibold text-sm">{prod.brand || prod.brandName || '-'}</span>
-                                            <span className="text-slate-400 dark:text-slate-500 text-xs">{prod.model || prod.modelName || '-'}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium text-center whitespace-normal break-normal max-w-[140px]">{prod.category || 'Kategorisiz'}</td>
-                                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium text-center whitespace-normal break-normal max-w-[140px]">{prod.supplier || '-'}</td>
+                        <thead>
+                            <tr className="bg-slate-50/70 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs font-bold tracking-wider">
+                                <th className="px-4 py-3 pl-6 w-1 whitespace-nowrap text-center">Durum</th>
+                                <th className="px-4 py-3 min-w-[220px] text-center">Ürün Adı</th>
+                                <th className="px-4 py-3 min-w-[140px] text-center">Marka / Model</th>
+                                <th className="px-4 py-3 text-center">Kategori</th>
+                                <th className="px-4 py-3 text-center">Tedarikçi</th>
+                                <th className="px-4 py-3 whitespace-nowrap min-w-[120px] text-center">SKU Kodu</th>
+                                <th className="px-4 py-3 whitespace-nowrap min-w-[140px] text-center">Barkod</th>
+                                <th className="px-4 py-3 text-center w-1 whitespace-nowrap">Satış Fiyatı</th>
+                                <th className="px-4 py-3 text-center w-1 whitespace-nowrap">Stok Durumu</th>
+                                <th className="px-4 py-3 text-center w-1 whitespace-nowrap">Stok</th>
+                                <th className="px-4 py-3 pr-6 text-center w-1 whitespace-nowrap">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {isLoading ? (
+                                <tr><td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400 animate-pulse font-medium">Veritabanından ürünler çekiliyor...</td></tr>
+                            ) : paginatedProducts.length === 0 ? (
+                                <tr><td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400">Kayıt bulunamadı.</td></tr>
+                            ) : (
+                                paginatedProducts.map((prod) => (
+                                    <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                                        <td className="px-4 py-3 pl-6 w-1 whitespace-nowrap text-center">
+                                            <StatusBadge isActive={prod.isActive} />
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-900 dark:text-slate-100 font-semibold text-center whitespace-normal break-normal [text-wrap:pretty] max-w-[220px]">{formatNoOrphans(prod.productName)}</td>
+                                        <td className="px-4 py-3 text-center whitespace-normal break-normal max-w-[160px]">
+                                            <div className="flex flex-col items-center justify-center">
+                                                <span className="text-slate-700 dark:text-slate-300 font-semibold text-sm">{prod.brand || prod.brandName || '-'}</span>
+                                                <span className="text-slate-400 dark:text-slate-500 text-xs">{prod.model || prod.modelName || '-'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium text-center whitespace-normal break-normal max-w-[140px]">{prod.category || 'Kategorisiz'}</td>
+                                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium text-center whitespace-normal break-normal max-w-[140px]">{prod.supplier || '-'}</td>
 
-                                    <td className="px-4 py-3 align-middle text-center">
-                                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">
-                                            {prod.skuCode || '-'}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 align-middle text-center">
-                                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">
-                                            {prod.barcode || '-'}
-                                        </span>
-                                    </td>
+                                        <td className="px-4 py-3 align-middle text-center">
+                                            <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">
+                                                {prod.skuCode || '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 align-middle text-center">
+                                            <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-brand-surfaceDark dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/50 rounded px-2 py-1 whitespace-nowrap">
+                                                {prod.barcode || '-'}
+                                            </span>
+                                        </td>
 
-                                    <td className="px-4 py-3 text-center text-slate-900 dark:text-slate-100 font-bold w-1 whitespace-nowrap">₺ {prod.salePrice?.toLocaleString()}</td>
-                                    
-                                    <td className="px-4 py-3 text-center w-1 whitespace-nowrap">
-                                        <span className={`inline-flex items-center justify-center min-w-[70px] px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
-                                            prod.stockQuantity === 0 
-                                                ? 'bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400' 
-                                                : (prod.stockQuantity > 25 
-                                                    ? 'bg-emerald-100/50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' 
-                                                    : 'bg-rose-100/50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400')
-                                        }`}>
-                                            {prod.stockQuantity === 0 ? 'Tükendi' : (prod.stockQuantity > 25 ? 'Yeterli' : 'Kritik')}
-                                        </span>
-                                    </td>
-                                    
-                                    <td className="px-4 py-3 text-center w-1 whitespace-nowrap">
-                                        <span className={`inline-flex items-center justify-center gap-1 min-w-[70px] px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity <= 25 ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' : 'bg-brand-surfaceDark dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
-                                            {prod.stockQuantity} Adet
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 pr-6 text-center w-1 whitespace-nowrap">
-                                        <div className="flex justify-center gap-3">
-                                            <button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors font-semibold">Düzenle</button>
-                                            <button onClick={() => handleDeleteClick(prod.id, prod.productName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                                        <td className="px-4 py-3 text-center text-slate-900 dark:text-slate-100 font-bold w-1 whitespace-nowrap">₺ {prod.salePrice?.toLocaleString()}</td>
+
+                                        <td className="px-4 py-3 text-center w-1 whitespace-nowrap">
+                                            <span className={`inline-flex items-center justify-center min-w-[70px] px-3 py-1 rounded-full text-xs font-bold shadow-sm ${prod.stockQuantity === 0
+                                                    ? 'bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400'
+                                                    : (prod.stockQuantity > 25
+                                                        ? 'bg-emerald-100/50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                                                        : 'bg-rose-100/50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400')
+                                                }`}>
+                                                {prod.stockQuantity === 0 ? 'Tükendi' : (prod.stockQuantity > 25 ? 'Yeterli' : 'Kritik')}
+                                            </span>
+                                        </td>
+
+                                        <td className="px-4 py-3 text-center w-1 whitespace-nowrap">
+                                            <span className={`inline-flex items-center justify-center gap-1 min-w-[70px] px-3 py-1 rounded-full text-xs font-bold ${prod.stockQuantity <= 25 ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' : 'bg-brand-surfaceDark dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
+                                                {prod.stockQuantity} Adet
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 pr-6 text-center w-1 whitespace-nowrap">
+                                            <div className="flex justify-center gap-3">
+                                                <button onClick={() => handleEditClick(prod)} className="text-emerald-600 hover:text-emerald-800 transition-colors font-semibold">Düzenle</button>
+                                                <button onClick={() => handleDeleteClick(prod.id, prod.productName)} className="text-rose-500 hover:text-rose-700 transition-colors font-semibold">Sil</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
                 <Pagination
                     currentPage={currentPage}
@@ -822,13 +825,13 @@ export default function UrunEnvanterSayfasi() {
                                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                     </button>
                                 </div>
-                                
+
                                 {(!watch("id") || entryMode === 'existing') && (
                                     <div className="flex bg-slate-200/50 dark:bg-slate-800 p-1 rounded-lg w-full max-w-sm">
-                                        <button 
-                                            type="button" 
-                                            onClick={() => { 
-                                                setEntryMode('new'); 
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setEntryMode('new');
                                                 reset({
                                                     id: null, productName: '', purchasePrice: '', salePrice: '', skuCode: '', barcode: '',
                                                     stockQuantity: '', categoryId: '', brandId: '', isActive: true, supplierId: '', modelId: '', locationId: null
@@ -838,8 +841,8 @@ export default function UrunEnvanterSayfasi() {
                                         >
                                             Yeni Ürün Girişi
                                         </button>
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             onClick={() => setEntryMode('existing')}
                                             className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${entryMode === 'existing' ? 'bg-white dark:bg-slate-700 text-brand-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                                         >
@@ -887,7 +890,7 @@ export default function UrunEnvanterSayfasi() {
                                             <input type="text" {...register("productName", { required: true })} className={`w-full p-2.5 border rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:border-emerald-500 text-sm ${errors.productName ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-600'}`} />
                                             {errors.productName && <ErrorMessage />}
                                         </div>
-                                        
+
                                         <SearchableSelect
                                             label="Kategori *"
                                             name="categoryId"
@@ -1054,7 +1057,7 @@ export default function UrunEnvanterSayfasi() {
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>
-                        
+
                         <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50 dark:bg-slate-900/20">
                             <div className="space-y-4">
                                 {isFetchingCritical ? (
@@ -1081,16 +1084,16 @@ export default function UrunEnvanterSayfasi() {
                                             </div>
                                             <div className="flex items-center gap-3 w-full sm:w-auto">
                                                 <div className="relative w-24">
-                                                    <input 
-                                                        type="number" 
+                                                    <input
+                                                        type="number"
                                                         min="1"
-                                                        value={orderQuantities[prod.id] !== undefined ? orderQuantities[prod.id] : 50} 
-                                                        onChange={(e) => setOrderQuantities({...orderQuantities, [prod.id]: parseInt(e.target.value) || 0})}
+                                                        value={orderQuantities[prod.id] !== undefined ? orderQuantities[prod.id] : 50}
+                                                        onChange={(e) => setOrderQuantities({ ...orderQuantities, [prod.id]: parseInt(e.target.value) || 0 })}
                                                         className="w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-brand-primary/20"
                                                     />
                                                     <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-medium">Adet</span>
                                                 </div>
-                                                <button 
+                                                <button
                                                     onClick={() => handleCreateOrder(prod)}
                                                     disabled={isSubmittingOrder[prod.id] || (orderQuantities[prod.id] !== undefined && orderQuantities[prod.id] <= 0)}
                                                     className="bg-brand-primary hover:bg-brand-primaryHover text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all disabled:opacity-50 flex items-center gap-2 whitespace-nowrap"
