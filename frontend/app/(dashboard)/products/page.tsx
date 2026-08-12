@@ -1036,7 +1036,16 @@ export default function UrunEnvanterSayfasi() {
                                     </span>
                                     Kritik Stok Sipariş Yönetimi
                                 </h2>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Stoğu 25 ve altında olan ürünler için hızlıca sipariş girişi oluşturun.</p>
+                                <div className="mt-4 flex items-center gap-3 p-3.5 bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl border border-purple-200/60 dark:border-purple-800/50">
+                                    <div className="bg-white dark:bg-slate-800 shadow-sm border border-purple-100 dark:border-purple-800 p-2 rounded-xl text-purple-500 flex-shrink-0">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                        Stoğu <span className="font-bold text-purple-600 dark:text-purple-400">25 ve altında</span> olan ürünler için hızlıca sipariş girişi oluşturun.
+                                    </p>
+                                </div>
                             </div>
                             <button onClick={() => setIsOrderModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
