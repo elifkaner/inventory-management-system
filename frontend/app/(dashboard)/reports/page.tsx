@@ -181,14 +181,14 @@ const renderSupplierPieLabel = (props: any) => {
 
 const renderSupplierLabelLine = (props: any) => {
     const { points, name, stroke, value, percent } = props;
-    if (!value || percent < 0.01 || !points || points.length < 2) return null;
+    if (!value || percent < 0.01 || !points || points.length < 2) return <path d="" />;
     
     let p0 = points[0];
     let p1 = points[1];
     let p2 = points.length > 2 ? points[2] : null;
 
     if (name?.toLowerCase().includes('diğer')) {
-        return null; // Oku tamamen yok et
+        return <path d="" />; // Oku tamamen yok et
     }
 
     let d = `M${p0.x},${p0.y}L${p1.x},${p1.y}`;
