@@ -57,6 +57,8 @@ export default function UrunEnvanterSayfasi() {
     const [orderQuantities, setOrderQuantities] = useState<{ [key: number]: number }>({});
     const [isSubmittingOrder, setIsSubmittingOrder] = useState<{ [key: number]: boolean }>({});
     const [pendingOrders, setPendingOrders] = useState<any[]>([]);
+    const [pendingOrdersPage, setPendingOrdersPage] = useState(1);
+    const [pendingOrdersPageSize, setPendingOrdersPageSize] = useState(4);
     const [criticalProducts, setCriticalProducts] = useState<any[]>([]);
     const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
     const [isFetchingCritical, setIsFetchingCritical] = useState(false);
@@ -532,6 +534,7 @@ export default function UrunEnvanterSayfasi() {
 
     const hasActiveFilters = searchTerm !== "" || statusFilter !== "all" || filterCategoryId !== "" || filterBrandId !== "" || filterModelId !== "" || filterSupplierId !== "";
 
+    const currentPendingOrders = pendingOrders.slice((pendingOrdersPage - 1) * pendingOrdersPageSize, pendingOrdersPage * pendingOrdersPageSize);
     return (
         <div className="p-8 bg-brand-surface dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 font-sans relative transition-colors duration-200">
             <Toast isOpen={infoModal.isOpen} message={infoModal.message} type={infoModal.type} onClose={() => setInfoModal({ ...infoModal, isOpen: false })} />

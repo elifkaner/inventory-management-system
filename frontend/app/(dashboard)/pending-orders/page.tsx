@@ -3,10 +3,13 @@ import { useState, useEffect } from 'react';
 import { formatNoOrphans } from '@/app/lib/utils';
 import { authFetch, API_BASE_URL } from '@/app/lib/api';
 import Toast from '@/app/ui/toast';
+import Pagination from '@/app/ui/pagination';
 
 export default function PendingOrdersPage() {
     const [pendingOrders, setPendingOrders] = useState<any[]>([]);
     const [toast, setToast] = useState<{ isOpen: boolean; message: string; type: 'success' | 'error' | 'info' }>({ isOpen: false, message: '', type: 'info' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
     useEffect(() => {
@@ -68,6 +71,18 @@ export default function PendingOrdersPage() {
         });
     };
 
+    const totalPages = Math.ceil(pendingOrders.length / pageSize);
+    const indexOfLastItem = currentPage * pageSize;
+    const indexOfFirstItem = indexOfLastItem - pageSize;
+    const currentOrders = pendingOrders.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Silme sonrası sayfa boşalırsa bir önceki sayfaya geç
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
+        }
+    }, [pendingOrders.length, currentPage, totalPages]);
+
     return (
         <div className="w-full flex flex-col min-h-[calc(100vh-2rem)] md:min-h-full">
             <Toast isOpen={toast.isOpen} message={toast.message} type={toast.type} onClose={() => setToast(prev => ({ ...prev, isOpen: false }))} />
@@ -124,7 +139,7 @@ export default function PendingOrdersPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                pendingOrders.map((order, idx) => (
+                                currentOrders.map((order, idx) => (
                                     <tr key={`${order.id}-${idx}`} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors group">
                                         <td className="px-6 py-4 text-slate-900 dark:text-slate-100 font-bold whitespace-normal max-w-[250px]">
                                             {formatNoOrphans(order.productName)}
@@ -157,8 +172,23 @@ export default function PendingOrdersPage() {
                                 ))
                             )}
                         </tbody>
+
                     </table>
                 </div>
+                            {pendingOrders.length > 0 && (
+                <div className="mt-4">
+                    <Pagination
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        totalCount={pendingOrders.length}
+                        onPageChange={setCurrentPage}
+                        onPageSizeChange={(size) => {
+                            setPageSize(size);
+                            setCurrentPage(1);
+                        }}
+                    />
+                </div>
+            )}
             </div>
 
             {/* Confirm Modal */}
