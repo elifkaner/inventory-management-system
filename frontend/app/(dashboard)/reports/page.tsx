@@ -30,7 +30,7 @@ const renderCustomLegend = (props: any) => {
       <ul style={{ display: 'flex', justifyContent: 'center', gap: '4rem', listStyle: 'none', padding: 0, margin: 0, marginTop: '24px' }}>
         {payload.map((entry: any, index: number) => (
           <li key={`item-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#475569', fontWeight: 700, fontSize: '14px' }}>
-            <span style={{ width: 14, height: 14, borderRadius: '4px', backgroundColor: entry.color, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}></span>
+            <span style={{ width: 11, height: 11, borderRadius: '4px', backgroundColor: entry.color, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}></span>
             {entry.value && entry.value.length > 28 ? entry.value.substring(0, 28) + "..." : entry.value}
           </li>
         ))}
@@ -64,6 +64,34 @@ const renderPieLabel = (props: any) => {
     );
 };
 
+const renderSupplierPieLegend = (props: any) => {
+    const { payload } = props;
+    const total = payload.reduce((sum: number, entry: any) => sum + (entry.payload?.totalProduct || 0), 0);
+
+    return (
+      <ul style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', columnGap: '2.5rem', rowGap: '0.75rem', listStyle: 'none', padding: 0, margin: 0, marginTop: '0px' }}>
+        {payload.map((entry: any, index: number) => {
+            const val = entry.payload?.totalProduct || 0;
+            const percent = total > 0 ? ((val / total) * 100).toFixed(1) : "0.0";
+            
+            let shortName = entry.value || "";
+            const words = shortName.split(' ');
+            if (words.length > 2) {
+                shortName = words.slice(0, 2).join(' ') + '...';
+            }
+
+            return (
+              <li key={`item-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontWeight: 600, fontSize: '11px' }}>
+                <span style={{ width: 14, height: 14, borderRadius: '4px', backgroundColor: entry.color, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}></span>
+                {shortName}
+                <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 700 }}>%${percent}</span>
+              </li>
+            );
+        })}
+      </ul>
+    );
+};
+
 const renderPieLegend = (props: any) => {
     const { payload } = props;
     
@@ -86,6 +114,89 @@ const renderPieLegend = (props: any) => {
         })}
       </ul>
     );
+};
+
+
+
+
+const renderSupplierPieLabel = (props: any) => {
+    const { x, y, cx, cy, name, value, percent, fill } = props;
+    if (!value || percent < 0.01) return null;
+
+    const isRight = x > cx;
+    let nudgeX = isRight ? 10 : -10;
+    let nudgeY = 0;
+
+    // Uzun isimleri sadece 2 kelimeyle sınırla
+    let shortName = name || "";
+    const words = shortName.split(' ');
+    if (words.length > 2) {
+        shortName = words.slice(0, 2).join(' ') + '...';
+    }
+
+    // Renge göre temel ittirmeler
+    if (fill === '#10B981') {
+        nudgeY = -20;
+        nudgeX += 10;
+    } else if (fill === '#B39DDB') {
+        nudgeY = 15;
+        nudgeX += 5;
+    } else if (fill === '#3B82F6') {
+        nudgeY = 25;
+        nudgeX -= 5;
+    } else if (fill === '#F43F5E') {
+        nudgeY = -25;
+        nudgeX -= 15;
+    } else {
+        nudgeY = y > cy ? 15 : -15;
+    }
+
+    // KULLANICININ ÖZEL İSTEĞİ: Sadece yazıların konumlarını (koordinatlarını) kaydır!
+    const lowerName = name?.toLowerCase() || "";
+    if (lowerName.includes('karadeniz gıda')) {
+        nudgeY += 8; // 5px daha aşağı
+    }
+    if (lowerName.includes('marmara ofis')) {
+        nudgeY -= 40; // 10px daha yukarı
+        nudgeX += 10; // 10px sağa
+    }
+    if (lowerName.includes('akdeniz temizlik')) {
+        nudgeY += 15; // 5px yukarı (eskiden +20'ydi)
+    }
+    if (lowerName.includes('anadolu elektronik')) {
+        nudgeY -= 50; // 10px daha yukarı (eskiden -40'tı)
+        nudgeX -= 5;  // 5px daha sola (eskiden 0'dı)
+    }
+    if (lowerName === 'diğer' || lowerName.includes('diğer')) {
+        nudgeX += 100; // 10px daha sola (eskiden +110'du)
+        nudgeY -= 70;  // 20px daha yukarı (eskiden -50'ydi)
+    }
+
+    return (
+        <text x={x + nudgeX} y={y + nudgeY} fill={fill} textAnchor={isRight ? 'start' : 'end'} dominantBaseline="central" fontSize={13} fontWeight={700}>
+            {shortName} ({value})
+        </text>
+    );
+};
+
+const renderSupplierLabelLine = (props: any) => {
+    const { points, name, stroke, value, percent } = props;
+    if (!value || percent < 0.01 || !points || points.length < 2) return null;
+    
+    let p0 = points[0];
+    let p1 = points[1];
+    let p2 = points.length > 2 ? points[2] : null;
+
+    if (name?.toLowerCase().includes('diğer')) {
+        return null; // Oku tamamen yok et
+    }
+
+    let d = `M${p0.x},${p0.y}L${p1.x},${p1.y}`;
+    if (p2) {
+        d += `L${p2.x},${p2.y}`;
+    }
+
+    return <path d={d} stroke={stroke || '#94a3b8'} fill="none" strokeWidth={1} />;
 };
 
 export default function AnalizVeRaporlamaSayfasi() {
@@ -311,20 +422,23 @@ export default function AnalizVeRaporlamaSayfasi() {
                                     data={groupedSupplierData}
                                     dataKey="totalProduct"
                                     nameKey="supplierName"
-                                    cx="50%"
-                                    cy="50%"
+                                    cx="46%"
+                                    cy="55%"
                                     outerRadius={105}
-                                    label={renderPieLabel}
-                                    labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                                    startAngle={120}
+                                    endAngle={-240}
+                                    label={renderSupplierPieLabel}
+                                    labelLine={renderSupplierLabelLine}
                                 >
-                                    {groupedSupplierData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
-                                    ))}
+                                    {groupedSupplierData.map((entry, index) => {
+                                        const SUPPLIER_COLORS = ['#10B981', '#B39DDB', '#3B82F6', '#F43F5E', '#F57C00', '#8B5CF6', '#14B8A6', '#5C6BC0'];
+                                        return <Cell key={`cell-${index}`} fill={SUPPLIER_COLORS[index % SUPPLIER_COLORS.length]} />;
+                                    })}
                                 </Pie>
                                 <Tooltip 
                                     contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                                 />
-                                <Legend verticalAlign="bottom" content={renderPieLegend} />
+                                <Legend verticalAlign="bottom" content={renderSupplierPieLegend} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
