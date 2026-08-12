@@ -36,6 +36,9 @@ namespace InventoryManagement.Application.Services
                 ProductName = p.Product?.ProductName,
                 SkuCode = p.Product?.SkuCode,
                 Barcode = p.Product?.Barcode,
+                Category = p.Product?.Category?.Name,
+                Brand = p.Product?.Brand?.Name,
+                Supplier = p.Product?.Supplier?.CompanyName,
                 OrderQuantity = p.OrderQuantity,
                 OrderDate = p.OrderDate
             }).ToList();
@@ -66,6 +69,9 @@ namespace InventoryManagement.Application.Services
                         ProductName = product.ProductName,
                         SkuCode = product.SkuCode,
                         Barcode = product.Barcode,
+                        Category = product.Category?.Name,
+                        Brand = product.Brand?.Name,
+                        Supplier = product.Supplier?.CompanyName,
                         OrderQuantity = existingOrder.OrderQuantity,
                         OrderDate = existingOrder.OrderDate
                     };
@@ -89,6 +95,9 @@ namespace InventoryManagement.Application.Services
                         ProductName = product.ProductName,
                         SkuCode = product.SkuCode,
                         Barcode = product.Barcode,
+                        Category = product.Category?.Name,
+                        Brand = product.Brand?.Name,
+                        Supplier = product.Supplier?.CompanyName,
                         OrderQuantity = newOrder.OrderQuantity,
                         OrderDate = newOrder.OrderDate
                     };

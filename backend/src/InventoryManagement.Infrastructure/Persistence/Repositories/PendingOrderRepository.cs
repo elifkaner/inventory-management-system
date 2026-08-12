@@ -21,6 +21,11 @@ namespace InventoryManagement.Infrastructure.Repositories
         {
             return await _context.PendingOrders
                 .Include(p => p.Product)
+                    .ThenInclude(p => p.Category)
+                .Include(p => p.Product)
+                    .ThenInclude(p => p.Brand)
+                .Include(p => p.Product)
+                    .ThenInclude(p => p.Supplier)
                 .OrderByDescending(p => p.OrderDate)
                 .ToListAsync();
         }
@@ -38,21 +43,25 @@ namespace InventoryManagement.Infrastructure.Repositories
         public async Task AddAsync(PendingOrder pendingOrder)
         {
             await _context.PendingOrders.AddAsync(pendingOrder);
+            await _context.SaveChangesAsync();
         }
 
         public void Update(PendingOrder pendingOrder)
         {
             _context.PendingOrders.Update(pendingOrder);
+            _context.SaveChanges();
         }
 
         public void Remove(PendingOrder pendingOrder)
         {
             _context.PendingOrders.Remove(pendingOrder);
+            _context.SaveChanges();
         }
 
         public void RemoveRange(IEnumerable<PendingOrder> pendingOrders)
         {
             _context.PendingOrders.RemoveRange(pendingOrders);
+            _context.SaveChanges();
         }
 
         public async Task<IEnumerable<PendingOrder>> GetListByProductIdAsync(int productId)

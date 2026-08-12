@@ -11,7 +11,9 @@ namespace InventoryManagement.Application.DTOs
         public string ProductName { get; set; }
         public string SkuCode { get; set; }
         public string Barcode { get; set; }
-        
+        public string Category { get; set; }
+        public string Brand { get; set; }
+        public string Supplier { get; set; }
         public int OrderQuantity { get; set; }
         public DateTime OrderDate { get; set; }
     }
